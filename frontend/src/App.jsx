@@ -26,7 +26,15 @@ import {
   Network,
   Rocket,
   Shield,
-  BarChart
+  BarChart,
+  Plus,
+  Edit,
+  Trash2,
+  Tag,
+  Link,
+  GripVertical,
+  Folder,
+  FolderPlus
 } from 'lucide-react';
 
 // Erstelle QueryClient
@@ -322,33 +330,534 @@ const Dashboard = () => (
   </div>
 );
 
-// Other Components
-const Projects = () => (
-  <div className="space-y-8 fade-in">
-    <div className="text-center">
-      <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6">Projekte</h1>
-      <p className="text-xl text-slate-600 dark:text-slate-400">Verwalten Sie Ihre Projekte und verfolgen Sie den Fortschritt.</p>
-    </div>
-    
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {[1, 2, 3, 4, 5, 6].map((i) => (
-        <div key={i} className="card group cursor-pointer transform hover:scale-105 transition-all duration-300">
-          <div className="flex items-center justify-between mb-6">
-            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <FileText className="w-7 h-7 text-white" />
-            </div>
-            <span className="text-sm font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">Projekt {i}</span>
+// Projektverwaltung Component
+const Projects = () => {
+  const [projects, setProjects] = useState([
+    {
+      id: 1,
+      name: "Website Redesign",
+      priority: "Hoch",
+      tags: ["Frontend", "Design"],
+      links: ["https://github.com/project1", "https://figma.com/design1"],
+      category: "Webentwicklung",
+      subcategory: "Frontend",
+      status: "In Bearbeitung",
+      progress: 65,
+      createdAt: "2024-01-15"
+    },
+    {
+      id: 2,
+      name: "Mobile App",
+      priority: "Mittel",
+      tags: ["Mobile", "React Native"],
+      links: ["https://github.com/project2"],
+      category: "Mobile Entwicklung",
+      subcategory: "iOS",
+      status: "Planung",
+      progress: 25,
+      createdAt: "2024-01-20"
+    },
+    {
+      id: 3,
+      name: "API Backend",
+      priority: "Hoch",
+      tags: ["Backend", "Node.js"],
+      links: ["https://github.com/project3"],
+      category: "Backend Entwicklung",
+      subcategory: "API",
+      status: "Abgeschlossen",
+      progress: 100,
+      createdAt: "2024-01-10"
+    }
+  ]);
+
+  const [categories, setCategories] = useState([
+    {
+      id: 1,
+      name: "Webentwicklung",
+      subcategories: ["Frontend", "Backend", "Fullstack"]
+    },
+    {
+      id: 2,
+      name: "Mobile Entwicklung",
+      subcategories: ["iOS", "Android", "Cross-Platform"]
+    },
+    {
+      id: 3,
+      name: "Backend Entwicklung",
+      subcategories: ["API", "Datenbank", "Microservices"]
+    }
+  ]);
+
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
+  const [draggedProject, setDraggedProject] = useState(null);
+  const [filterCategory, setFilterCategory] = useState("Alle");
+  const [filterPriority, setFilterPriority] = useState("Alle");
+
+  const handleDragStart = (e, project) => {
+    setDraggedProject(project);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e, targetProject) => {
+    e.preventDefault();
+    if (!draggedProject || draggedProject.id === targetProject.id) return;
+
+    const newProjects = [...projects];
+    const draggedIndex = newProjects.findIndex(p => p.id === draggedProject.id);
+    const targetIndex = newProjects.findIndex(p => p.id === targetProject.id);
+
+    // Projekte neu anordnen
+    const [draggedItem] = newProjects.splice(draggedIndex, 1);
+    newProjects.splice(targetIndex, 0, draggedItem);
+
+    setProjects(newProjects);
+    setDraggedProject(null);
+  };
+
+  const handleCreateProject = (projectData) => {
+    const newProject = {
+      ...projectData,
+      id: Date.now(),
+      status: "Planung",
+      progress: 0,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    setProjects([...projects, newProject]);
+    setShowCreateForm(false);
+  };
+
+  const handleEditProject = (projectData) => {
+    setProjects(projects.map(p => p.id === projectData.id ? projectData : p));
+    setEditingProject(null);
+  };
+
+  const handleDeleteProject = (projectId) => {
+    setProjects(projects.filter(p => p.id !== projectId));
+  };
+
+  const filteredProjects = projects.filter(project => {
+    const categoryMatch = filterCategory === "Alle" || project.category === filterCategory;
+    const priorityMatch = filterPriority === "Alle" || project.priority === filterPriority;
+    return categoryMatch && priorityMatch;
+  });
+
+  return (
+    <div className="space-y-8 fade-in">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        <div>
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+            Projektverwaltung
+          </h1>
+          <p className="text-xl text-slate-600 dark:text-slate-400">
+            Verwalten Sie Ihre Projekte und organisieren Sie sie nach Kategorien und Prioritäten.
+          </p>
+        </div>
+        
+        <div className="flex flex-wrap gap-4">
+          <button
+            onClick={() => setShowCreateForm(true)}
+            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 flex items-center space-x-2"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Neues Projekt</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Filter und Kategorien */}
+      <div className="card">
+        <div className="flex flex-wrap gap-6 items-center">
+          <div className="flex items-center space-x-4">
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Kategorie:</label>
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="Alle">Alle Kategorien</option>
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.name}>{cat.name}</option>
+              ))}
+            </select>
           </div>
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Projekt Name {i}</h3>
-          <p className="text-slate-600 dark:text-slate-400 mb-6">Beschreibung des Projekts und aktuelle Status.</p>
-          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 shadow-inner">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full shadow-lg" style={{ width: `${Math.random() * 100}%` }}></div>
+          
+          <div className="flex items-center space-x-4">
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Priorität:</label>
+            <select
+              value={filterPriority}
+              onChange={(e) => setFilterPriority(e.target.value)}
+              className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="Alle">Alle Prioritäten</option>
+              <option value="Hoch">Hoch</option>
+              <option value="Mittel">Mittel</option>
+              <option value="Niedrig">Niedrig</option>
+            </select>
           </div>
         </div>
-      ))}
+      </div>
+
+      {/* Projektübersicht mit Drag & Drop */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {filteredProjects.map((project, index) => (
+          <div
+            key={project.id}
+            draggable
+            onDragStart={(e) => handleDragStart(e, project)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, project)}
+            className={`card group cursor-move transform transition-all duration-300 hover:scale-105 ${
+              draggedProject?.id === project.id ? 'opacity-50' : ''
+            }`}
+          >
+            {/* Drag Handle */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-2">
+                <GripVertical className="w-4 h-4 text-slate-400 cursor-move" />
+                <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                  #{project.id}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setEditingProject(project)}
+                  className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200"
+                >
+                  <Edit className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                </button>
+                <button
+                  onClick={() => handleDeleteProject(project.id)}
+                  className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors duration-200"
+                >
+                  <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+                </button>
+              </div>
+            </div>
+
+            {/* Projektinhalt */}
+            <div className="mb-4">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                {project.name}
+              </h3>
+              
+              <div className="flex items-center justify-between mb-3">
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  project.priority === 'Hoch' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' :
+                  project.priority === 'Mittel' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' :
+                  'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                }`}>
+                  {project.priority}
+                </span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">
+                  {project.status}
+                </span>
+              </div>
+
+              <div className="mb-3">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Folder className="w-4 h-4 text-slate-400" />
+                  <span className="text-sm text-slate-600 dark:text-slate-400">
+                    {project.category} → {project.subcategory}
+                  </span>
+                </div>
+              </div>
+
+              {/* Tags */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                {project.tags.map((tag, tagIndex) => (
+                  <span
+                    key={tagIndex}
+                    className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs rounded-full flex items-center space-x-1"
+                  >
+                    <Tag className="w-3 h-3" />
+                    <span>{tag}</span>
+                  </span>
+                ))}
+              </div>
+
+              {/* Links */}
+              {project.links.length > 0 && (
+                <div className="mb-3">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Link className="w-4 h-4 text-slate-400" />
+                    <span className="text-sm text-slate-600 dark:text-slate-400">Links:</span>
+                  </div>
+                  <div className="space-y-1">
+                    {project.links.map((link, linkIndex) => (
+                      <a
+                        key={linkIndex}
+                        href={link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block text-xs text-blue-600 dark:text-blue-400 hover:underline truncate"
+                      >
+                        {link}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Fortschrittsbalken */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Fortschritt</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">{project.progress}%</span>
+              </div>
+              <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 shadow-inner">
+                <div 
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full shadow-lg transition-all duration-300"
+                  style={{ width: `${project.progress}%` }}
+                ></div>
+              </div>
+            </div>
+
+            {/* Erstellungsdatum */}
+            <div className="text-xs text-slate-500 dark:text-slate-400">
+              Erstellt: {new Date(project.createdAt).toLocaleDateString('de-DE')}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Erstellungs-/Bearbeitungsformular */}
+      {(showCreateForm || editingProject) && (
+        <ProjectForm
+          project={editingProject}
+          categories={categories}
+          onSubmit={editingProject ? handleEditProject : handleCreateProject}
+          onCancel={() => {
+            setShowCreateForm(false);
+            setEditingProject(null);
+          }}
+        />
+      )}
     </div>
-  </div>
-);
+  );
+};
+
+// Projektformular Component
+const ProjectForm = ({ project, categories, onSubmit, onCancel }) => {
+  const [formData, setFormData] = useState({
+    name: project?.name || '',
+    priority: project?.priority || 'Mittel',
+    tags: project?.tags?.join(', ') || '',
+    links: project?.links?.join('\n') || '',
+    category: project?.category || '',
+    subcategory: project?.subcategory || ''
+  });
+
+  const [newCategory, setNewCategory] = useState('');
+  const [newSubcategory, setNewSubcategory] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    const projectData = {
+      ...formData,
+      id: project?.id,
+      tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+      links: formData.links.split('\n').map(link => link.trim()).filter(link => link)
+    };
+
+    onSubmit(projectData);
+  };
+
+  const handleAddCategory = () => {
+    if (newCategory.trim()) {
+      // Hier würde normalerweise die Kategorie zur Datenbank hinzugefügt
+      setNewCategory('');
+    }
+  };
+
+  const handleAddSubcategory = () => {
+    if (newSubcategory.trim() && formData.category) {
+      // Hier würde normalerweise die Unterkategorie zur Datenbank hinzugefügt
+      setNewSubcategory('');
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+            {project ? 'Projekt bearbeiten' : 'Neues Projekt erstellen'}
+          </h2>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Projektname */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Projektname *
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Projektname eingeben..."
+            />
+          </div>
+
+          {/* Priorität */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Priorität
+            </label>
+            <select
+              value={formData.priority}
+              onChange={(e) => setFormData({...formData, priority: e.target.value})}
+              className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="Hoch">Hoch</option>
+              <option value="Mittel">Mittel</option>
+              <option value="Niedrig">Niedrig</option>
+            </select>
+          </div>
+
+          {/* Kategorie und Unterkategorie */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Kategorie
+              </label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({...formData, category: e.target.value, subcategory: ''})}
+                className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Kategorie auswählen...</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.name}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Unterkategorie
+              </label>
+              <select
+                value={formData.subcategory}
+                onChange={(e) => setFormData({...formData, subcategory: e.target.value})}
+                className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={!formData.category}
+              >
+                <option value="">Unterkategorie auswählen...</option>
+                {formData.category && categories.find(cat => cat.name === formData.category)?.subcategories.map(sub => (
+                  <option key={sub} value={sub}>{sub}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Neue Kategorie/Unterkategorie hinzufügen */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Neue Kategorie hinzufügen
+              </label>
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  className="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Kategoriename..."
+                />
+                <button
+                  type="button"
+                  onClick={handleAddCategory}
+                  className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Neue Unterkategorie hinzufügen
+              </label>
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={newSubcategory}
+                  onChange={(e) => setNewSubcategory(e.target.value)}
+                  className="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Unterkategoriename..."
+                  disabled={!formData.category}
+                />
+                <button
+                  type="button"
+                  onClick={handleAddSubcategory}
+                  className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200"
+                  disabled={!formData.category}
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Tags */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Tags (durch Kommas getrennt)
+            </label>
+            <input
+              type="text"
+              value={formData.tags}
+              onChange={(e) => setFormData({...formData, tags: e.target.value})}
+              className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Frontend, Backend, Design..."
+            />
+          </div>
+
+          {/* Links */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Links (ein Link pro Zeile)
+            </label>
+            <textarea
+              value={formData.links}
+              onChange={(e) => setFormData({...formData, links: e.target.value})}
+              rows="3"
+              className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="https://github.com/project...&#10;https://figma.com/design..."
+            />
+          </div>
+
+          {/* Buttons */}
+          <div className="flex justify-end space-x-4 pt-4">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-6 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-lg transition-colors duration-200"
+            >
+              Abbrechen
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium rounded-lg shadow-lg hover:shadow-blue-500/25 transition-all duration-300"
+            >
+              {project ? 'Aktualisieren' : 'Erstellen'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 const Modules = () => (
   <div className="space-y-8 fade-in">
