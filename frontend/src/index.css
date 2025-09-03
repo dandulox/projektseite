@@ -46,6 +46,10 @@
     box-sizing: border-box;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     line-height: 1.6;
@@ -55,6 +59,7 @@
     transition: background-color 0.3s ease, color 0.3s ease;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
 
   #root {
@@ -65,6 +70,11 @@
   /* Smooth transitions for theme switching */
   * {
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  }
+
+  /* Ensure all elements use the correct font */
+  h1, h2, h3, h4, h5, h6, p, span, div, button, input, textarea, select {
+    font-family: inherit;
   }
 }
 
@@ -139,6 +149,21 @@
   .status-warning {
     @apply text-amber-600 dark:text-amber-400;
   }
+
+  /* Ensure proper spacing and layout */
+  .container-apple {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Fix for gradient text */
+  .text-gradient {
+    @apply bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent;
+  }
+
+  /* Fix for background gradients */
+  .bg-gradient-apple {
+    @apply bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800;
+  }
 }
 
 @layer utilities {
@@ -187,19 +212,6 @@
     }
   }
 
-  /* Responsive utilities */
-  .container-apple {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-  }
-
-  .text-gradient {
-    @apply bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent;
-  }
-
-  .bg-gradient-apple {
-    @apply bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800;
-  }
-
   /* Enhanced shadows */
   .shadow-soft {
     box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
@@ -207,6 +219,25 @@
 
   .shadow-soft-dark {
     box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.3), 0 10px 20px -2px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Fix for backdrop blur */
+  .backdrop-blur-xl {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  /* Ensure proper z-index values */
+  .z-50 {
+    z-index: 50;
+  }
+
+  .z-40 {
+    z-index: 40;
+  }
+
+  .z-30 {
+    z-index: 30;
   }
 }
 
@@ -240,5 +271,16 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Fix for Safari and older browsers */
+@supports not (backdrop-filter: blur(1px)) {
+  .backdrop-blur-xl {
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+  
+  [data-theme="dark"] .backdrop-blur-xl {
+    background-color: rgba(15, 23, 42, 0.9);
   }
 }
