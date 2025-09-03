@@ -16,8 +16,14 @@ COPY . .
 # Erstelle shared Verzeichnis
 RUN mkdir -p /app/shared
 
+# Debug: Zeige Verzeichnisinhalt
+RUN ls -la
+
 # Baue Anwendung
 RUN npm run build
+
+# Debug: Zeige Build-Ergebnis
+RUN ls -la dist/
 
 # Produktions-Image
 FROM nginx:alpine
