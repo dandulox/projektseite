@@ -1,113 +1,99 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
-import Sidebar from './components/layout/Sidebar';
-import Header from './components/layout/Header';
-import Dashboard from './pages/Dashboard';
-import Projects from './pages/Projects';
-import Modules from './pages/Modules';
-import Design from './pages/Design';
-import Admin from './pages/Admin';
-import Login from './pages/Login';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { DesignProvider } from './contexts/DesignContext';
-import './App.css';
 
-// React Query Client
+// Erstelle QueryClient
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false,
       retry: 1,
+      refetchOnWindowFocus: false,
     },
   },
 });
 
-// Geschützte Route-Komponente
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
-  
-  if (loading) {
-    return <div className="loading-spinner">Lade...</div>;
-  }
-  
-  return isAuthenticated ? children : <Navigate to="/login" />;
-};
+// Einfache Komponenten für den Start
+const Dashboard = () => (
+  <div className="p-6">
+    <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+    <p>Willkommen bei der Projektseite!</p>
+  </div>
+);
 
-// Haupt-App-Komponente
-const AppContent = () => {
-  const { isAuthenticated } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+const Projects = () => (
+  <div className="p-6">
+    <h1 className="text-2xl font-bold mb-4">Projekte</h1>
+    <p>Hier werden alle Projekte angezeigt.</p>
+  </div>
+);
 
-  // Lade zentrale CSS-Datei
-  useEffect(() => {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = '/shared/styles/main.css';
-    document.head.appendChild(link);
+const Modules = () => (
+  <div className="p-6">
+    <h1 className="text-2xl font-bold mb-4">Module</h1>
+    <p>Hier werden alle Module angezeigt.</p>
+  </div>
+);
 
-    return () => {
-      document.head.removeChild(link);
-    };
-  }, []);
+const Design = () => (
+  <div className="p-6">
+    <h1 className="text-2xl font-bold mb-4">Design</h1>
+    <p>Hier können Sie das Design anpassen.</p>
+  </div>
+);
 
-  if (!isAuthenticated) {
-    return (
-      <div className="app">
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="*" element={<Navigate to="/login" />} />
-        </Routes>
-      </div>
-    );
-  }
+const Admin = () => (
+  <div className="p-6">
+    <h1 className="text-2xl font-bold mb-4">Admin</h1>
+    <p>Administrationsbereich.</p>
+  </div>
+);
 
-  return (
-    <div className="app">
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="main-content">
-        <Header onMenuClick={() => setSidebarOpen(true)} />
-        <div className="page-content">
-          <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/projects" element={<Projects />} />
-            <Route path="/modules" element={<Modules />} />
-            <Route path="/design" element={<Design />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="*" element={<Navigate to="/dashboard" />} />
-          </Routes>
-        </div>
-      </div>
-    </div>
-  );
-};
+const Login = () => (
+  <div className="p-6">
+    <h1 className="text-2xl font-bold mb-4">Login</h1>
+    <p>Bitte melden Sie sich an.</p>
+  </div>
+);
 
-// Haupt-App
-const App = () => {
+// Hauptkomponente
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <DesignProvider>
-          <Router>
-            <AppContent />
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: 'var(--white)',
-                  color: 'var(--gray-900)',
-                  border: '1px solid var(--gray-200)',
-                },
-              }}
-            />
-          </Router>
-        </DesignProvider>
-      </AuthProvider>
+      <Router>
+        <div className="min-h-screen bg-gray-50">
+          <div className="flex">
+            {/* Einfache Sidebar */}
+            <div className="w-64 bg-white shadow-lg min-h-screen">
+              <div className="p-4">
+                <h2 className="text-xl font-bold text-gray-800">Projektseite</h2>
+              </div>
+              <nav className="mt-4">
+                <a href="/" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Dashboard</a>
+                <a href="/projects" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Projekte</a>
+                <a href="/modules" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Module</a>
+                <a href="/design" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Design</a>
+                <a href="/admin" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Admin</a>
+              </nav>
+            </div>
+            
+            {/* Hauptinhalt */}
+            <div className="flex-1">
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/projects" element={<Projects />} />
+                <Route path="/modules" element={<Modules />} />
+                <Route path="/design" element={<Design />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/login" element={<Login />} />
+              </Routes>
+            </div>
+          </div>
+        </div>
+        <Toaster position="top-right" />
+      </Router>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;
