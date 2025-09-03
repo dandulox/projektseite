@@ -141,6 +141,16 @@ fi
 # Klone das Projekt von GitHub
 log_info "Klone Projekt von GitHub..."
 cd $PROJECT_DIR
+
+# Lösche vorhandene Dateien falls das Verzeichnis nicht leer ist
+if [ "$(ls -A)" ]; then
+    log_info "Verzeichnis ist nicht leer, lösche vorhandene Dateien..."
+    rm -rf ./* ./.* 2>/dev/null || true
+    log_info "Verzeichnis geleert"
+fi
+
+# Klone das Projekt
+log_info "Klone Projekt von GitHub..."
 git clone https://github.com/dandulox/projektseite.git .
 git config --global user.name "Projektseite Server"
 git config --global user.email "server@projektseite.local"
