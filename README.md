@@ -57,6 +57,7 @@ projektseite/
     ├── start-docker.sh                    # Docker-Container starten
     ├── check-logs.sh                      # Container-Logs überprüfen
     ├── patch-system.sh                    # System-Patch (Git + Docker)
+    ├── fix-systemd.sh                     # Systemd Service reparieren
     ├── update-system.sh                   # System-Updates
     ├── backup-system.sh                   # System-Backups
     └── restore-system.sh                  # System-Wiederherstellung
@@ -252,6 +253,17 @@ docker-compose -f docker/docker-compose.yml restart backend
 # 5. Baut Docker-Container neu
 # 6. Startet alle Services
 # 7. Überprüft Service-Verfügbarkeit
+```
+
+### Systemd Service reparieren
+```bash
+# Repariert den systemd Service mit korrektem Pfad
+./scripts/fix-systemd.sh
+
+# Das Skript behebt:
+# - Falsche Pfade zur docker-compose.yml
+# - Fehlgeschlagene systemd Services
+# - Automatischen Start der Container
 ```
 
 ## 📊 Monitoring & Überwachung

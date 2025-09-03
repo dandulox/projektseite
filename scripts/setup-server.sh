@@ -167,8 +167,8 @@ After=docker.service
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=$PROJECT_DIR
-ExecStart=/usr/local/bin/docker-compose up -d
-ExecStop=/usr/local/bin/docker-compose down
+ExecStart=/usr/local/bin/docker-compose -f docker/docker-compose.yml up -d
+ExecStop=/usr/local/bin/docker-compose -f docker/docker-compose.yml down
 TimeoutStartSec=0
 
 [Install]
