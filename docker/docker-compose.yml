@@ -23,6 +23,8 @@ services:
     build:
       context: ../backend
       dockerfile: Dockerfile
+      args:
+        NODE_ENV: production
     container_name: projektseite-backend
     environment:
       NODE_ENV: production
@@ -47,6 +49,8 @@ services:
     build:
       context: ../frontend
       dockerfile: Dockerfile
+      args:
+        NODE_ENV: production
     container_name: projektseite-frontend
     ports:
       - "3000:3000"

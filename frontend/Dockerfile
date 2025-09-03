@@ -1,33 +1,35 @@
 # Frontend Dockerfile
-FROM node:18-alpine
+FROM node:18-alpine AS builder
 
-# Arbeitsverzeichnis
+# Setze Arbeitsverzeichnis
 WORKDIR /app
 
-# Kopiere package.json und package-lock.json
+# Kopiere package.json und package-lock.json (falls vorhanden)
 COPY package*.json ./
 
-# Installiere Abhängigkeiten
-RUN npm ci
+# Installiere alle Abhängigkeiten (inkl. devDependencies für Build)
+RUN npm install --no-audit --no-fund
 
 # Kopiere Anwendungscode
 COPY . .
 
-# Erstelle shared-Verzeichnis
+# Erstelle shared Verzeichnis
 RUN mkdir -p /app/shared
 
-# Build der Anwendung
+# Baue Anwendung
 RUN npm run build
 
-# Installiere serve für Production
-RUN npm install -g serve
+# Produktions-Image
+FROM nginx:alpine
+
+# Kopiere gebaute Dateien
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Kopiere nginx Konfiguration
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # Exponiere Port
 EXPOSE 3000
 
-# Health Check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000 || exit 1
-
-# Starte Anwendung
-CMD ["serve", "-s", "dist", "-l", "3000"]
+# Starte nginx
+CMD ["nginx", "-g", "daemon off;"]
