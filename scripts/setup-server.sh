@@ -287,14 +287,14 @@ fi
 
 # Erstelle Umgebungsvariablen-Datei
 log_info "Erstelle Umgebungsvariablen..."
-sudo tee /etc/environment.d/projektseite.conf > /dev/null <<EOF
+tee /etc/environment.d/projektseite.conf > /dev/null <<EOF
 PROJEKTSEITE_HOME=$PROJECT_DIR
 NODE_ENV=production
 EOF
 
 # Setze Berechtigungen
 log_info "Setze Berechtigungen..."
-sudo chmod +x /opt/projektseite/scripts/*.sh
+chmod +x /opt/projektseite/scripts/*.sh
 
 # Finale Nachricht
 log_success "Server-Setup abgeschlossen!"
