@@ -291,8 +291,10 @@ else
     fi
 fi
 
-# Erstelle Node Exporter Service
-tee /etc/systemd/system/node_exporter.service > /dev/null <<EOF
+# Erstelle Node Exporter Service (falls noch nicht vorhanden)
+if [ ! -f /etc/systemd/system/node_exporter.service ]; then
+    log_info "Erstelle Node Exporter Service..."
+    tee /etc/systemd/system/node_exporter.service > /dev/null <<EOF
 [Unit]
 Description=Node Exporter
 After=network.target
@@ -305,29 +307,74 @@ Restart=always
 [Install]
 WantedBy=multi-user.target
 EOF
+    log_success "Node Exporter Service erstellt"
+else
+    log_info "Node Exporter Service existiert bereits"
+fi
 
-# Erstelle Prometheus-Benutzer
-useradd --no-create-home --shell /bin/false prometheus
+# Erstelle Prometheus-Benutzer (falls noch nicht vorhanden)
+if ! id "prometheus" &>/dev/null; then
+    log_info "Erstelle Prometheus-Benutzer..."
+    useradd --no-create-home --shell /bin/false prometheus
+    log_success "Prometheus-Benutzer erstellt"
+else
+    log_info "Prometheus-Benutzer existiert bereits"
+fi
+
+# Setze Berechtigungen für Node Exporter
 chown prometheus:prometheus /usr/local/bin/node_exporter
+log_info "Node Exporter-Berechtigungen gesetzt"
 
 # Aktiviere Node Exporter
+log_info "Aktiviere Node Exporter Service..."
 systemctl enable node_exporter
-systemctl start node_exporter
 
-# Erstelle Cron-Jobs für Wartung
+# Starte Node Exporter nur falls er nicht läuft
+if ! systemctl is-active --quiet node_exporter; then
+    log_info "Starte Node Exporter Service..."
+    systemctl start node_exporter
+    log_success "Node Exporter Service gestartet"
+else
+    log_info "Node Exporter Service läuft bereits"
+fi
+
+# Erstelle Cron-Jobs für Wartung (falls noch nicht vorhanden)
 log_info "Erstelle Cron-Jobs..."
 if [[ $EUID -eq 0 ]]; then
     ACTUAL_USER=${SUDO_USER:-$USER}
     if [ -n "$ACTUAL_USER" ]; then
-        (crontab -u $ACTUAL_USER -l 2>/dev/null; echo "0 2 * * * /opt/projektseite/scripts/backup-system.sh") | crontab -u $ACTUAL_USER -
-        (crontab -u $ACTUAL_USER -l 2>/dev/null; echo "0 3 * * 0 /opt/projektseite/scripts/update-system.sh") | crontab -u $ACTUAL_USER -
-        log_info "Cron-Jobs für Benutzer $ACTUAL_USER erstellt"
+        # Prüfe ob Cron-Jobs bereits existieren
+        if ! crontab -u $ACTUAL_USER -l 2>/dev/null | grep -q "backup-system.sh"; then
+            (crontab -u $ACTUAL_USER -l 2>/dev/null; echo "0 2 * * * /opt/projektseite/scripts/backup-system.sh") | crontab -u $ACTUAL_USER -
+            log_info "Backup Cron-Job für Benutzer $ACTUAL_USER erstellt"
+        else
+            log_info "Backup Cron-Job existiert bereits für Benutzer $ACTUAL_USER"
+        fi
+        
+        if ! crontab -u $ACTUAL_USER -l 2>/dev/null | grep -q "update-system.sh"; then
+            (crontab -u $ACTUAL_USER -l 2>/dev/null; echo "0 3 * * 0 /opt/projektseite/scripts/update-system.sh") | crontab -u $ACTUAL_USER -
+            log_info "Update Cron-Job für Benutzer $ACTUAL_USER erstellt"
+        else
+            log_info "Update Cron-Job existiert bereits für Benutzer $ACTUAL_USER"
+        fi
     else
         log_warning "Konnte Cron-Jobs nicht erstellen"
     fi
 else
-    (crontab -l 2>/dev/null; echo "0 2 * * * /opt/projektseite/scripts/backup-system.sh") | crontab -
-    (crontab -l 2>/dev/null; echo "0 3 * * 0 /opt/projektseite/scripts/update-system.sh") | crontab -
+    # Prüfe ob Cron-Jobs bereits existieren
+    if ! crontab -l 2>/dev/null | grep -q "backup-system.sh"; then
+        (crontab -l 2>/dev/null; echo "0 2 * * * /opt/projektseite/scripts/backup-system.sh") | crontab -
+        log_info "Backup Cron-Job erstellt"
+    else
+        log_info "Backup Cron-Job existiert bereits"
+    fi
+    
+    if ! crontab -l 2>/dev/null | grep -q "update-system.sh"; then
+        (crontab -l 2>/dev/null; echo "0 3 * * 0 /opt/projektseite/scripts/update-system.sh") | crontab -
+        log_info "Update Cron-Job erstellt"
+    else
+        log_info "Update Cron-Job existiert bereits"
+    fi
 fi
 
 # Erstelle Umgebungsvariablen-Datei
@@ -336,11 +383,17 @@ log_info "Erstelle Umgebungsvariablen..."
 # Erstelle das Verzeichnis falls es nicht existiert
 mkdir -p /etc/environment.d
 
-# Erstelle die Umgebungsvariablen-Datei
-tee /etc/environment.d/projektseite.conf > /dev/null <<EOF
+# Erstelle die Umgebungsvariablen-Datei (falls noch nicht vorhanden)
+if [ ! -f /etc/environment.d/projektseite.conf ]; then
+    log_info "Erstelle Umgebungsvariablen-Datei..."
+    tee /etc/environment.d/projektseite.conf > /dev/null <<EOF
 PROJEKTSEITE_HOME=$PROJECT_DIR
 NODE_ENV=production
 EOF
+    log_success "Umgebungsvariablen-Datei erstellt"
+else
+    log_info "Umgebungsvariablen-Datei existiert bereits"
+fi
 
 # Erstelle auch eine .profile Datei für den Benutzer als Fallback
 if [[ $EUID -eq 0 ]]; then
@@ -348,13 +401,19 @@ if [[ $EUID -eq 0 ]]; then
     if [ -n "$ACTUAL_USER" ]; then
         USER_HOME=$(eval echo ~$ACTUAL_USER)
         if [ -d "$USER_HOME" ]; then
-            log_info "Erstelle .profile für Benutzer $ACTUAL_USER"
-            cat >> "$USER_HOME/.profile" <<EOF
+            # Prüfe ob Umgebungsvariablen bereits in .profile existieren
+            if ! grep -q "PROJEKTSEITE_HOME" "$USER_HOME/.profile" 2>/dev/null; then
+                log_info "Erstelle .profile für Benutzer $ACTUAL_USER"
+                cat >> "$USER_HOME/.profile" <<EOF
 
 # Projektseite Umgebungsvariablen
 export PROJEKTSEITE_HOME=$PROJECT_DIR
 export NODE_ENV=production
 EOF
+                log_success ".profile für Benutzer $ACTUAL_USER aktualisiert"
+            else
+                log_info "Umgebungsvariablen existieren bereits in .profile für Benutzer $ACTUAL_USER"
+            fi
         fi
     fi
 fi
@@ -363,7 +422,12 @@ log_success "Umgebungsvariablen erstellt"
 
 # Setze Berechtigungen
 log_info "Setze Berechtigungen..."
-chmod +x /opt/projektseite/scripts/*.sh
+if [ -d "/opt/projektseite/scripts" ]; then
+    chmod +x /opt/projektseite/scripts/*.sh
+    log_success "Skript-Berechtigungen gesetzt"
+else
+    log_warning "Scripts-Verzeichnis nicht gefunden - Berechtigungen können nicht gesetzt werden"
+fi
 
 # Finale Nachricht
 log_success "Server-Setup abgeschlossen!"
