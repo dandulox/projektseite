@@ -251,10 +251,45 @@ fi
 
 # Installiere Prometheus Node Exporter für System-Monitoring
 log_info "Installiere Prometheus Node Exporter..."
-wget https://github.com/prometheus/node_exporter/releases/latest/download/node_exporter-1.6.1.linux-amd64.tar.gz
-tar xvfz node_exporter-1.6.1.linux-amd64.tar.gz
-sudo mv node_exporter-1.6.1.linux-amd64/node_exporter /usr/local/bin/
-rm -rf node_exporter-1.6.1.linux-amd64*
+
+# Lade die neueste Version herunter
+NODE_EXPORTER_VERSION=$(curl -s https://api.github.com/repos/prometheus/node_exporter/releases/latest | grep '"tag_name":' | cut -d'"' -f4)
+log_info "Neueste Node Exporter Version: $NODE_EXPORTER_VERSION"
+
+# Download der neuesten Version
+wget "https://github.com/prometheus/node_exporter/releases/download/${NODE_EXPORTER_VERSION}/node_exporter-${NODE_EXPORTER_VERSION#v}.linux-amd64.tar.gz"
+
+if [ $? -eq 0 ]; then
+    log_info "Node Exporter erfolgreich heruntergeladen"
+    
+    # Extrahiere und installiere
+    tar xvfz "node_exporter-${NODE_EXPORTER_VERSION#v}.linux-amd64.tar.gz"
+    mv "node_exporter-${NODE_EXPORTER_VERSION#v}.linux-amd64/node_exporter" /usr/local/bin/
+    chmod +x /usr/local/bin/node_exporter
+    
+    # Bereinige temporäre Dateien
+    rm -rf "node_exporter-${NODE_EXPORTER_VERSION#v}.linux-amd64"*
+    rm -f "node_exporter-${NODE_EXPORTER_VERSION#v}.linux-amd64.tar.gz"
+    
+    log_success "Node Exporter $NODE_EXPORTER_VERSION erfolgreich installiert"
+else
+    log_error "Download fehlgeschlagen, verwende Fallback-Version"
+    
+    # Fallback: Verwende eine bekannte funktionierende Version
+    wget "https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz"
+    
+    if [ $? -eq 0 ]; then
+        tar xvfz node_exporter-1.6.1.linux-amd64.tar.gz
+        mv node_exporter-1.6.1.linux-amd64/node_exporter /usr/local/bin/
+        chmod +x /usr/local/bin/node_exporter
+        rm -rf node_exporter-1.6.1.linux-amd64*
+        rm -f node_exporter-1.6.1.linux-amd64.tar.gz
+        log_success "Node Exporter 1.6.1 (Fallback) erfolgreich installiert"
+    else
+        log_error "Auch Fallback-Download fehlgeschlagen!"
+        log_warning "Node Exporter wird übersprungen - Monitoring funktioniert eingeschränkt"
+    fi
+fi
 
 # Erstelle Node Exporter Service
 tee /etc/systemd/system/node_exporter.service > /dev/null <<EOF
