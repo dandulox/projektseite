@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Datenbank
+  postgres:
+    image: postgres:15-alpine
+    container_name: projektseite-postgres
+    environment:
+      POSTGRES_DB: projektseite
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secure_password_123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - projektseite-network
+    restart: unless-stopped
+
+  # Backend API
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: projektseite-backend
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: projektseite
+      DB_USER: admin
+      DB_PASSWORD: secure_password_123
+      JWT_SECRET: your_jwt_secret_key_here
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+    networks:
+      - projektseite-network
+    restart: unless-stopped
+    volumes:
+      - ../shared:/app/shared
+
+  # Frontend Admin-Interface
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: projektseite-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - projektseite-network
+    restart: unless-stopped
+    volumes:
+      - ../shared:/app/shared
+
+  # Grafana für Monitoring
+  grafana:
+    image: grafana/grafana:latest
+    container_name: projektseite-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+    ports:
+      - "3002:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - projektseite-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  grafana_data:
+
+networks:
+  projektseite-network:
+    driver: bridge
