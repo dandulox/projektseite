@@ -101,6 +101,41 @@ chmod +x scripts/setup-server.sh
 
 # Server neu starten (wichtig!)
 sudo reboot
+
+### 2. Standard-Logindaten nach der Installation
+
+Nach erfolgreicher Installation sind folgende Standard-Zugangsdaten verfügbar:
+
+#### 🌐 Frontend (Admin-Interface)
+- **URL:** http://localhost:3000
+- **Status:** Wird nach dem ersten Build verfügbar sein
+- **Hinweis:** Noch keine Authentifizierung implementiert
+
+#### 🔧 Backend API
+- **URL:** http://localhost:3001
+- **Health Check:** http://localhost:3001/health
+- **Status:** Läuft nach dem ersten Build
+- **Hinweis:** API-Endpunkte müssen noch implementiert werden
+
+#### 🗄️ PostgreSQL Datenbank
+- **Host:** localhost
+- **Port:** 5432
+- **Datenbank:** projektseite
+- **Benutzer:** admin
+- **Passwort:** secure_password_123
+- **Status:** Läuft sofort nach dem Setup
+
+#### 📊 Grafana Monitoring
+- **URL:** http://localhost:3002
+- **Benutzer:** admin
+- **Passwort:** admin123
+- **Status:** Läuft sofort nach dem Setup
+- **Dashboard:** Projektseite-Übersicht verfügbar
+
+#### 🔍 Prometheus Node Exporter
+- **URL:** http://localhost:9100/metrics
+- **Status:** Läuft als System-Service
+- **Metriken:** System-Performance-Daten verfügbar
 ```
 
 **Was wird installiert:**
@@ -113,14 +148,14 @@ sudo reboot
 - Git & automatische Cron-Jobs
 - Automatisches Klonen von GitHub
 
-### 2. Projekt wird automatisch geklont
+### 3. Projekt wird automatisch geklont
 ```bash
 # Nach dem Reboot wird das Projekt automatisch von GitHub geklont
 # Keine manuellen Schritte erforderlich
 cd /opt/projektseite
 ```
 
-### 3. Docker-Container starten
+### 4. Docker-Container starten
 ```bash
 # Berechtigungen setzen
 chmod +x scripts/*.sh
@@ -129,7 +164,7 @@ chmod +x scripts/*.sh
 ./scripts/start-docker.sh
 ```
 
-### 4. Datenbank initialisieren
+### 5. Datenbank initialisieren
 ```bash
 # Datenbank-Schema erstellen
 ./scripts/init-database.sh
