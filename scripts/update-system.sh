@@ -50,8 +50,24 @@ log_info "Erstelle Backup vor Update..."
 # Git-Update
 log_info "Aktualisiere Projekt von GitHub..."
 cd /opt/projektseite
+
+# Sichere lokale Änderungen (falls vorhanden)
+log_info "Sichere lokale Änderungen..."
+git stash push -m "Auto-stash vor Update $(date)" || log_warning "Keine lokalen Änderungen zum Stashen"
+
+# Hole neueste Änderungen
+log_info "Hole neueste Änderungen von GitHub..."
 git fetch origin
-git pull origin main
+
+# Zeige verfügbare Updates
+log_info "Verfügbare Updates:"
+git log --oneline HEAD..origin/main
+
+# Überschreibe lokale Änderungen und führe Pull durch
+log_info "Überschreibe lokale Änderungen und führe Pull durch..."
+git reset --hard origin/main
+
+log_success "Git-Update erfolgreich - lokale Änderungen überschrieben"
 
 # Stoppe Docker-Container
 log_info "Stoppe Docker-Container..."

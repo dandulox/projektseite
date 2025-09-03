@@ -188,7 +188,7 @@ Nach dem erfolgreichen Start sind folgende Services verfügbar:
 
 ### Automatische Wartung
 - **Backups**: Täglich um 2:00 Uhr
-- **Updates**: Sonntags um 3:00 Uhr
+- **Updates**: Sonntags um 3:00 Uhr (überschreibt lokale Änderungen)
 - **Log-Rotation**: Automatisch
 
 ### Manuelle Wartung

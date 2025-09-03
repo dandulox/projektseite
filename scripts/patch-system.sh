@@ -108,17 +108,14 @@ git fetch origin
 log_info "Verfügbare Updates:"
 git log --oneline HEAD..origin/main
 
-# Führe Pull durch
-log_info "Führe Git Pull durch..."
-if git pull origin main; then
-    log_success "Git-Update erfolgreich"
+# Überschreibe lokale Änderungen und führe Update durch
+log_info "Überschreibe lokale Änderungen und führe Update durch..."
+git reset --hard origin/main
+
+if [ $? -eq 0 ]; then
+    log_success "Git-Update erfolgreich - lokale Änderungen überschrieben"
 else
     log_error "Git-Update fehlgeschlagen!"
-    
-    # Versuche Stash wiederherzustellen
-    log_info "Stelle lokale Änderungen wieder her..."
-    git stash pop || log_warning "Konnte Stash nicht wiederherstellen"
-    
     exit 1
 fi
 
