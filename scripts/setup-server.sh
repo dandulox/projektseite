@@ -34,8 +34,7 @@ log_error() {
 
 # Prüfe ob als Root ausgeführt
 if [[ $EUID -eq 0 ]]; then
-   log_error "Dieses Skript sollte nicht als Root ausgeführt werden!"
-   exit 1
+   log_info "Skript wird als Root ausgeführt - das ist in Ordnung für Server-Setup"
 fi
 
 # Aktualisiere System
@@ -74,7 +73,19 @@ sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 # Füge Benutzer zur Docker-Gruppe hinzu
-sudo usermod -aG docker $USER
+if [[ $EUID -eq 0 ]]; then
+    # Als Root: Benutzer aus Umgebungsvariable oder Standard
+    ACTUAL_USER=${SUDO_USER:-$USER}
+    if [ -n "$ACTUAL_USER" ]; then
+        usermod -aG docker $ACTUAL_USER
+        log_info "Benutzer $ACTUAL_USER zur Docker-Gruppe hinzugefügt"
+    else
+        log_warning "Konnte Benutzer nicht zur Docker-Gruppe hinzufügen"
+    fi
+else
+    # Als normaler Benutzer: sudo verwenden
+    sudo usermod -aG docker $USER
+fi
 
 # Installiere Docker Compose
 log_info "Installiere Docker Compose..."
@@ -111,8 +122,21 @@ sudo systemctl start fail2ban
 # Erstelle Projektverzeichnis
 log_info "Erstelle Projektverzeichnis..."
 PROJECT_DIR="/opt/projektseite"
-sudo mkdir -p $PROJECT_DIR
-sudo chown $USER:$USER $PROJECT_DIR
+mkdir -p $PROJECT_DIR
+
+# Bestimme den tatsächlichen Benutzer
+if [[ $EUID -eq 0 ]]; then
+    ACTUAL_USER=${SUDO_USER:-$USER}
+    if [ -n "$ACTUAL_USER" ]; then
+        chown $ACTUAL_USER:$ACTUAL_USER $PROJECT_DIR
+        log_info "Projektverzeichnis für Benutzer $ACTUAL_USER erstellt"
+    else
+        log_warning "Konnte Besitzer nicht setzen"
+    fi
+else
+    sudo mkdir -p $PROJECT_DIR
+    sudo chown $USER:$USER $PROJECT_DIR
+fi
 
 # Klone das Projekt von GitHub
 log_info "Klone Projekt von GitHub..."
@@ -146,16 +170,50 @@ sudo systemctl enable projektseite.service
 
 # Erstelle Backup-Verzeichnis
 log_info "Erstelle Backup-Verzeichnis..."
-sudo mkdir -p /opt/backups/projektseite
-sudo chown $USER:$USER /opt/backups/projektseite
+mkdir -p /opt/backups/projektseite
+
+if [[ $EUID -eq 0 ]]; then
+    ACTUAL_USER=${SUDO_USER:-$USER}
+    if [ -n "$ACTUAL_USER" ]; then
+        chown $ACTUAL_USER:$ACTUAL_USER /opt/backups/projektseite
+    fi
+else
+    sudo chown $USER:$USER /opt/backups/projektseite
+fi
 
 # Erstelle Log-Verzeichnis
 log_info "Erstelle Log-Verzeichnis..."
-sudo mkdir -p /var/log/projektseite
-sudo chown $USER:$USER /var/log/projektseite
+mkdir -p /var/log/projektseite
+
+if [[ $EUID -eq 0 ]]; then
+    ACTUAL_USER=${SUDO_USER:-$USER}
+    if [ -n "$ACTUAL_USER" ]; then
+        chown $ACTUAL_USER:$ACTUAL_USER /var/log/projektseite
+    fi
+else
+    sudo chown $USER:$USER /var/log/projektseite
+fi
 
 # Konfiguriere Log-Rotation
-sudo tee /etc/logrotate.d/projektseite > /dev/null <<EOF
+if [[ $EUID -eq 0 ]]; then
+    ACTUAL_USER=${SUDO_USER:-$USER}
+    if [ -n "$ACTUAL_USER" ]; then
+        tee /etc/logrotate.d/projektseite > /dev/null <<EOF
+/var/log/projektseite/*.log {
+    daily
+    missingok
+    rotate 30
+    compress
+    delaycompress
+    notifempty
+    create 644 $ACTUAL_USER $ACTUAL_USER
+}
+EOF
+    else
+        log_warning "Konnte Log-Rotation nicht konfigurieren"
+    fi
+else
+    sudo tee /etc/logrotate.d/projektseite > /dev/null <<EOF
 /var/log/projektseite/*.log {
     daily
     missingok
@@ -166,11 +224,20 @@ sudo tee /etc/logrotate.d/projektseite > /dev/null <<EOF
     create 644 $USER $USER
 }
 EOF
+fi
 
 # Erstelle Monitoring-Verzeichnis
 log_info "Erstelle Monitoring-Verzeichnis..."
-sudo mkdir -p /opt/monitoring
-sudo chown $USER:$USER /opt/monitoring
+mkdir -p /opt/monitoring
+
+if [[ $EUID -eq 0 ]]; then
+    ACTUAL_USER=${SUDO_USER:-$USER}
+    if [ -n "$ACTUAL_USER" ]; then
+        chown $ACTUAL_USER:$ACTUAL_USER /opt/monitoring
+    fi
+else
+    sudo chown $USER:$USER /opt/monitoring
+fi
 
 # Installiere Prometheus Node Exporter für System-Monitoring
 log_info "Installiere Prometheus Node Exporter..."
@@ -180,7 +247,7 @@ sudo mv node_exporter-1.6.1.linux-amd64/node_exporter /usr/local/bin/
 rm -rf node_exporter-1.6.1.linux-amd64*
 
 # Erstelle Node Exporter Service
-sudo tee /etc/systemd/system/node_exporter.service > /dev/null <<EOF
+tee /etc/systemd/system/node_exporter.service > /dev/null <<EOF
 [Unit]
 Description=Node Exporter
 After=network.target
@@ -195,17 +262,28 @@ WantedBy=multi-user.target
 EOF
 
 # Erstelle Prometheus-Benutzer
-sudo useradd --no-create-home --shell /bin/false prometheus
-sudo chown prometheus:prometheus /usr/local/bin/node_exporter
+useradd --no-create-home --shell /bin/false prometheus
+chown prometheus:prometheus /usr/local/bin/node_exporter
 
 # Aktiviere Node Exporter
-sudo systemctl enable node_exporter
-sudo systemctl start node_exporter
+systemctl enable node_exporter
+systemctl start node_exporter
 
 # Erstelle Cron-Jobs für Wartung
 log_info "Erstelle Cron-Jobs..."
-(crontab -l 2>/dev/null; echo "0 2 * * * /opt/projektseite/scripts/backup-system.sh") | crontab -
-(crontab -l 2>/dev/null; echo "0 3 * * 0 /opt/projektseite/scripts/update-system.sh") | crontab -
+if [[ $EUID -eq 0 ]]; then
+    ACTUAL_USER=${SUDO_USER:-$USER}
+    if [ -n "$ACTUAL_USER" ]; then
+        (crontab -u $ACTUAL_USER -l 2>/dev/null; echo "0 2 * * * /opt/projektseite/scripts/backup-system.sh") | crontab -u $ACTUAL_USER -
+        (crontab -u $ACTUAL_USER -l 2>/dev/null; echo "0 3 * * 0 /opt/projektseite/scripts/update-system.sh") | crontab -u $ACTUAL_USER -
+        log_info "Cron-Jobs für Benutzer $ACTUAL_USER erstellt"
+    else
+        log_warning "Konnte Cron-Jobs nicht erstellen"
+    fi
+else
+    (crontab -l 2>/dev/null; echo "0 2 * * * /opt/projektseite/scripts/backup-system.sh") | crontab -
+    (crontab -l 2>/dev/null; echo "0 3 * * 0 /opt/projektseite/scripts/update-system.sh") | crontab -
+fi
 
 # Erstelle Umgebungsvariablen-Datei
 log_info "Erstelle Umgebungsvariablen..."
