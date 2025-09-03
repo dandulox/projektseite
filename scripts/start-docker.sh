@@ -38,7 +38,21 @@ if [[ $EUID -eq 0 ]]; then
 fi
 
 # Wechsle zum Projektverzeichnis
-cd /opt/projektseite
+log_info "Aktuelles Verzeichnis: $(pwd)"
+if [ ! -f "docker-compose.yml" ]; then
+    log_info "Docker-Compose-Datei nicht gefunden, wechsle zum Projektverzeichnis..."
+    cd /opt/projektseite
+    log_info "Neues Verzeichnis: $(pwd)"
+    if [ ! -f "docker-compose.yml" ]; then
+        log_error "Docker-Compose-Datei nicht gefunden in /opt/projektseite!"
+        log_info "Verfügbare Dateien:"
+        ls -la
+        log_error "Bitte führe zuerst setup-server.sh aus, um das Projekt zu klonen."
+        exit 1
+    fi
+else
+    log_info "Docker-Compose-Datei gefunden im aktuellen Verzeichnis"
+fi
 
 # Prüfe ob Docker läuft
 log_info "Prüfe Docker-Status..."
@@ -56,7 +70,15 @@ fi
 
 # Stoppe laufende Container
 log_info "Stoppe laufende Container..."
-docker-compose down
+if [ -f "docker-compose.yml" ]; then
+    docker-compose down
+else
+    log_error "Docker-Compose-Datei nicht gefunden im aktuellen Verzeichnis!"
+    log_info "Aktuelles Verzeichnis: $(pwd)"
+    log_info "Verfügbare Dateien:"
+    ls -la
+    exit 1
+fi
 
 # Prüfe verfügbaren Speicherplatz
 log_info "Prüfe verfügbaren Speicherplatz..."
@@ -71,7 +93,12 @@ fi
 
 # Starte Container
 log_info "Starte Docker-Container..."
-docker-compose up -d
+if [ -f "docker-compose.yml" ]; then
+    docker-compose up -d
+else
+    log_error "Docker-Compose-Datei nicht gefunden!"
+    exit 1
+fi
 
 # Warte auf Container-Start
 log_info "Warte auf Container-Start..."
@@ -79,21 +106,31 @@ sleep 15
 
 # Prüfe Container-Status
 log_info "Prüfe Container-Status..."
-docker-compose ps
+if [ -f "docker-compose.yml" ]; then
+    docker-compose ps
+else
+    log_error "Docker-Compose-Datei nicht gefunden!"
+    exit 1
+fi
 
 # Prüfe Container-Logs
 log_info "Prüfe Container-Logs..."
-echo "=== PostgreSQL Logs ==="
-docker-compose logs postgres --tail=10
+if [ -f "docker-compose.yml" ]; then
+    echo "=== PostgreSQL Logs ==="
+    docker-compose logs postgres --tail=10
 
-echo "=== Backend Logs ==="
-docker-compose logs backend --tail=10
+    echo "=== Backend Logs ==="
+    docker-compose logs backend --tail=10
 
-echo "=== Frontend Logs ==="
-docker-compose logs frontend --tail=10
+    echo "=== Frontend Logs ==="
+    docker-compose logs frontend --tail=10
 
-echo "=== Grafana Logs ==="
-docker-compose logs grafana --tail=10
+    echo "=== Grafana Logs ==="
+    docker-compose logs grafana --tail=10
+else
+    log_error "Docker-Compose-Datei nicht gefunden!"
+    exit 1
+fi
 
 # Prüfe Verbindungen
 log_info "Prüfe Verbindungen..."
@@ -155,7 +192,12 @@ echo "   Grafana:          http://localhost:3002"
 echo "   PostgreSQL:       localhost:5432"
 echo ""
 echo "📊 Container-Status:"
-docker-compose ps
+if [ -f "docker-compose.yml" ]; then
+    docker-compose ps
+else
+    log_error "Docker-Compose-Datei nicht gefunden!"
+    exit 1
+fi
 echo ""
 echo "📝 Nützliche Befehle:"
 echo "   Container stoppen:  docker-compose down"
@@ -170,7 +212,7 @@ cat > "$STATUS_FILE" <<EOF
 # Erstellt: $(date)
 
 ## Container-Status
-$(docker-compose ps)
+$(if [ -f "docker-compose.yml" ]; then docker-compose ps; else echo "Docker-Compose nicht verfügbar"; fi)
 
 ## Service-URLs
 - Frontend: http://localhost:3000
