@@ -68,7 +68,11 @@ fi
 # Stoppe Docker-Container für konsistente Backups
 log_info "Stoppe Docker-Container für konsistente Backups..."
 cd "$PROJECT_DIR"
-docker-compose down
+if [ -f "docker/docker-compose.yml" ]; then
+    docker-compose -f docker/docker-compose.yml down
+else
+    log_warning "Docker-Compose-Datei nicht gefunden, überspringe Docker-Operationen"
+fi
 
 # Erstelle temporäres Backup-Verzeichnis
 TEMP_BACKUP_DIR="/tmp/$BACKUP_NAME"
@@ -86,14 +90,18 @@ cp -r "$PROJECT_DIR/.git" "$TEMP_BACKUP_DIR/" 2>/dev/null || true
 log_info "Erstelle Datenbank-Backup..."
 if docker ps -a | grep -q "projektseite-postgres"; then
     # Starte PostgreSQL temporär für Backup
-    docker-compose up -d postgres
-    sleep 10
-    
-    # Erstelle Datenbank-Dump
-    docker exec projektseite-postgres pg_dump -U admin -d projektseite > "$TEMP_BACKUP_DIR/database-backup.sql"
-    
-    # Stoppe PostgreSQL wieder
-    docker-compose down
+    if [ -f "docker/docker-compose.yml" ]; then
+        docker-compose -f docker/docker-compose.yml up -d postgres
+        sleep 10
+        
+        # Erstelle Datenbank-Dump
+        docker exec projektseite-postgres pg_dump -U admin -d projektseite > "$TEMP_BACKUP_DIR/database-backup.sql"
+        
+        # Stoppe PostgreSQL wieder
+        docker-compose -f docker/docker-compose.yml down
+    else
+        log_warning "Docker-Compose-Datei nicht gefunden, überspringe Datenbank-Backup"
+    fi
 else
     log_warning "PostgreSQL-Container nicht gefunden, überspringe Datenbank-Backup"
 fi
@@ -128,7 +136,11 @@ rm -rf "$TEMP_BACKUP_DIR"
 # Starte Docker-Container wieder
 log_info "Starte Docker-Container wieder..."
 cd "$PROJECT_DIR"
-docker-compose up -d
+if [ -f "docker/docker-compose.yml" ]; then
+    docker-compose -f docker/docker-compose.yml up -d
+else
+    log_warning "Docker-Compose-Datei nicht gefunden, überspringe Docker-Start"
+fi
 
 # Warte auf Container-Start
 log_info "Warte auf Container-Start..."
@@ -136,7 +148,11 @@ sleep 15
 
 # Prüfe Container-Status
 log_info "Prüfe Container-Status..."
-docker-compose ps
+if [ -f "docker/docker-compose.yml" ]; then
+    docker-compose -f docker/docker-compose.yml ps
+else
+    log_warning "Docker-Compose-Datei nicht gefunden, überspringe Container-Status-Prüfung"
+fi
 
 # Bereinige alte Backups
 log_info "Bereinige alte Backups (älter als $RETENTION_DAYS Tage)..."
@@ -184,7 +200,7 @@ cat > "$REPORT_FILE" <<EOF
 
 ## Container-Status nach Backup
 \`\`\`
-$(docker-compose ps)
+$(if [ -f "docker/docker-compose.yml" ]; then docker-compose -f docker/docker-compose.yml ps; else echo "Docker-Compose-Datei nicht gefunden"; fi)
 \`\`\`
 
 ## Nächste geplante Backups

@@ -56,7 +56,11 @@ git pull origin main
 # Stoppe Docker-Container
 log_info "Stoppe Docker-Container..."
 cd /opt/projektseite
-docker-compose down
+if [ -f "docker/docker-compose.yml" ]; then
+    docker-compose -f docker/docker-compose.yml down
+else
+    log_warning "Docker-Compose-Datei nicht gefunden, überspringe Docker-Operationen"
+fi
 
 # System-Updates
 log_info "Führe System-Updates durch..."
@@ -72,16 +76,28 @@ docker image prune -f
 
 # Prüfe auf neue Docker-Images
 log_info "Prüfe auf neue Docker-Images..."
-docker-compose pull
+if [ -f "docker/docker-compose.yml" ]; then
+    docker-compose -f docker/docker-compose.yml pull
+else
+    log_warning "Docker-Compose-Datei nicht gefunden, überspringe Docker-Operationen"
+fi
 
 # Starte Docker-Container neu
 log_info "Starte Docker-Container neu..."
-docker-compose up -d
+if [ -f "docker/docker-compose.yml" ]; then
+    docker-compose -f docker/docker-compose.yml up -d
+else
+    log_warning "Docker-Compose-Datei nicht gefunden, überspringe Docker-Operationen"
+fi
 
 # Prüfe Container-Status
 log_info "Prüfe Container-Status..."
-sleep 10
-docker-compose ps
+if [ -f "docker/docker-compose.yml" ]; then
+    sleep 10
+    docker-compose -f docker/docker-compose.yml ps
+else
+    log_warning "Docker-Compose-Datei nicht gefunden, überspringe Container-Status-Prüfung"
+fi
 
 # Node.js Updates
 log_info "Prüfe Node.js Updates..."
@@ -140,7 +156,7 @@ cat > "$REPORT_FILE" <<EOF
 
 ## Container-Status
 \`\`\`
-$(docker-compose ps)
+$(if [ -f "docker/docker-compose.yml" ]; then docker-compose -f docker/docker-compose.yml ps; else echo "Docker-Compose-Datei nicht gefunden"; fi)
 \`\`\`
 
 ## System-Informationen

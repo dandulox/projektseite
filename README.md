@@ -55,6 +55,8 @@ projektseite/
 └── 🔧 scripts/
     ├── setup-server.sh                    # Server-Setup (Ubuntu 24.04)
     ├── start-docker.sh                    # Docker-Container starten
+    ├── check-logs.sh                      # Container-Logs überprüfen
+    ├── patch-system.sh                    # System-Patch (Git + Docker)
     ├── update-system.sh                   # System-Updates
     ├── backup-system.sh                   # System-Backups
     └── restore-system.sh                  # System-Wiederherstellung
@@ -219,6 +221,37 @@ docker-compose restart [service]
 
 # Container-Logs
 docker-compose logs -f [service]
+```
+
+### Diagnose & Fehlerbehebung
+```bash
+# Container-Logs überprüfen
+./scripts/check-logs.sh
+
+# Spezifische Service-Logs
+docker-compose -f docker/docker-compose.yml logs -f backend
+docker-compose -f docker/docker-compose.yml logs -f frontend
+
+# Container-Status prüfen
+docker-compose -f docker/docker-compose.yml ps
+
+# Container neu starten
+docker-compose -f docker/docker-compose.yml restart backend
+```
+
+### System-Patch (Git + Docker)
+```bash
+# Vollständiger System-Patch
+./scripts/patch-system.sh
+
+# Das Skript führt folgende Schritte aus:
+# 1. Stoppt alle Docker-Container
+# 2. Erstellt Backup vor Patch
+# 3. Führt Git-Update durch
+# 4. Aktualisiert Dependencies
+# 5. Baut Docker-Container neu
+# 6. Startet alle Services
+# 7. Überprüft Service-Verfügbarkeit
 ```
 
 ## 📊 Monitoring & Überwachung

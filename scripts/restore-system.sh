@@ -81,7 +81,11 @@ log_info "Erstelle Backup vor Restore..."
 # Stoppe Docker-Container
 log_info "Stoppe Docker-Container..."
 cd "$PROJECT_DIR"
-docker-compose down
+if [ -f "docker/docker-compose.yml" ]; then
+    docker-compose -f docker/docker-compose.yml down
+else
+    log_warning "Docker-Compose-Datei nicht gefunden, überspringe Docker-Operationen"
+fi
 
 # Erstelle Restore-Verzeichnis
 log_info "Erstelle Restore-Verzeichnis..."
@@ -133,7 +137,12 @@ log_info "Stelle Datenbank wieder her..."
 if [ -f "$PROJECT_DIR/database-backup.sql" ]; then
     log_info "Datenbank-Backup gefunden, starte PostgreSQL..."
     cd "$PROJECT_DIR"
-    docker-compose up -d postgres
+    if [ -f "docker/docker-compose.yml" ]; then
+        docker-compose -f docker/docker-compose.yml up -d postgres
+    else
+        log_error "Docker-Compose-Datei nicht gefunden!"
+        exit 1
+    fi
     
     # Warte auf PostgreSQL-Start
     log_info "Warte auf PostgreSQL-Start..."
@@ -185,7 +194,12 @@ chmod +x "$PROJECT_DIR/scripts"/*.sh
 
 # Starte Docker-Container
 log_info "Starte Docker-Container..."
-docker-compose up -d
+if [ -f "docker/docker-compose.yml" ]; then
+    docker-compose -f docker/docker-compose.yml up -d
+else
+    log_error "Docker-Compose-Datei nicht gefunden!"
+    exit 1
+fi
 
 # Warte auf Container-Start
 log_info "Warte auf Container-Start..."
@@ -193,7 +207,12 @@ sleep 20
 
 # Prüfe Container-Status
 log_info "Prüfe Container-Status..."
-docker-compose ps
+if [ -f "docker/docker-compose.yml" ]; then
+    docker-compose -f docker/docker-compose.yml ps
+else
+    log_error "Docker-Compose-Datei nicht gefunden!"
+    exit 1
+fi
 
 # Prüfe Verbindungen
 log_info "Prüfe Verbindungen..."
@@ -235,7 +254,7 @@ cat > "$REPORT_FILE" <<EOF
 
 ## Container-Status nach Restore
 \`\`\`
-$(docker-compose ps)
+$(if [ -f "docker/docker-compose.yml" ]; then docker-compose -f docker/docker-compose.yml ps; else echo "Docker-Compose-Datei nicht gefunden"; fi)
 \`\`\`
 
 ## Sicherungs-Backup

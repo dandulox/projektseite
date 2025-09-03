@@ -131,7 +131,7 @@ sleep 15
 log_info "Prüfe Container-Status..."
 if [ -n "$DOCKER_COMPOSE_PATH" ]; then
     cd "$(dirname "$DOCKER_COMPOSE_PATH")"
-    docker-compose ps
+    docker-compose ps --quiet
 else
     log_error "Docker-Compose-Datei nicht gefunden!"
     exit 1
