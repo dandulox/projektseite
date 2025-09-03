@@ -118,6 +118,17 @@ rm -rf "$PROJECT_DIR"/*
 log_info "Stelle Projektdateien wieder her..."
 cp -r "$RESTORE_CONTENT"/* "$PROJECT_DIR/"
 
+# Stelle Git-Informationen wieder her
+log_info "Stelle Git-Informationen wieder her..."
+if [ -d "$RESTORE_CONTENT/.git" ]; then
+    cp -r "$RESTORE_CONTENT/.git" "$PROJECT_DIR/"
+    log_info "Git-Repository wiederhergestellt"
+else
+    log_info "Git-Repository nicht gefunden, klone von GitHub..."
+    cd "$PROJECT_DIR"
+    git clone https://github.com/dandulox/projektseite.git .
+fi
+
 # Stelle Datenbank wieder her
 log_info "Stelle Datenbank wieder her..."
 if [ -f "$PROJECT_DIR/database-backup.sql" ]; then
@@ -218,7 +229,7 @@ cat > "$REPORT_FILE" <<EOF
 - **Status:** Abgeschlossen
 
 ## Wiederhergestellte Daten
-- Projektdateien
+- Projektdateien (inkl. Git-Historie)
 - Datenbank (falls verfügbar)
 - System-Konfiguration
 - Logs

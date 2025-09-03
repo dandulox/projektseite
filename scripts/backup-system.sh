@@ -79,6 +79,10 @@ mkdir -p "$TEMP_BACKUP_DIR"
 log_info "Erstelle Backup der Projektdateien..."
 cp -r "$PROJECT_DIR"/* "$TEMP_BACKUP_DIR/"
 
+# Backup der Git-Informationen
+log_info "Erstelle Git-Backup..."
+cp -r "$PROJECT_DIR/.git" "$TEMP_BACKUP_DIR/" 2>/dev/null || true
+
 # Backup der Datenbank
 log_info "Erstelle Datenbank-Backup..."
 if docker ps -a | grep -q "projektseite-postgres"; then
@@ -168,7 +172,7 @@ cat > "$REPORT_FILE" <<EOF
 - **Größe:** $BACKUP_SIZE
 
 ## Enthaltene Daten
-- Projektdateien
+- Projektdateien (inkl. Git-Historie)
 - Datenbank-Dump
 - System-Konfiguration
 - Logs

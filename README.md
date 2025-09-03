@@ -92,7 +92,7 @@ projektseite/
 ### 1. Server-Setup (Ubuntu 24.04)
 ```bash
 # Projektdateien herunterladen
-git clone <repository-url>
+git clone https://github.com/dandulox/projektseite.git
 cd projektseite
 
 # Server-Setup ausführen
@@ -110,13 +110,13 @@ sudo reboot
 - Nginx, UFW Firewall
 - Fail2ban für Sicherheit
 - Prometheus Node Exporter
-- Automatische Cron-Jobs
+- Git & automatische Cron-Jobs
+- Automatisches Klonen von GitHub
 
-### 2. Projektdateien kopieren
+### 2. Projekt wird automatisch geklont
 ```bash
-# Nach dem Reboot
-sudo cp -r . /opt/projektseite/
-sudo chown -R $USER:$USER /opt/projektseite/
+# Nach dem Reboot wird das Projekt automatisch von GitHub geklont
+# Keine manuellen Schritte erforderlich
 cd /opt/projektseite
 ```
 
@@ -318,12 +318,16 @@ docker-compose logs -f
 
 ### Regelmäßige Updates
 ```bash
-# System-Updates
+# System-Updates (inkl. Git-Updates)
 ./scripts/update-system.sh
 
 # Docker-Images aktualisieren
 docker-compose pull
 docker-compose up -d
+
+# Manueller Git-Update
+cd /opt/projektseite
+git pull origin main
 ```
 
 ### Backup-Strategie
@@ -331,6 +335,7 @@ docker-compose up -d
 - **30 Tage Aufbewahrung**
 - **Automatische Rotation**
 - **Integritätsprüfung**
+- **Git-Historie** wird mit gesichert
 
 ### Wiederherstellung
 ```bash
@@ -358,11 +363,16 @@ MIT License - Siehe LICENSE-Datei für Details.
 
 ## 🤝 Beitragen
 
-1. Fork das Repository
+1. Fork das Repository: https://github.com/dandulox/projektseite
 2. Erstelle einen Feature-Branch
 3. Committe deine Änderungen
 4. Push zum Branch
 5. Erstelle einen Pull Request
+
+### Git-Repository
+- **URL**: https://github.com/dandulox/projektseite
+- **Branch**: main
+- **Automatische Updates**: Täglich über Cron-Job
 
 ---
 

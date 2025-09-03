@@ -114,6 +114,13 @@ PROJECT_DIR="/opt/projektseite"
 sudo mkdir -p $PROJECT_DIR
 sudo chown $USER:$USER $PROJECT_DIR
 
+# Klone das Projekt von GitHub
+log_info "Klone Projekt von GitHub..."
+cd $PROJECT_DIR
+git clone https://github.com/dandulox/projektseite.git .
+git config --global user.name "Projektseite Server"
+git config --global user.email "server@projektseite.local"
+
 # Erstelle Systemd Service für automatischen Start
 log_info "Erstelle Systemd Service..."
 sudo tee /etc/systemd/system/projektseite.service > /dev/null <<EOF
@@ -215,7 +222,7 @@ sudo chmod +x /opt/projektseite/scripts/*.sh
 log_success "Server-Setup abgeschlossen!"
 log_info "Nächste Schritte:"
 log_info "1. Server neu starten: sudo reboot"
-log_info "2. Projektdateien nach /opt/projektseite kopieren"
+log_info "2. Projekt wird automatisch von GitHub geklont"
 log_info "3. Docker starten: ./scripts/start-docker.sh"
 log_info "4. Datenbank initialisieren: ./scripts/init-database.sh"
 

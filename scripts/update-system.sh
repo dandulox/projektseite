@@ -48,6 +48,12 @@ fi
 log_info "Erstelle Backup vor Update..."
 ./scripts/backup-system.sh
 
+# Git-Update
+log_info "Aktualisiere Projekt von GitHub..."
+cd /opt/projektseite
+git fetch origin
+git pull origin main
+
 # Stoppe Docker-Container
 log_info "Stoppe Docker-Container..."
 cd /opt/projektseite
@@ -127,6 +133,7 @@ cat > "$REPORT_FILE" <<EOF
 
 ## Durchgeführte Updates
 - System-Pakete aktualisiert
+- Projekt von GitHub aktualisiert
 - Docker-Images aktualisiert
 - Node.js geprüft und aktualisiert
 - NPM-Pakete aktualisiert
