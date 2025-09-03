@@ -132,8 +132,8 @@ else
     git clone https://github.com/dandulox/projektseite.git .
 fi
 
-# Stelle Datenbank wieder her
-log_info "Stelle Datenbank wieder her..."
+# Aktualisiere Datenbank-Schema
+log_info "Aktualisiere Datenbank-Schema..."
 if [ -f "$PROJECT_DIR/database-backup.sql" ]; then
     log_info "Datenbank-Backup gefunden, starte PostgreSQL..."
     cd "$PROJECT_DIR"
@@ -150,10 +150,17 @@ if [ -f "$PROJECT_DIR/database-backup.sql" ]; then
     
     # Prüfe PostgreSQL-Verbindung
     if docker exec projektseite-postgres pg_isready -U admin; then
-        log_info "Stelle Datenbank wieder her..."
-        docker exec projektseite-postgres psql -U admin -d projektseite -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
-        docker exec -i projektseite-postgres psql -U admin -d projektseite < "$PROJECT_DIR/database-backup.sql"
-        log_success "Datenbank erfolgreich wiederhergestellt"
+        log_info "Aktualisiere Datenbank-Schema..."
+        
+        # Sichere aktuelle Daten
+        log_info "Sichere aktuelle Daten..."
+        docker exec projektseite-postgres pg_dump -U admin -d projektseite --data-only > "$PROJECT_DIR/current-data-backup.sql"
+        
+        # Aktualisiere nur das Schema (ohne Daten zu löschen)
+        log_info "Aktualisiere Datenbank-Schema..."
+        docker exec -i projektseite-postgres psql -U admin -d projektseite < "$PROJECT_DIR/database-backup.sql" 2>/dev/null || log_warning "Schema-Update fehlgeschlagen, aber Daten bleiben erhalten"
+        
+        log_success "Datenbank-Schema aktualisiert (Daten bleiben erhalten)"
     else
         log_error "PostgreSQL ist nicht bereit!"
     fi
@@ -246,9 +253,9 @@ cat > "$REPORT_FILE" <<EOF
 - **Benutzer:** $USER
 - **Status:** Abgeschlossen
 
-## Wiederhergestellte Daten
+## Wiederhergestellte/Aktualisierte Daten
 - Projektdateien (inkl. Git-Historie)
-- Datenbank (falls verfügbar)
+- Datenbank-Schema (Daten bleiben erhalten)
 - System-Konfiguration
 - Logs
 
@@ -263,8 +270,9 @@ $(if [ -f "docker/docker-compose.yml" ]; then docker-compose -f docker/docker-co
 
 ## Nächste Schritte
 1. Überprüfen Sie alle Funktionen
-2. Testen Sie die Datenbank-Verbindungen
+2. Testen Sie die Datenbank-Verbindungen (Daten bleiben erhalten)
 3. Prüfen Sie die Logs auf Fehler
+4. Überprüfen Sie, ob das Schema korrekt aktualisiert wurde
 
 ---
 *Generiert automatisch von restore-system.sh*

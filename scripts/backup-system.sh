@@ -108,13 +108,15 @@ fi
 
 # Backup der System-Konfiguration
 log_info "Erstelle Backup der System-Konfiguration..."
-cp -r /etc/systemd/system/projektseite.service "$TEMP_BACKUP_DIR/system/"
-cp -r /etc/logrotate.d/projektseite "$TEMP_BACKUP_DIR/system/"
-cp -r /etc/environment.d/projektseite.conf "$TEMP_BACKUP_DIR/system/"
+mkdir -p "$TEMP_BACKUP_DIR/system"
+cp -r /etc/systemd/system/projektseite.service "$TEMP_BACKUP_DIR/system/" 2>/dev/null || log_warning "Projektseite Service nicht gefunden"
+cp -r /etc/logrotate.d/projektseite "$TEMP_BACKUP_DIR/system/" 2>/dev/null || log_warning "Logrotate-Konfiguration nicht gefunden"
+cp -r /etc/environment.d/projektseite.conf "$TEMP_BACKUP_DIR/system/" 2>/dev/null || log_warning "Umgebungsvariablen nicht gefunden"
 
 # Backup der Logs
 log_info "Erstelle Backup der Logs..."
-cp -r /var/log/projektseite "$TEMP_BACKUP_DIR/logs/"
+mkdir -p "$TEMP_BACKUP_DIR/logs"
+cp -r /var/log/projektseite "$TEMP_BACKUP_DIR/logs/" 2>/dev/null || log_warning "Projektseite-Logs nicht gefunden"
 
 # Backup der Umgebungsvariablen
 log_info "Erstelle Backup der Umgebungsvariablen..."
