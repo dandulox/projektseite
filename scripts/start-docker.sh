@@ -37,22 +37,42 @@ if [[ $EUID -eq 0 ]]; then
    log_info "Skript wird als Root ausgeführt - das ist in Ordnung"
 fi
 
-# Wechsle zum Projektverzeichnis
+# Wechsle zum Projektverzeichnis und suche nach docker-compose.yml
 log_info "Aktuelles Verzeichnis: $(pwd)"
-if [ ! -f "docker-compose.yml" ]; then
-    log_info "Docker-Compose-Datei nicht gefunden, wechsle zum Projektverzeichnis..."
-    cd /opt/projektseite
-    log_info "Neues Verzeichnis: $(pwd)"
-    if [ ! -f "docker-compose.yml" ]; then
-        log_error "Docker-Compose-Datei nicht gefunden in /opt/projektseite!"
-        log_info "Verfügbare Dateien:"
-        ls -la
-        log_error "Bitte führe zuerst setup-server.sh aus, um das Projekt zu klonen."
-        exit 1
-    fi
-else
+
+# Suche nach docker-compose.yml in verschiedenen Verzeichnissen
+DOCKER_COMPOSE_PATH=""
+if [ -f "docker-compose.yml" ]; then
+    DOCKER_COMPOSE_PATH="$(pwd)/docker-compose.yml"
     log_info "Docker-Compose-Datei gefunden im aktuellen Verzeichnis"
+elif [ -f "docker/docker-compose.yml" ]; then
+    DOCKER_COMPOSE_PATH="$(pwd)/docker/docker-compose.yml"
+    log_info "Docker-Compose-Datei gefunden im docker/ Unterverzeichnis"
+elif [ -f "/opt/projektseite/docker-compose.yml" ]; then
+    cd /opt/projektseite
+    DOCKER_COMPOSE_PATH="$(pwd)/docker-compose.yml"
+    log_info "Docker-Compose-Datei gefunden im Projektverzeichnis"
+elif [ -f "/opt/projektseite/docker/docker-compose.yml" ]; then
+    cd /opt/projektseite
+    DOCKER_COMPOSE_PATH="$(pwd)/docker/docker-compose.yml"
+    log_info "Docker-Compose-Datei gefunden im Projektverzeichnis/docker/"
+else
+    log_error "Docker-Compose-Datei nicht gefunden!"
+    log_info "Verfügbare Dateien im aktuellen Verzeichnis:"
+    ls -la
+    if [ -d "/opt/projektseite" ]; then
+        log_info "Verfügbare Dateien in /opt/projektseite:"
+        ls -la /opt/projektseite
+        if [ -d "/opt/projektseite/docker" ]; then
+            log_info "Verfügbare Dateien in /opt/projektseite/docker:"
+            ls -la /opt/projektseite/docker
+        fi
+    fi
+    log_error "Bitte führe zuerst setup-server.sh aus, um das Projekt zu klonen."
+    exit 1
 fi
+
+log_info "Verwende Docker-Compose-Datei: $DOCKER_COMPOSE_PATH"
 
 # Prüfe ob Docker läuft
 log_info "Prüfe Docker-Status..."
@@ -70,13 +90,13 @@ fi
 
 # Stoppe laufende Container
 log_info "Stoppe laufende Container..."
-if [ -f "docker-compose.yml" ]; then
+if [ -n "$DOCKER_COMPOSE_PATH" ]; then
+    # Wechsle zum Verzeichnis der docker-compose.yml
+    cd "$(dirname "$DOCKER_COMPOSE_PATH")"
+    log_info "Wechsle zu Verzeichnis: $(pwd)"
     docker-compose down
 else
-    log_error "Docker-Compose-Datei nicht gefunden im aktuellen Verzeichnis!"
-    log_info "Aktuelles Verzeichnis: $(pwd)"
-    log_info "Verfügbare Dateien:"
-    ls -la
+    log_error "Docker-Compose-Datei nicht gefunden!"
     exit 1
 fi
 
@@ -93,7 +113,10 @@ fi
 
 # Starte Container
 log_info "Starte Docker-Container..."
-if [ -f "docker-compose.yml" ]; then
+if [ -n "$DOCKER_COMPOSE_PATH" ]; then
+    # Stelle sicher, dass wir im richtigen Verzeichnis sind
+    cd "$(dirname "$DOCKER_COMPOSE_PATH")"
+    log_info "Starte Container aus Verzeichnis: $(pwd)"
     docker-compose up -d
 else
     log_error "Docker-Compose-Datei nicht gefunden!"
@@ -106,7 +129,8 @@ sleep 15
 
 # Prüfe Container-Status
 log_info "Prüfe Container-Status..."
-if [ -f "docker-compose.yml" ]; then
+if [ -n "$DOCKER_COMPOSE_PATH" ]; then
+    cd "$(dirname "$DOCKER_COMPOSE_PATH")"
     docker-compose ps
 else
     log_error "Docker-Compose-Datei nicht gefunden!"
@@ -115,7 +139,8 @@ fi
 
 # Prüfe Container-Logs
 log_info "Prüfe Container-Logs..."
-if [ -f "docker-compose.yml" ]; then
+if [ -n "$DOCKER_COMPOSE_PATH" ]; then
+    cd "$(dirname "$DOCKER_COMPOSE_PATH")"
     echo "=== PostgreSQL Logs ==="
     docker-compose logs postgres --tail=10
 
@@ -192,7 +217,8 @@ echo "   Grafana:          http://localhost:3002"
 echo "   PostgreSQL:       localhost:5432"
 echo ""
 echo "📊 Container-Status:"
-if [ -f "docker-compose.yml" ]; then
+if [ -n "$DOCKER_COMPOSE_PATH" ]; then
+    cd "$(dirname "$DOCKER_COMPOSE_PATH")"
     docker-compose ps
 else
     log_error "Docker-Compose-Datei nicht gefunden!"
