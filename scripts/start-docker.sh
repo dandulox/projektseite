@@ -34,8 +34,7 @@ log_error() {
 
 # Prüfe ob als Root ausgeführt
 if [[ $EUID -eq 0 ]]; then
-   log_error "Dieses Skript sollte nicht als Root ausgeführt werden!"
-   exit 1
+   log_info "Skript wird als Root ausgeführt - das ist in Ordnung"
 fi
 
 # Wechsle zum Projektverzeichnis
@@ -45,7 +44,7 @@ cd /opt/projektseite
 log_info "Prüfe Docker-Status..."
 if ! docker info > /dev/null 2>&1; then
     log_error "Docker läuft nicht! Starte Docker..."
-    sudo systemctl start docker
+    systemctl start docker
     sleep 5
 fi
 

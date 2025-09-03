@@ -40,8 +40,7 @@ log_info "Update-Log wird in $LOG_FILE geschrieben"
 
 # Prüfe ob als Root ausgeführt
 if [[ $EUID -eq 0 ]]; then
-   log_error "Dieses Skript sollte nicht als Root ausgeführt werden!"
-   exit 1
+   log_info "Skript wird als Root ausgeführt - das ist in Ordnung"
 fi
 
 # Erstelle Backup vor Update
@@ -61,10 +60,10 @@ docker-compose down
 
 # System-Updates
 log_info "Führe System-Updates durch..."
-sudo apt update
-sudo apt upgrade -y
-sudo apt autoremove -y
-sudo apt autoclean
+apt update
+apt upgrade -y
+apt autoremove -y
+apt autoclean
 
 # Docker-Updates
 log_info "Aktualisiere Docker-Images..."
@@ -92,19 +91,19 @@ NODE_LATEST=$(curl -s https://nodejs.org/dist/index.json | grep -o '"version":"[
 if [ "$NODE_CURRENT" != "v$NODE_LATEST" ]; then
     log_warning "Node.js Update verfügbar: $NODE_CURRENT -> v$NODE_LATEST"
     log_info "Führe Node.js Update durch..."
-    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-    sudo apt install -y nodejs
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+    apt install -y nodejs
 else
     log_success "Node.js ist aktuell: $NODE_CURRENT"
 fi
 
 # NPM Updates
 log_info "Aktualisiere globale NPM-Pakete..."
-sudo npm update -g
+npm update -g
 
 # Log-Rotation
 log_info "Führe Log-Rotation durch..."
-sudo logrotate /etc/logrotate.d/projektseite
+logrotate /etc/logrotate.d/projektseite
 
 # Prüfe Festplattenspeicher
 log_info "Prüfe Festplattenspeicher..."
@@ -116,8 +115,8 @@ docker system df
 
 # Prüfe System-Services
 log_info "Prüfe System-Services..."
-sudo systemctl status projektseite.service --no-pager
-sudo systemctl status node_exporter.service --no-pager
+systemctl status projektseite.service --no-pager
+systemctl status node_exporter.service --no-pager
 
 # Erstelle Update-Report
 REPORT_FILE="/opt/projektseite/reports/update-report-$(date +%Y%m%d).md"

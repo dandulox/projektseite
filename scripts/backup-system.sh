@@ -47,8 +47,7 @@ log_info "Backup-Log wird in $LOG_FILE geschrieben"
 
 # Prüfe ob als Root ausgeführt
 if [[ $EUID -eq 0 ]]; then
-   log_error "Dieses Skript sollte nicht als Root ausgeführt werden!"
-   exit 1
+   log_info "Skript wird als Root ausgeführt - das ist in Ordnung"
 fi
 
 # Erstelle Backup-Verzeichnis
@@ -101,9 +100,9 @@ fi
 
 # Backup der System-Konfiguration
 log_info "Erstelle Backup der System-Konfiguration..."
-sudo cp -r /etc/systemd/system/projektseite.service "$TEMP_BACKUP_DIR/system/"
-sudo cp -r /etc/logrotate.d/projektseite "$TEMP_BACKUP_DIR/system/"
-sudo cp -r /etc/environment.d/projektseite.conf "$TEMP_BACKUP_DIR/system/"
+cp -r /etc/systemd/system/projektseite.service "$TEMP_BACKUP_DIR/system/"
+cp -r /etc/logrotate.d/projektseite "$TEMP_BACKUP_DIR/system/"
+cp -r /etc/environment.d/projektseite.conf "$TEMP_BACKUP_DIR/system/"
 
 # Backup der Logs
 log_info "Erstelle Backup der Logs..."

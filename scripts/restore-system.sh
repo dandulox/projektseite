@@ -39,8 +39,7 @@ RESTORE_DIR="/tmp/projektseite-restore"
 
 # Prüfe ob als Root ausgeführt
 if [[ $EUID -eq 0 ]]; then
-   log_error "Dieses Skript sollte nicht als Root ausgeführt werden!"
-   exit 1
+   log_info "Skript wird als Root ausgeführt - das ist in Ordnung"
 fi
 
 # Zeige verfügbare Backups
@@ -159,12 +158,12 @@ fi
 # Stelle System-Konfiguration wieder her
 log_info "Stelle System-Konfiguration wieder her..."
 if [ -d "$PROJECT_DIR/system" ]; then
-    sudo cp "$PROJECT_DIR/system/projektseite.service" /etc/systemd/system/ 2>/dev/null || true
-    sudo cp "$PROJECT_DIR/system/projektseite" /etc/logrotate.d/ 2>/dev/null || true
-    sudo cp "$PROJECT_DIR/system/projektseite.conf" /etc/environment.d/ 2>/dev/null || true
+    cp "$PROJECT_DIR/system/projektseite.service" /etc/systemd/system/ 2>/dev/null || true
+    cp "$PROJECT_DIR/system/projektseite" /etc/logrotate.d/ 2>/dev/null || true
+    cp "$PROJECT_DIR/system/projektseite.conf" /etc/environment.d/ 2>/dev/null || true
     
     # Lade Systemd neu
-    sudo systemctl daemon-reload
+    systemctl daemon-reload
     
     # Entferne temporäre System-Dateien
     rm -rf "$PROJECT_DIR/system"
@@ -173,8 +172,8 @@ fi
 # Stelle Logs wieder her
 log_info "Stelle Logs wieder her..."
 if [ -d "$PROJECT_DIR/logs" ]; then
-    sudo cp -r "$PROJECT_DIR/logs"/* /var/log/projektseite/ 2>/dev/null || true
-    sudo chown -R $USER:$USER /var/log/projektseite
+    cp -r "$PROJECT_DIR/logs"/* /var/log/projektseite/ 2>/dev/null || true
+    chown -R $USER:$USER /var/log/projektseite
     
     # Entferne temporäre Log-Dateien
     rm -rf "$PROJECT_DIR/logs"
