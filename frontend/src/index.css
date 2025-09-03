@@ -6,37 +6,37 @@
 :root {
   /* Light Mode Colors */
   --bg-primary: #ffffff;
-  --bg-secondary: #f5f5f7;
-  --bg-tertiary: #fafafa;
-  --text-primary: #1d1d1f;
-  --text-secondary: #86868b;
-  --text-tertiary: #6e6e73;
-  --accent-primary: #0071e3;
-  --accent-secondary: #0077ed;
-  --border-primary: #d2d2d7;
-  --border-secondary: #e5e5e7;
-  --shadow-primary: 0 4px 20px rgba(0, 0, 0, 0.08);
-  --shadow-secondary: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --glass-bg: rgba(255, 255, 255, 0.8);
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --accent-primary: #3b82f6;
+  --accent-secondary: #2563eb;
+  --border-primary: #e2e8f0;
+  --border-secondary: #cbd5e1;
+  --shadow-primary: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-secondary: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --glass-bg: rgba(255, 255, 255, 0.9);
   --glass-border: rgba(255, 255, 255, 0.2);
 }
 
 [data-theme="dark"] {
   /* Dark Mode Colors */
-  --bg-primary: #000000;
-  --bg-secondary: #1c1c1e;
-  --bg-tertiary: #2c2c2e;
-  --text-primary: #ffffff;
-  --text-secondary: #a1a1a6;
-  --text-tertiary: #8e8e93;
-  --accent-primary: #0a84ff;
-  --accent-secondary: #409cff;
-  --border-primary: #38383a;
-  --border-secondary: #48484a;
-  --shadow-primary: 0 4px 20px rgba(0, 0, 0, 0.3);
-  --shadow-secondary: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --glass-bg: rgba(0, 0, 0, 0.8);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --accent-primary: #3b82f6;
+  --accent-secondary: #60a5fa;
+  --border-primary: #334155;
+  --border-secondary: #475569;
+  --shadow-primary: 0 10px 25px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-secondary: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --glass-bg: rgba(15, 23, 42, 0.9);
+  --glass-border: rgba(148, 163, 184, 0.1);
 }
 
 @layer base {
@@ -64,7 +64,7 @@
 
   /* Smooth transitions for theme switching */
   * {
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
   }
 }
 
@@ -97,39 +97,39 @@
 
   /* Apple-style button */
   .btn-primary {
-    @apply bg-accent-blue text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center gap-2 hover:bg-accent-blue-hover hover:-translate-y-0.5;
+    @apply bg-blue-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center gap-2 hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-lg;
   }
 
   .btn-secondary {
-    @apply bg-transparent text-accent-blue border border-accent-blue py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center gap-2 hover:bg-accent-blue hover:text-white;
+    @apply bg-transparent text-blue-600 border border-blue-600 py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center gap-2 hover:bg-blue-600 hover:text-white hover:shadow-lg;
   }
 
   /* Card styles */
   .card {
-    @apply bg-apple-50 dark:bg-apple-800 rounded-apple p-6 shadow-apple-subtle dark:shadow-apple-subtle-dark border border-apple-200 dark:border-apple-700 hover:shadow-apple dark:hover:shadow-apple-dark hover:-translate-y-0.5 transition-all duration-200;
+    @apply bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-xl dark:shadow-slate-900/30 border border-slate-200 dark:border-slate-700 hover:shadow-2xl dark:hover:shadow-slate-900/40 hover:-translate-y-1 transition-all duration-300;
   }
 
   /* Input styles */
   .input {
-    @apply bg-apple-50 dark:bg-apple-800 border border-apple-200 dark:border-apple-700 rounded-xl py-3 px-4 text-apple-900 dark:text-apple-100 text-sm transition-all duration-200 focus:outline-none focus:border-accent-blue focus:shadow-[0_0_0_3px_rgba(0,113,227,0.1)];
+    @apply bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-slate-900 dark:text-slate-100 text-sm transition-all duration-200 focus:outline-none focus:border-blue-600 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] focus:bg-white dark:focus:bg-slate-700;
   }
 
   /* Navigation link styles */
   .nav-link {
-    @apply group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200;
+    @apply group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200;
   }
 
   .nav-link-active {
-    @apply bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300;
+    @apply bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-md;
   }
 
   .nav-link-inactive {
-    @apply text-apple-700 dark:text-apple-300 hover:bg-apple-100 dark:hover:bg-apple-800;
+    @apply text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white;
   }
 
   /* Status indicators */
   .status-online {
-    @apply text-green-600 dark:text-green-400;
+    @apply text-emerald-600 dark:text-emerald-400;
   }
 
   .status-offline {
@@ -137,18 +137,18 @@
   }
 
   .status-warning {
-    @apply text-yellow-600 dark:text-yellow-400;
+    @apply text-amber-600 dark:text-amber-400;
   }
 }
 
 @layer utilities {
   /* Animation classes */
   .fade-in {
-    animation: fadeIn 0.6s ease-out;
+    animation: fadeIn 0.8s ease-out;
   }
 
   .slide-up {
-    animation: slideUp 0.4s ease-out;
+    animation: slideUp 0.6s ease-out;
   }
 
   .bounce-gentle {
@@ -159,7 +159,7 @@
   @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(20px);
+      transform: translateY(30px);
     }
     to {
       opacity: 1;
@@ -170,7 +170,7 @@
   @keyframes slideUp {
     from {
       opacity: 0;
-      transform: translateY(40px);
+      transform: translateY(50px);
     }
     to {
       opacity: 1;
@@ -183,7 +183,7 @@
       transform: translateY(0);
     }
     50% {
-      transform: translateY(-5px);
+      transform: translateY(-8px);
     }
   }
 
@@ -193,18 +193,27 @@
   }
 
   .text-gradient {
-    @apply bg-gradient-to-r from-accent-blue to-accent-purple bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent;
   }
 
   .bg-gradient-apple {
-    @apply bg-gradient-to-br from-apple-50 to-apple-100 dark:from-apple-900 dark:to-apple-800;
+    @apply bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800;
+  }
+
+  /* Enhanced shadows */
+  .shadow-soft {
+    box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
+  }
+
+  .shadow-soft-dark {
+    box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.3), 0 10px 20px -2px rgba(0, 0, 0, 0.2);
   }
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
   .card {
-    @apply p-4 rounded-xl;
+    @apply p-6 rounded-2xl;
   }
   
   .btn-primary,
