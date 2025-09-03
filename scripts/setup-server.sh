@@ -332,10 +332,34 @@ fi
 
 # Erstelle Umgebungsvariablen-Datei
 log_info "Erstelle Umgebungsvariablen..."
+
+# Erstelle das Verzeichnis falls es nicht existiert
+mkdir -p /etc/environment.d
+
+# Erstelle die Umgebungsvariablen-Datei
 tee /etc/environment.d/projektseite.conf > /dev/null <<EOF
 PROJEKTSEITE_HOME=$PROJECT_DIR
 NODE_ENV=production
 EOF
+
+# Erstelle auch eine .profile Datei für den Benutzer als Fallback
+if [[ $EUID -eq 0 ]]; then
+    ACTUAL_USER=${SUDO_USER:-$USER}
+    if [ -n "$ACTUAL_USER" ]; then
+        USER_HOME=$(eval echo ~$ACTUAL_USER)
+        if [ -d "$USER_HOME" ]; then
+            log_info "Erstelle .profile für Benutzer $ACTUAL_USER"
+            cat >> "$USER_HOME/.profile" <<EOF
+
+# Projektseite Umgebungsvariablen
+export PROJEKTSEITE_HOME=$PROJECT_DIR
+export NODE_ENV=production
+EOF
+        fi
+    fi
+fi
+
+log_success "Umgebungsvariablen erstellt"
 
 # Setze Berechtigungen
 log_info "Setze Berechtigungen..."
