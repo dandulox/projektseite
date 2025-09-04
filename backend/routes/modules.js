@@ -42,14 +42,10 @@ const checkModulePermission = async (userId, moduleId, moduleType, requiredPermi
         WHERE pm.id = $1
       `, [moduleId]);
     } else {
-      try {
-        moduleResult = await pool.query(`
-          SELECT owner_id, team_id, visibility
-          FROM standalone_modules WHERE id = $1
-        `, [moduleId]);
-      } catch (error) {
-        return false; // Tabelle existiert nicht
-      }
+      moduleResult = await pool.query(`
+        SELECT owner_id, team_id, visibility
+        FROM standalone_modules WHERE id = $1
+      `, [moduleId]);
     }
 
     if (moduleResult.rows.length === 0) {
@@ -65,39 +61,30 @@ const checkModulePermission = async (userId, moduleId, moduleType, requiredPermi
 
     // Prüfe Team-Berechtigung
     if (module.team_id) {
-      try {
-        const teamResult = await pool.query(`
-          SELECT role FROM team_memberships 
-          WHERE team_id = $1 AND user_id = $2
-        `, [module.team_id, userId]);
+      const teamResult = await pool.query(`
+        SELECT role FROM team_memberships 
+        WHERE team_id = $1 AND user_id = $2
+      `, [module.team_id, userId]);
 
-        if (teamResult.rows.length > 0) {
-          const teamRole = teamResult.rows[0].role;
-          if (teamRole === 'leader' && requiredPermission !== 'admin') {
-            return true;
-          }
-          if (teamRole === 'member' && ['view', 'edit'].includes(requiredPermission)) {
-            return true;
-          }
-          if (teamRole === 'viewer' && requiredPermission === 'view') {
-            return true;
-          }
+      if (teamResult.rows.length > 0) {
+        const teamRole = teamResult.rows[0].role;
+        if (teamRole === 'leader' && requiredPermission !== 'admin') {
+          return true;
         }
-      } catch (error) {
-        // Team-System nicht verfügbar, ignoriere Team-Berechtigungen
+        if (teamRole === 'member' && ['view', 'edit'].includes(requiredPermission)) {
+          return true;
+        }
+        if (teamRole === 'viewer' && requiredPermission === 'view') {
+          return true;
+        }
       }
     }
 
-    // Prüfe explizite Berechtigungen (falls Tabelle existiert)
-    let permissionResult = { rows: [] };
-    try {
-      permissionResult = await pool.query(`
-        SELECT permission_type FROM module_permissions
-        WHERE module_id = $1 AND module_type = $2 AND user_id = $3
-      `, [moduleId, moduleType, userId]);
-    } catch (error) {
-      // Tabelle existiert nicht, ignoriere explizite Berechtigungen
-    }
+    // Prüfe explizite Berechtigungen
+    const permissionResult = await pool.query(`
+      SELECT permission_type FROM module_permissions
+      WHERE module_id = $1 AND module_type = $2 AND user_id = $3
+    `, [moduleId, moduleType, userId]);
 
     if (permissionResult.rows.length > 0) {
       const permission = permissionResult.rows[0].permission_type;
@@ -113,7 +100,7 @@ const checkModulePermission = async (userId, moduleId, moduleType, requiredPermi
     }
 
     // Prüfe Sichtbarkeit für view-Berechtigung
-    if (requiredPermission === 'view' && (module.visibility === 'public' || module.visibility === null)) {
+    if (requiredPermission === 'view' && module.visibility === 'public') {
       return true;
     }
 
@@ -123,23 +110,10 @@ const checkModulePermission = async (userId, moduleId, moduleType, requiredPermi
 
 // Hilfsfunktion: Erstellt Modul-Log
 const createModuleLog = async (moduleId, moduleType, userId, action, details) => {
-  try {
-    await pool.query(`
-      INSERT INTO module_logs (module_id, module_type, user_id, action, details)
-      VALUES ($1, $2, $3, $4, $5)
-    `, [moduleId, moduleType, userId, action, details]);
-  } catch (error) {
-    // Fallback: Log in project_logs falls module_logs nicht existiert
-    console.log('module_logs Tabelle nicht verfügbar, verwende project_logs als Fallback');
-    try {
-      await pool.query(`
-        INSERT INTO project_logs (project_id, user_id, action, details)
-        VALUES ($1, $2, $3, $4)
-      `, [moduleId, userId, `module_${action}`, details]);
-    } catch (fallbackError) {
-      console.error('Fehler beim Erstellen des Log-Eintrags:', fallbackError);
-    }
-  }
+  await pool.query(`
+    INSERT INTO module_logs (module_id, module_type, user_id, action, details)
+    VALUES ($1, $2, $3, $4, $5)
+  `, [moduleId, moduleType, userId, action, details]);
 };
 
 // Alle Module abrufen (Projekt-Module und eigenständige Module)
@@ -174,7 +148,7 @@ router.get('/', authenticateToken, async (req, res) => {
         projectModulesQuery += `
           AND (
             p.owner_id = $${++paramCount} OR
-            (pm.visibility = 'public' OR pm.visibility IS NULL) OR
+            pm.visibility = 'public' OR
             (pm.team_id IS NOT NULL AND EXISTS (
               SELECT 1 FROM team_memberships tm 
               WHERE tm.team_id = pm.team_id AND tm.user_id = $${paramCount}
@@ -211,91 +185,67 @@ router.get('/', authenticateToken, async (req, res) => {
 
       projectModulesQuery += ` ORDER BY pm.created_at DESC`;
 
-      try {
-        const projectModulesResult = await pool.query(projectModulesQuery, params);
-        modules = modules.concat(projectModulesResult.rows);
-      } catch (error) {
-        console.log('Fehler beim Abrufen der Projekt-Module:', error.message);
-        // Versuche mit vereinfachter Abfrage
-        const simpleQuery = `
-          SELECT pm.*, 
-                 p.name as project_name,
-                 u.username as owner_username,
-                 u2.username as assigned_username,
-                 'project' as module_type
-          FROM project_modules pm
-          JOIN projects p ON p.id = pm.project_id
-          LEFT JOIN users u ON u.id = p.owner_id
-          LEFT JOIN users u2 ON u2.id = pm.assigned_to
-          WHERE p.owner_id = $1
-          ORDER BY pm.created_at DESC
-        `;
-        const simpleResult = await pool.query(simpleQuery, [req.user.id]);
-        modules = modules.concat(simpleResult.rows);
-      }
+      const projectModulesResult = await pool.query(projectModulesQuery, params);
+      modules = modules.concat(projectModulesResult.rows);
     }
 
-    // Eigenständige Module abrufen (falls Tabelle existiert)
+    // Eigenständige Module abrufen
     if (!type || type === 'standalone') {
-      try {
-        let standaloneModulesQuery = `
-          SELECT sm.*, 
-                 u.username as owner_username,
-                 u2.username as assigned_username,
-                 t.name as team_name,
-                 'standalone' as module_type
-          FROM standalone_modules sm
-          LEFT JOIN users u ON u.id = sm.owner_id
-          LEFT JOIN users u2 ON u2.id = sm.assigned_to
-          LEFT JOIN teams t ON t.id = sm.team_id
-          WHERE 1=1
-        `;
-        
-        const params = [];
-        let paramCount = 0;
+      let standaloneModulesQuery = `
+        SELECT sm.*, 
+               u.username as owner_username,
+               u2.username as assigned_username,
+               t.name as team_name,
+               'standalone' as module_type
+        FROM standalone_modules sm
+        LEFT JOIN users u ON u.id = sm.owner_id
+        LEFT JOIN users u2 ON u2.id = sm.assigned_to
+        LEFT JOIN teams t ON t.id = sm.team_id
+        WHERE 1=1
+      `;
+      
+      const params = [];
+      let paramCount = 0;
 
-        // Filter basierend auf Benutzer-Berechtigung
-        if (req.user.role !== 'admin') {
-          standaloneModulesQuery += `
-            AND (
-              sm.owner_id = $${++paramCount} OR
-              sm.visibility = 'public' OR
-              (sm.team_id IS NOT NULL AND EXISTS (
-                SELECT 1 FROM team_memberships tm 
-                WHERE tm.team_id = sm.team_id AND tm.user_id = $${paramCount}
-              )) OR
-              EXISTS (
-                SELECT 1 FROM module_permissions mp 
-                WHERE mp.module_id = sm.id AND mp.module_type = 'standalone' AND mp.user_id = $${paramCount}
-              )
+      // Filter basierend auf Benutzer-Berechtigung
+      if (req.user.role !== 'admin') {
+        standaloneModulesQuery += `
+          AND (
+            sm.owner_id = $${++paramCount} OR
+            sm.visibility = 'public' OR
+            (sm.team_id IS NOT NULL AND EXISTS (
+              SELECT 1 FROM team_memberships tm 
+              WHERE tm.team_id = sm.team_id AND tm.user_id = $${paramCount}
+            )) OR
+            EXISTS (
+              SELECT 1 FROM module_permissions mp 
+              WHERE mp.module_id = sm.id AND mp.module_type = 'standalone' AND mp.user_id = $${paramCount}
             )
-          `;
-          params.push(req.user.id);
-        }
-
-        // Zusätzliche Filter
-        if (team_id) {
-          standaloneModulesQuery += ` AND sm.team_id = $${++paramCount}`;
-          params.push(team_id);
-        }
-        
-        if (status) {
-          standaloneModulesQuery += ` AND sm.status = $${++paramCount}`;
-          params.push(status);
-        }
-        
-        if (visibility) {
-          standaloneModulesQuery += ` AND sm.visibility = $${++paramCount}`;
-          params.push(visibility);
-        }
-
-        standaloneModulesQuery += ` ORDER BY sm.created_at DESC`;
-
-        const standaloneModulesResult = await pool.query(standaloneModulesQuery, params);
-        modules = modules.concat(standaloneModulesResult.rows);
-      } catch (error) {
-        console.log('standalone_modules Tabelle nicht verfügbar');
+          )
+        `;
+        params.push(req.user.id);
       }
+
+      // Zusätzliche Filter
+      if (team_id) {
+        standaloneModulesQuery += ` AND sm.team_id = $${++paramCount}`;
+        params.push(team_id);
+      }
+      
+      if (status) {
+        standaloneModulesQuery += ` AND sm.status = $${++paramCount}`;
+        params.push(status);
+      }
+      
+      if (visibility) {
+        standaloneModulesQuery += ` AND sm.visibility = $${++paramCount}`;
+        params.push(visibility);
+      }
+
+      standaloneModulesQuery += ` ORDER BY sm.created_at DESC`;
+
+      const standaloneModulesResult = await pool.query(standaloneModulesQuery, params);
+      modules = modules.concat(standaloneModulesResult.rows);
     }
 
     res.json({ modules });
@@ -334,49 +284,22 @@ router.get('/:type/:id', authenticateToken, async (req, res) => {
         WHERE pm.id = $1
       `;
     } else {
-      try {
-        moduleQuery = `
-          SELECT sm.*, 
-                 u.username as owner_username,
-                 u2.username as assigned_username,
-                 t.name as team_name,
-                 'standalone' as module_type
-          FROM standalone_modules sm
-          LEFT JOIN users u ON u.id = sm.owner_id
-          LEFT JOIN users u2 ON u2.id = sm.assigned_to
-          LEFT JOIN teams t ON t.id = sm.team_id
-          WHERE sm.id = $1
-        `;
-      } catch (error) {
-        return res.status(400).json({ error: 'Eigenständige Module sind noch nicht verfügbar. Bitte wenden Sie den Datenbank-Patch an.' });
-      }
+      moduleQuery = `
+        SELECT sm.*, 
+               u.username as owner_username,
+               u2.username as assigned_username,
+               t.name as team_name,
+               'standalone' as module_type
+        FROM standalone_modules sm
+        LEFT JOIN users u ON u.id = sm.owner_id
+        LEFT JOIN users u2 ON u2.id = sm.assigned_to
+        LEFT JOIN teams t ON t.id = sm.team_id
+        WHERE sm.id = $1
+      `;
     }
 
     // Modul-Details abrufen
-    let moduleResult;
-    try {
-      moduleResult = await pool.query(moduleQuery, [id]);
-    } catch (error) {
-      if (moduleType === 'standalone') {
-        return res.status(400).json({ error: 'Eigenständige Module sind noch nicht verfügbar. Bitte wenden Sie den Datenbank-Patch an.' });
-      }
-      
-      // Für Projekt-Module: Versuche mit vereinfachter Abfrage
-      console.log('Fehler beim Abrufen der Modul-Details:', error.message);
-      const simpleQuery = `
-        SELECT pm.*, 
-               p.name as project_name,
-               u.username as owner_username,
-               u2.username as assigned_username,
-               'project' as module_type
-        FROM project_modules pm
-        JOIN projects p ON p.id = pm.project_id
-        LEFT JOIN users u ON u.id = p.owner_id
-        LEFT JOIN users u2 ON u2.id = pm.assigned_to
-        WHERE pm.id = $1
-      `;
-      moduleResult = await pool.query(simpleQuery, [id]);
-    }
+    const moduleResult = await pool.query(moduleQuery, [id]);
 
     if (moduleResult.rows.length === 0) {
       return res.status(404).json({ error: 'Modul nicht gefunden' });
@@ -384,56 +307,41 @@ router.get('/:type/:id', authenticateToken, async (req, res) => {
 
     const module = moduleResult.rows[0];
 
-    // Modul-Verbindungen abrufen (falls Tabelle existiert)
-    let connectionsResult = { rows: [] };
-    try {
-      connectionsQuery = `
-        SELECT mc.*, 
-               CASE 
-                 WHEN mc.target_module_type = 'project' THEN pm.name
-                 ELSE sm.name
-               END as target_module_name,
-               CASE 
-                 WHEN mc.target_module_type = 'project' THEN pm.status
-                 ELSE sm.status
-               END as target_module_status
-        FROM module_connections mc
-        LEFT JOIN project_modules pm ON pm.id = mc.target_module_id AND mc.target_module_type = 'project'
-        LEFT JOIN standalone_modules sm ON sm.id = mc.target_module_id AND mc.target_module_type = 'standalone'
-        WHERE mc.source_module_id = $1 AND mc.source_module_type = $2
-        ORDER BY mc.created_at DESC
-      `;
-      connectionsResult = await pool.query(connectionsQuery, [id, moduleType]);
-    } catch (error) {
-      console.log('module_connections Tabelle nicht verfügbar');
-    }
+    // Modul-Verbindungen abrufen
+    const connectionsQuery = `
+      SELECT mc.*, 
+             CASE 
+               WHEN mc.target_module_type = 'project' THEN pm.name
+               ELSE sm.name
+             END as target_module_name,
+             CASE 
+               WHEN mc.target_module_type = 'project' THEN pm.status
+               ELSE sm.status
+             END as target_module_status
+      FROM module_connections mc
+      LEFT JOIN project_modules pm ON pm.id = mc.target_module_id AND mc.target_module_type = 'project'
+      LEFT JOIN standalone_modules sm ON sm.id = mc.target_module_id AND mc.target_module_type = 'standalone'
+      WHERE mc.source_module_id = $1 AND mc.source_module_type = $2
+      ORDER BY mc.created_at DESC
+    `;
+    const connectionsResult = await pool.query(connectionsQuery, [id, moduleType]);
 
-    // Modul-Logs abrufen (falls Tabelle existiert)
-    let logsResult = { rows: [] };
-    try {
-      logsQuery = `
-        SELECT ml.*, u.username
-        FROM module_logs ml
-        LEFT JOIN users u ON u.id = ml.user_id
-        WHERE ml.module_id = $1 AND ml.module_type = $2
-        ORDER BY ml.timestamp DESC
-        LIMIT 50
-      `;
-      logsResult = await pool.query(logsQuery, [id, moduleType]);
-    } catch (error) {
-      console.log('module_logs Tabelle nicht verfügbar');
-    }
+    // Modul-Logs abrufen
+    const logsQuery = `
+      SELECT ml.*, u.username
+      FROM module_logs ml
+      LEFT JOIN users u ON u.id = ml.user_id
+      WHERE ml.module_id = $1 AND ml.module_type = $2
+      ORDER BY ml.timestamp DESC
+      LIMIT 50
+    `;
+    const logsResult = await pool.query(logsQuery, [id, moduleType]);
 
-    // Abhängigkeiten prüfen (falls Funktion existiert)
-    let dependenciesResult = { rows: [] };
-    try {
-      dependenciesResult = await pool.query(
-        'SELECT * FROM check_module_dependencies($1, $2)',
-        [id, moduleType]
-      );
-    } catch (error) {
-      console.log('check_module_dependencies Funktion nicht verfügbar');
-    }
+    // Abhängigkeiten prüfen
+    const dependenciesResult = await pool.query(
+      'SELECT * FROM check_module_dependencies($1, $2)',
+      [id, moduleType]
+    );
 
     res.json({
       module,
@@ -471,35 +379,25 @@ router.post('/standalone', authenticateToken, async (req, res) => {
 
     // Prüfe Team-Berechtigung falls team_id angegeben
     if (team_id) {
-      try {
-        const teamCheck = await pool.query(`
-          SELECT id FROM team_memberships 
-          WHERE team_id = $1 AND user_id = $2
-        `, [team_id, req.user.id]);
-        
-        if (teamCheck.rows.length === 0 && req.user.role !== 'admin') {
-          return res.status(403).json({ error: 'Keine Berechtigung für das angegebene Team' });
-        }
-      } catch (error) {
-        // Team-System nicht verfügbar, ignoriere Team-Berechtigungen
-        console.log('Team-System nicht verfügbar, ignoriere Team-Berechtigungen');
+      const teamCheck = await pool.query(`
+        SELECT id FROM team_memberships 
+        WHERE team_id = $1 AND user_id = $2
+      `, [team_id, req.user.id]);
+      
+      if (teamCheck.rows.length === 0 && req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Keine Berechtigung für das angegebene Team' });
       }
     }
 
-    // Modul erstellen (falls Tabelle existiert)
-    let result;
-    try {
-      result = await pool.query(`
-        INSERT INTO standalone_modules (
-          name, description, status, priority, start_date, target_date, 
-          owner_id, team_id, visibility, estimated_hours, assigned_to, tags, dependencies
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-        RETURNING *
-      `, [name, description, status, priority, start_date, target_date, req.user.id, team_id, visibility, estimated_hours, assigned_to, tags, dependencies]);
-    } catch (error) {
-      return res.status(400).json({ error: 'Eigenständige Module sind noch nicht verfügbar. Bitte wenden Sie den Datenbank-Patch an.' });
-    }
+    // Modul erstellen
+    const result = await pool.query(`
+      INSERT INTO standalone_modules (
+        name, description, status, priority, start_date, target_date, 
+        owner_id, team_id, visibility, estimated_hours, assigned_to, tags, dependencies
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      RETURNING *
+    `, [name, description, status, priority, start_date, target_date, req.user.id, team_id, visibility, estimated_hours, assigned_to, tags, dependencies]);
 
     const module = result.rows[0];
 
@@ -587,48 +485,28 @@ router.post('/project/:projectId', authenticateToken, async (req, res) => {
     // Prüfe Berechtigung für das Projekt
     if (req.user.role !== 'admin' && project.owner_id !== req.user.id) {
       if (project.team_id) {
-        try {
-          const teamMembership = await pool.query(`
-            SELECT tm.role FROM team_memberships tm
-            WHERE tm.team_id = $1 AND tm.user_id = $2
-          `, [project.team_id, req.user.id]);
+        const teamMembership = await pool.query(`
+          SELECT tm.role FROM team_memberships tm
+          WHERE tm.team_id = $1 AND tm.user_id = $2
+        `, [project.team_id, req.user.id]);
 
-          if (teamMembership.rows.length === 0) {
-            return res.status(403).json({ error: 'Keine Berechtigung für dieses Projekt' });
-          }
-        } catch (error) {
-          // Team-System nicht verfügbar, ignoriere Team-Berechtigungen
-          console.log('Team-System nicht verfügbar, ignoriere Team-Berechtigungen');
+        if (teamMembership.rows.length === 0) {
+          return res.status(403).json({ error: 'Keine Berechtigung für dieses Projekt' });
         }
       } else {
         return res.status(403).json({ error: 'Keine Berechtigung für dieses Projekt' });
       }
     }
 
-    // Modul erstellen (mit Fallback für fehlende Spalten)
-    let result;
-    try {
-      // Versuche zuerst mit allen neuen Spalten
-      result = await pool.query(`
-        INSERT INTO project_modules (
-          project_id, name, description, status, priority, estimated_hours, 
-          assigned_to, due_date, team_id, visibility, tags, dependencies
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-        RETURNING *
-      `, [projectId, name, description, status, priority, estimated_hours, assigned_to, due_date, team_id, visibility, tags, dependencies]);
-    } catch (error) {
-      // Fallback: Nur mit den ursprünglichen Spalten
-      console.log('Neue Spalten nicht verfügbar, verwende Fallback-Erstellung');
-      result = await pool.query(`
-        INSERT INTO project_modules (
-          project_id, name, description, status, priority, estimated_hours, 
-          assigned_to, due_date
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        RETURNING *
-      `, [projectId, name, description, status, priority, estimated_hours, assigned_to, due_date]);
-    }
+    // Modul erstellen
+    const result = await pool.query(`
+      INSERT INTO project_modules (
+        project_id, name, description, status, priority, estimated_hours, 
+        assigned_to, due_date, team_id, visibility, tags, dependencies
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      RETURNING *
+    `, [projectId, name, description, status, priority, estimated_hours, assigned_to, due_date, team_id, visibility, tags, dependencies]);
 
     const module = result.rows[0];
 
@@ -691,41 +569,21 @@ router.put('/:type/:id', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Keine Berechtigung zum Bearbeiten des Moduls' });
     }
 
-    // Erlaubte Felder für Update (mit Fallback für fehlende Spalten)
+    // Erlaubte Felder für Update
     const allowedFields = [
       'name', 'description', 'status', 'priority', 'start_date', 
       'target_date', 'completion_percentage', 'visibility', 'estimated_hours',
       'actual_hours', 'assigned_to', 'due_date', 'tags', 'dependencies'
     ];
     
-    // Basis-Felder, die immer verfügbar sind
-    const baseFields = [
-      'name', 'description', 'status', 'priority', 'estimated_hours',
-      'assigned_to', 'due_date'
-    ];
-    
     const updateFields = [];
     const values = [];
     let paramCount = 0;
 
-    // Filtere Felder basierend auf Verfügbarkeit
-    const fieldsToUpdate = [];
     for (const [key, value] of Object.entries(updateData)) {
       if (allowedFields.includes(key) && value !== undefined) {
-        fieldsToUpdate.push({ key, value });
-      }
-    }
-    
-    // Versuche zuerst mit allen Feldern
-    let useBaseFields = false;
-    for (const field of fieldsToUpdate) {
-      if (baseFields.includes(field.key)) {
-        updateFields.push(`${field.key} = $${++paramCount}`);
-        values.push(field.value);
-      } else {
-        // Neue Felder - werden später hinzugefügt
-        updateFields.push(`${field.key} = $${++paramCount}`);
-        values.push(field.value);
+        updateFields.push(`${key} = $${++paramCount}`);
+        values.push(value);
       }
     }
 
@@ -744,43 +602,7 @@ router.put('/:type/:id', authenticateToken, async (req, res) => {
       RETURNING *
     `;
 
-    let result;
-    try {
-      result = await pool.query(query, values);
-    } catch (error) {
-      if (moduleType === 'standalone') {
-        return res.status(400).json({ error: 'Eigenständige Module sind noch nicht verfügbar. Bitte wenden Sie den Datenbank-Patch an.' });
-      }
-      
-      // Für Projekt-Module: Versuche mit nur den Basis-Feldern
-      console.log('Neue Spalten nicht verfügbar, verwende Fallback-Update');
-      const baseUpdateFields = [];
-      const baseValues = [];
-      let baseParamCount = 0;
-      
-      for (const field of fieldsToUpdate) {
-        if (baseFields.includes(field.key)) {
-          baseUpdateFields.push(`${field.key} = $${++baseParamCount}`);
-          baseValues.push(field.value);
-        }
-      }
-      
-      if (baseUpdateFields.length === 0) {
-        return res.status(400).json({ error: 'Keine gültigen Felder zum Aktualisieren' });
-      }
-      
-      baseUpdateFields.push(`updated_at = NOW()`);
-      baseValues.push(id);
-      
-      const baseQuery = `
-        UPDATE ${tableName} 
-        SET ${baseUpdateFields.join(', ')}
-        WHERE id = $${++baseParamCount}
-        RETURNING *
-      `;
-      
-      result = await pool.query(baseQuery, baseValues);
-    }
+    const result = await pool.query(query, values);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Modul nicht gefunden' });
@@ -834,15 +656,11 @@ router.delete('/:type/:id', authenticateToken, async (req, res) => {
         WHERE pm.id = $1
       `, [id]);
     } else {
-      try {
-        ownerCheck = await pool.query(`
-          SELECT owner_id, name
-          FROM standalone_modules
-          WHERE id = $1
-        `, [id]);
-      } catch (error) {
-        return res.status(400).json({ error: 'Eigenständige Module sind noch nicht verfügbar. Bitte wenden Sie den Datenbank-Patch an.' });
-      }
+      ownerCheck = await pool.query(`
+        SELECT owner_id, name
+        FROM standalone_modules
+        WHERE id = $1
+      `, [id]);
     }
 
     if (ownerCheck.rows.length === 0) {
@@ -857,14 +675,7 @@ router.delete('/:type/:id', authenticateToken, async (req, res) => {
 
     // Modul löschen (CASCADE löscht auch Verbindungen, Logs, etc.)
     const tableName = moduleType === 'project' ? 'project_modules' : 'standalone_modules';
-    try {
-      await pool.query(`DELETE FROM ${tableName} WHERE id = $1`, [id]);
-    } catch (error) {
-      if (moduleType === 'standalone') {
-        return res.status(400).json({ error: 'Eigenständige Module sind noch nicht verfügbar. Bitte wenden Sie den Datenbank-Patch an.' });
-      }
-      throw error; // Re-throw für Projekt-Module
-    }
+    await pool.query(`DELETE FROM ${tableName} WHERE id = $1`, [id]);
 
     res.json({ message: 'Modul erfolgreich gelöscht' });
   } catch (error) {
@@ -893,20 +704,15 @@ router.post('/:type/:id/connections', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Keine Berechtigung für das Ziel-Modul' });
     }
 
-    // Verbindung erstellen (falls Tabelle existiert)
-    let result;
-    try {
-      result = await pool.query(`
-        INSERT INTO module_connections (
-          source_module_id, source_module_type, target_module_id, target_module_type,
-          connection_type, description, created_by
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING *
-      `, [id, sourceModuleType, target_module_id, target_module_type, connection_type, description, req.user.id]);
-    } catch (error) {
-      return res.status(400).json({ error: 'Modul-Verbindungen sind noch nicht verfügbar. Bitte wenden Sie den Datenbank-Patch an.' });
-    }
+    // Verbindung erstellen
+    const result = await pool.query(`
+      INSERT INTO module_connections (
+        source_module_id, source_module_type, target_module_id, target_module_type,
+        connection_type, description, created_by
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING *
+    `, [id, sourceModuleType, target_module_id, target_module_type, connection_type, description, req.user.id]);
 
     // Log-Einträge erstellen
     await createModuleLog(id, sourceModuleType, req.user.id, 'connection_created', `Verbindung zu ${target_module_type}-Modul ${target_module_id} erstellt`);
@@ -936,17 +742,12 @@ router.delete('/:type/:id/connections/:connectionId', authenticateToken, async (
       return res.status(403).json({ error: 'Keine Berechtigung zum Löschen der Verbindung' });
     }
 
-    // Verbindung löschen (falls Tabelle existiert)
-    let result;
-    try {
-      result = await pool.query(`
-        DELETE FROM module_connections 
-        WHERE id = $1 AND source_module_id = $2 AND source_module_type = $3
-        RETURNING *
-      `, [connectionId, id, moduleType]);
-    } catch (error) {
-      return res.status(400).json({ error: 'Modul-Verbindungen sind noch nicht verfügbar. Bitte wenden Sie den Datenbank-Patch an.' });
-    }
+    // Verbindung löschen
+    const result = await pool.query(`
+      DELETE FROM module_connections 
+      WHERE id = $1 AND source_module_id = $2 AND source_module_type = $3
+      RETURNING *
+    `, [connectionId, id, moduleType]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Verbindung nicht gefunden' });
@@ -984,19 +785,14 @@ router.post('/:type/:id/permissions', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Benutzer nicht gefunden' });
     }
 
-    // Berechtigung vergeben (falls Tabelle existiert)
-    let result;
-    try {
-      result = await pool.query(`
-        INSERT INTO module_permissions (module_id, module_type, user_id, permission_type, granted_by)
-        VALUES ($1, $2, $3, $4, $5)
-        ON CONFLICT (module_id, module_type, user_id) 
-        DO UPDATE SET permission_type = $4, granted_by = $5, granted_at = NOW()
-        RETURNING *
-      `, [id, moduleType, user_id, permission_type, req.user.id]);
-    } catch (error) {
-      return res.status(400).json({ error: 'Modul-Berechtigungen sind noch nicht verfügbar. Bitte wenden Sie den Datenbank-Patch an.' });
-    }
+    // Berechtigung vergeben
+    const result = await pool.query(`
+      INSERT INTO module_permissions (module_id, module_type, user_id, permission_type, granted_by)
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT (module_id, module_type, user_id) 
+      DO UPDATE SET permission_type = $4, granted_by = $5, granted_at = NOW()
+      RETURNING *
+    `, [id, moduleType, user_id, permission_type, req.user.id]);
 
     res.status(201).json({
       message: 'Berechtigung erfolgreich vergeben',
@@ -1031,19 +827,14 @@ router.post('/:type/:id/teams', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Team nicht gefunden' });
     }
 
-    // Team zuweisen (falls Tabelle existiert)
-    let result;
-    try {
-      result = await pool.query(`
-        INSERT INTO module_team_assignments (module_id, module_type, team_id, role, assigned_by)
-        VALUES ($1, $2, $3, $4, $5)
-        ON CONFLICT (module_id, module_type, team_id) 
-        DO UPDATE SET role = $4, assigned_by = $5, assigned_at = NOW()
-        RETURNING *
-      `, [id, moduleType, team_id, role, req.user.id]);
-    } catch (error) {
-      return res.status(400).json({ error: 'Modul-Team-Zuweisungen sind noch nicht verfügbar. Bitte wenden Sie den Datenbank-Patch an.' });
-    }
+    // Team zuweisen
+    const result = await pool.query(`
+      INSERT INTO module_team_assignments (module_id, module_type, team_id, role, assigned_by)
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT (module_id, module_type, team_id) 
+      DO UPDATE SET role = $4, assigned_by = $5, assigned_at = NOW()
+      RETURNING *
+    `, [id, moduleType, team_id, role, req.user.id]);
 
     // Log-Eintrag erstellen
     await createModuleLog(id, moduleType, req.user.id, 'team_assigned', `Team "${teamResult.rows[0].name}" zugewiesen`);
