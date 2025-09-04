@@ -14,17 +14,32 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+// API Base URL - dynamisch basierend auf der aktuellen Domain
+const getApiBaseUrl = () => {
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // Verwende die aktuelle Domain mit Port 3001 für das Backend
+  const currentHost = window.location.hostname;
+  return `http://${currentHost}:3001/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
 // API-Funktionen
 const fetchGreetings = async () => {
-  const response = await fetch('/api/greetings');
+  const response = await fetch(`${API_BASE_URL}/greetings`);
   if (!response.ok) {
-    throw new Error('Fehler beim Abrufen der Begrüßungen');
+    const errorText = await response.text();
+    console.error('API Fehler:', response.status, errorText);
+    throw new Error(`Fehler beim Abrufen der Begrüßungen: ${response.status} ${errorText}`);
   }
   return response.json();
 };
 
 const createGreeting = async (greetingData) => {
-  const response = await fetch('/api/greetings', {
+  const response = await fetch(`${API_BASE_URL}/greetings`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -32,7 +47,9 @@ const createGreeting = async (greetingData) => {
     body: JSON.stringify(greetingData),
   });
   if (!response.ok) {
-    throw new Error('Fehler beim Erstellen der Begrüßung');
+    const errorText = await response.text();
+    console.error('API Fehler:', response.status, errorText);
+    throw new Error(`Fehler beim Erstellen der Begrüßung: ${response.status} ${errorText}`);
   }
   return response.json();
 };
@@ -46,7 +63,9 @@ const updateGreeting = async ({ id, ...greetingData }) => {
     body: JSON.stringify(greetingData),
   });
   if (!response.ok) {
-    throw new Error('Fehler beim Aktualisieren der Begrüßung');
+    const errorText = await response.text();
+    console.error('API Fehler:', response.status, errorText);
+    throw new Error(`Fehler beim Aktualisieren der Begrüßung: ${response.status} ${errorText}`);
   }
   return response.json();
 };
@@ -56,7 +75,9 @@ const deleteGreeting = async (id) => {
     method: 'DELETE',
   });
   if (!response.ok) {
-    throw new Error('Fehler beim Löschen der Begrüßung');
+    const errorText = await response.text();
+    console.error('API Fehler:', response.status, errorText);
+    throw new Error(`Fehler beim Löschen der Begrüßung: ${response.status} ${errorText}`);
   }
   return response.json();
 };
@@ -99,6 +120,12 @@ const GreetingManagement = () => {
   const { data: greetings = [], isLoading, error } = useQuery({
     queryKey: ['greetings'],
     queryFn: fetchGreetings,
+    retry: 2,
+    retryDelay: 1000,
+    onError: (error) => {
+      console.error('Query Fehler:', error);
+      toast.error(`Fehler beim Laden der Begrüßungen: ${error.message}`);
+    }
   });
 
   // Mutations
