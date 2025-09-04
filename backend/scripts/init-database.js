@@ -1,4 +1,6 @@
 const { Pool } = require('pg');
+const fs = require('fs');
+const path = require('path');
 const { createDefaultUsers } = require('./create-default-users');
 
 // Datenbankverbindung
@@ -17,6 +19,31 @@ async function initializeDatabase() {
     // Prüfe ob Datenbank erreichbar ist
     await pool.query('SELECT 1');
     console.log('✅ Datenbankverbindung erfolgreich');
+
+    // Prüfe ob users Tabelle existiert
+    const tableCheck = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'users'
+      );
+    `);
+    
+    const tableExists = tableCheck.rows[0].exists;
+
+    if (!tableExists) {
+      console.log('📋 Erstelle Datenbankschema...');
+      
+      // Lade und führe das Schema aus
+      const schemaPath = path.join(__dirname, '../../database/init/01_schema.sql');
+      const schemaSQL = fs.readFileSync(schemaPath, 'utf8');
+      
+      // Führe das Schema aus
+      await pool.query(schemaSQL);
+      console.log('✅ Datenbankschema erfolgreich erstellt');
+    } else {
+      console.log('✅ Datenbankschema bereits vorhanden');
+    }
 
     // Prüfe ob Benutzer bereits existieren
     const userCount = await pool.query('SELECT COUNT(*) FROM users');

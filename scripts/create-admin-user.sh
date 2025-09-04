@@ -20,9 +20,9 @@ if [ ! -d "node_modules" ]; then
     npm install
 fi
 
-# Führe das Benutzer-Erstellungs-Skript aus
-echo "👤 Erstelle Standard-Benutzer..."
-node scripts/create-default-users.js
+# Führe zuerst die Datenbankinitialisierung aus
+echo "🚀 Initialisiere Datenbank..."
+node scripts/init-database.js
 
 if [ $? -eq 0 ]; then
     echo "✅ Standard-Benutzer erfolgreich erstellt!"
