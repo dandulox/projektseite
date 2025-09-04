@@ -1,0 +1,549 @@
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { 
+  BarChart3, 
+  Users, 
+  Calendar, 
+  TrendingUp, 
+  AlertTriangle, 
+  CheckCircle, 
+  Clock, 
+  Target,
+  ArrowRight,
+  Filter,
+  RefreshCw,
+  Eye,
+  EyeOff
+} from 'lucide-react';
+
+const ProjectDashboard = () => {
+  const { projectApi, teamApi, user, isAdmin } = useAuth();
+  const navigate = useNavigate();
+  const [projects, setProjects] = useState([]);
+  const [teams, setTeams] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalProjects: 0,
+    activeProjects: 0,
+    completedProjects: 0,
+    overdueProjects: 0,
+    averageProgress: 0
+  });
+  const [filters, setFilters] = useState({
+    status: '',
+    team_id: '',
+    priority: '',
+    showOverdue: true
+  });
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' oder 'list'
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [filters]);
+
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      // Projekte laden
+      const projectsResponse = await projectApi.getProjects(filters);
+      const projectsData = projectsResponse.projects || [];
+      
+      // Teams laden
+      const teamsResponse = await teamApi.getTeams();
+      const teamsData = teamsResponse.teams || [];
+      
+      setProjects(projectsData);
+      setTeams(teamsData);
+      
+      // Statistiken berechnen
+      calculateStats(projectsData);
+      
+    } catch (error) {
+      toast.error('Fehler beim Laden der Dashboard-Daten');
+      console.error('Error loading dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculateStats = (projectsData) => {
+    const now = new Date();
+    const totalProjects = projectsData.length;
+    const activeProjects = projectsData.filter(p => ['planning', 'active', 'in_progress'].includes(p.status)).length;
+    const completedProjects = projectsData.filter(p => p.status === 'completed').length;
+    const overdueProjects = projectsData.filter(p => {
+      if (!p.target_date || p.status === 'completed') return false;
+      return new Date(p.target_date) < now;
+    }).length;
+    
+    const totalProgress = projectsData.reduce((sum, p) => sum + (p.completion_percentage || 0), 0);
+    const averageProgress = totalProjects > 0 ? Math.round(totalProgress / totalProjects) : 0;
+    
+    setStats({
+      totalProjects,
+      activeProjects,
+      completedProjects,
+      overdueProjects,
+      averageProgress
+    });
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'completed': return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
+      case 'active': 
+      case 'in_progress': return 'text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'planning': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400';
+      case 'on_hold': return 'text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400';
+      case 'cancelled': return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
+      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-900/30 dark:text-gray-400';
+    }
+  };
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'critical': return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
+      case 'high': return 'text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400';
+      case 'medium': return 'text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'low': return 'text-gray-600 bg-gray-100 dark:bg-gray-900/30 dark:text-gray-400';
+      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-900/30 dark:text-gray-400';
+    }
+  };
+
+  const getProgressColor = (progress) => {
+    if (progress >= 80) return 'from-green-500 to-green-600';
+    if (progress >= 50) return 'from-blue-500 to-blue-600';
+    if (progress >= 25) return 'from-yellow-500 to-yellow-600';
+    return 'from-red-500 to-red-600';
+  };
+
+  const getTrafficLightStatus = (project) => {
+    const now = new Date();
+    const targetDate = project.target_date ? new Date(project.target_date) : null;
+    const progress = project.completion_percentage || 0;
+    
+    // Rot: Überfällig oder kritische Priorität mit niedrigem Fortschritt
+    if (targetDate && targetDate < now && progress < 100) {
+      return { color: 'red', text: 'Überfällig', icon: AlertTriangle };
+    }
+    if (project.priority === 'critical' && progress < 30) {
+      return { color: 'red', text: 'Kritisch', icon: AlertTriangle };
+    }
+    
+    // Gelb: Fällig in den nächsten 7 Tagen oder mittlere Priorität
+    if (targetDate) {
+      const daysUntilDue = Math.ceil((targetDate - now) / (1000 * 60 * 60 * 24));
+      if (daysUntilDue <= 7 && daysUntilDue > 0 && progress < 80) {
+        return { color: 'yellow', text: 'Bald fällig', icon: Clock };
+      }
+    }
+    if (project.priority === 'high' && progress < 60) {
+      return { color: 'yellow', text: 'Hoch', icon: Clock };
+    }
+    
+    // Grün: Alles in Ordnung
+    return { color: 'green', text: 'Auf Kurs', icon: CheckCircle };
+  };
+
+  const getStatusText = (status) => {
+    const statusMap = {
+      'planning': 'Planung',
+      'active': 'Aktiv',
+      'in_progress': 'In Bearbeitung',
+      'on_hold': 'Pausiert',
+      'completed': 'Abgeschlossen',
+      'cancelled': 'Abgebrochen'
+    };
+    return statusMap[status] || status;
+  };
+
+  const getPriorityText = (priority) => {
+    const priorityMap = {
+      'low': 'Niedrig',
+      'medium': 'Mittel',
+      'high': 'Hoch',
+      'critical': 'Kritisch'
+    };
+    return priorityMap[priority] || priority;
+  };
+
+  const handleProjectClick = (projectId) => {
+    navigate(`/projects?selected=${projectId}`);
+  };
+
+  const filteredProjects = projects.filter(project => {
+    if (filters.status && project.status !== filters.status) return false;
+    if (filters.team_id && project.team_id !== parseInt(filters.team_id)) return false;
+    if (filters.priority && project.priority !== filters.priority) return false;
+    if (!filters.showOverdue) {
+      const now = new Date();
+      const targetDate = project.target_date ? new Date(project.target_date) : null;
+      if (targetDate && targetDate < now && project.status !== 'completed') return false;
+    }
+    return true;
+  });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Projekt-Dashboard</h1>
+              <p className="text-slate-600 dark:text-slate-400 mt-2">
+                Übersicht über alle Projekte und deren aktuellen Status
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={loadDashboardData}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Aktualisieren
+              </button>
+              <button
+                onClick={() => navigate('/projects')}
+                className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+              >
+                <ArrowRight className="w-4 h-4" />
+                Zu Projekten
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Statistiken */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Gesamt</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.totalProjects}</p>
+              </div>
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                <BarChart3 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Aktiv</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.activeProjects}</p>
+              </div>
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Abgeschlossen</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.completedProjects}</p>
+              </div>
+              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Überfällig</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.overdueProjects}</p>
+              </div>
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Ø Fortschritt</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.averageProgress}%</p>
+              </div>
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                <Target className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filter */}
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+              <Filter className="w-5 h-5" />
+              Filter
+            </h3>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                title={viewMode === 'grid' ? 'Listenansicht' : 'Kartenansicht'}
+              >
+                {viewMode === 'grid' ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Status
+              </label>
+              <select
+                value={filters.status}
+                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+              >
+                <option value="">Alle Status</option>
+                <option value="planning">Planung</option>
+                <option value="active">Aktiv</option>
+                <option value="in_progress">In Bearbeitung</option>
+                <option value="on_hold">Pausiert</option>
+                <option value="completed">Abgeschlossen</option>
+                <option value="cancelled">Abgebrochen</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Team
+              </label>
+              <select
+                value={filters.team_id}
+                onChange={(e) => setFilters({ ...filters, team_id: e.target.value })}
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+              >
+                <option value="">Alle Teams</option>
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Priorität
+              </label>
+              <select
+                value={filters.priority}
+                onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+              >
+                <option value="">Alle Prioritäten</option>
+                <option value="low">Niedrig</option>
+                <option value="medium">Mittel</option>
+                <option value="high">Hoch</option>
+                <option value="critical">Kritisch</option>
+              </select>
+            </div>
+            
+            <div className="flex items-end">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={filters.showOverdue}
+                  onChange={(e) => setFilters({ ...filters, showOverdue: e.target.checked })}
+                  className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm text-slate-700 dark:text-slate-300">
+                  Überfällige anzeigen
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Projektliste */}
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+          <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+              Projekte ({filteredProjects.length})
+            </h2>
+          </div>
+          
+          {viewMode === 'grid' ? (
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProjects.map((project) => {
+                const trafficLight = getTrafficLightStatus(project);
+                const TrafficLightIcon = trafficLight.icon;
+                
+                return (
+                  <div
+                    key={project.id}
+                    onClick={() => handleProjectClick(project.id)}
+                    className="bg-slate-50 dark:bg-slate-700 rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200 border border-slate-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-blue-600"
+                  >
+                    {/* Header mit Ampelsystem */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
+                          {project.name}
+                        </h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                          {project.owner_username}
+                        </p>
+                      </div>
+                      <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                        trafficLight.color === 'red' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                        trafficLight.color === 'yellow' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                        'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                      }`}>
+                        <TrafficLightIcon className="w-3 h-3" />
+                        {trafficLight.text}
+                      </div>
+                    </div>
+
+                    {/* Status und Priorität */}
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
+                        {getStatusText(project.status)}
+                      </span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(project.priority)}`}>
+                        {getPriorityText(project.priority)}
+                      </span>
+                    </div>
+
+                    {/* Fortschrittsbalken */}
+                    <div className="mb-4">
+                      <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400 mb-2">
+                        <span>Fortschritt</span>
+                        <span>{project.completion_percentage || 0}%</span>
+                      </div>
+                      <div className="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full bg-gradient-to-r ${getProgressColor(project.completion_percentage || 0)} transition-all duration-300`}
+                          style={{ width: `${project.completion_percentage || 0}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Zusätzliche Infos */}
+                    <div className="text-sm text-slate-500 dark:text-slate-400">
+                      {project.target_date && (
+                        <div className="flex items-center gap-1 mb-1">
+                          <Calendar className="w-3 h-3" />
+                          {new Date(project.target_date).toLocaleDateString('de-DE')}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1">
+                        <Users className="w-3 h-3" />
+                        {project.module_count || 0} Module
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-200 dark:divide-slate-700">
+              {filteredProjects.map((project) => {
+                const trafficLight = getTrafficLightStatus(project);
+                const TrafficLightIcon = trafficLight.icon;
+                
+                return (
+                  <div
+                    key={project.id}
+                    onClick={() => handleProjectClick(project.id)}
+                    className="p-6 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-4 mb-2">
+                          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                            {project.name}
+                          </h3>
+                          <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                            trafficLight.color === 'red' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                            trafficLight.color === 'yellow' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                            'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                          }`}>
+                            <TrafficLightIcon className="w-3 h-3" />
+                            {trafficLight.text}
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-4 mb-3">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
+                            {getStatusText(project.status)}
+                          </span>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(project.priority)}`}>
+                            {getPriorityText(project.priority)}
+                          </span>
+                          <span className="text-sm text-slate-500 dark:text-slate-400">
+                            {project.owner_username}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center gap-6">
+                          <div className="flex-1 max-w-xs">
+                            <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400 mb-1">
+                              <span>Fortschritt</span>
+                              <span>{project.completion_percentage || 0}%</span>
+                            </div>
+                            <div className="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-2">
+                              <div 
+                                className={`h-2 rounded-full bg-gradient-to-r ${getProgressColor(project.completion_percentage || 0)} transition-all duration-300`}
+                                style={{ width: `${project.completion_percentage || 0}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          
+                          <div className="text-sm text-slate-500 dark:text-slate-400">
+                            {project.target_date && (
+                              <div className="flex items-center gap-1 mb-1">
+                                <Calendar className="w-3 h-3" />
+                                {new Date(project.target_date).toLocaleDateString('de-DE')}
+                              </div>
+                            )}
+                            <div className="flex items-center gap-1">
+                              <Users className="w-3 h-3" />
+                              {project.module_count || 0} Module
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          
+          {filteredProjects.length === 0 && (
+            <div className="p-12 text-center text-slate-500 dark:text-slate-400">
+              <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p className="text-lg">Keine Projekte gefunden</p>
+              <p className="text-sm">Passen Sie die Filter an oder erstellen Sie ein neues Projekt</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProjectDashboard;

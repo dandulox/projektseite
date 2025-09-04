@@ -9,6 +9,7 @@ import UserSettings from './components/UserSettings';
 import GreetingManagement from './components/GreetingManagement';
 import TeamManagement from './components/TeamManagement';
 import ProjectManagement from './components/ProjectManagement';
+import ProjectDashboard from './components/ProjectDashboard';
 import RegisterFormStartPage from './components/RegisterFormStartPage';
 import LoginForm from './components/LoginForm';
 import DynamicGreeting from './components/DynamicGreeting';
@@ -431,94 +432,8 @@ const MobileMenu = ({ isOpen, onClose }) => {
   );
 };
 
-// Dashboard Component
-const Dashboard = () => (
-  <div className="space-y-8 fade-in">
-    <div className="text-center">
-      {/* Dynamische Begrüßung für Dashboard */}
-      <div className="mb-6">
-        <DynamicGreeting 
-          className="text-center"
-          showTimePeriod={true}
-          refreshInterval={1800000} // 30 Minuten
-          autoRefresh={true}
-        />
-      </div>
-      
-      <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6">
-        Dashboard
-      </h1>
-      <p className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
-        Hier ist eine Übersicht über Ihre aktuellen Projekte und den Fortschritt.
-      </p>
-    </div>
-
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      <div className="card group cursor-pointer transform hover:scale-105 transition-all duration-300">
-        <div className="flex items-center justify-between mb-6">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <BarChart3 className="w-8 h-8 text-white" />
-          </div>
-          <span className="text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-3 py-1 rounded-full">Aktiv</span>
-        </div>
-        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Projekte</h3>
-        <p className="text-slate-600 dark:text-slate-400 mb-6 text-lg">12 laufende Projekte</p>
-        <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 shadow-inner">
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full shadow-lg" style={{ width: '75%' }}></div>
-        </div>
-      </div>
-
-      <div className="card group cursor-pointer transform hover:scale-105 transition-all duration-300">
-        <div className="flex items-center justify-between mb-6">
-          <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <Users className="w-8 h-8 text-white" />
-          </div>
-          <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-3 py-1 rounded-full">Online</span>
-        </div>
-        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Team</h3>
-        <p className="text-slate-600 dark:text-slate-400 mb-6 text-lg">8 aktive Mitglieder</p>
-        <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 shadow-inner">
-          <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-3 rounded-full shadow-lg" style={{ width: '90%' }}></div>
-        </div>
-      </div>
-
-      <div className="card group cursor-pointer transform hover:scale-105 transition-all duration-300">
-        <div className="flex items-center justify-between mb-6">
-          <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-violet-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <Calendar className="w-8 h-8 text-white" />
-          </div>
-          <span className="text-sm font-medium text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/30 px-3 py-1 rounded-full">Dieser Monat</span>
-        </div>
-        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Deadlines</h3>
-        <p className="text-slate-600 dark:text-slate-400 mb-6 text-lg">5 anstehende Termine</p>
-        <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 shadow-inner">
-          <div className="bg-gradient-to-r from-violet-500 to-violet-600 h-3 rounded-full shadow-lg" style={{ width: '60%' }}></div>
-        </div>
-      </div>
-    </div>
-
-    <div className="card">
-      <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Aktuelle Aktivitäten</h2>
-      <div className="space-y-6">
-        <div className="flex items-center space-x-4 p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
-          <div className="w-3 h-3 bg-blue-500 rounded-full shadow-lg"></div>
-          <span className="text-slate-700 dark:text-slate-300 text-lg">Neues Projekt "Website Redesign" wurde erstellt</span>
-          <span className="text-sm text-slate-500 dark:text-slate-400 ml-auto bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">vor 2 Stunden</span>
-        </div>
-        <div className="flex items-center space-x-4 p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
-          <div className="w-3 h-3 bg-emerald-500 rounded-full shadow-lg"></div>
-          <span className="text-slate-700 dark:text-slate-300 text-lg">Modul "User Authentication" abgeschlossen</span>
-          <span className="text-sm text-slate-500 dark:text-slate-400 ml-auto bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">vor 1 Tag</span>
-        </div>
-        <div className="flex items-center space-x-4 p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
-          <div className="w-3 h-3 bg-amber-500 rounded-full shadow-lg"></div>
-          <span className="text-slate-700 dark:text-slate-300 text-lg">Review für "Mobile App" anstehend</span>
-          <span className="text-sm text-slate-500 dark:text-slate-400 ml-auto bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">vor 3 Tagen</span>
-        </div>
-      </div>
-    </div>
-  </div>
-);
+// Dashboard Component - jetzt mit echter Projektübersicht
+const Dashboard = () => <ProjectDashboard />;
 
 // Projektverwaltung Component - jetzt mit echter Backend-Integration
 const Projects = () => <ProjectManagement />;
