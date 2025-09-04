@@ -296,6 +296,25 @@ docker-compose -f docker/docker-compose.yml restart backend
 # 7. Überprüft Service-Verfügbarkeit
 ```
 
+### Datenbank-Patch-System
+```bash
+# Datenbank-Strukturen prüfen und reparieren
+./scripts/db-patch.sh
+
+# Das Skript führt folgende Schritte aus:
+# 1. Erstellt automatisches Backup der Datenbank
+# 2. Prüft alle erforderlichen Tabellen
+# 3. Wendet verfügbare Patches aus database/patches/ an
+# 4. Repariert fehlende Strukturen
+# 5. Startet Backend-Container neu
+# 6. Zeigt finalen Datenbank-Status
+
+# Verfügbare Patches:
+# - 001_ensure_greetings_table.sql
+# - 002_example_patch_template.sql
+# - Weitere Patches werden automatisch erkannt
+```
+
 ### App-Update (Nur Container)
 ```bash
 # Schnelles App-Update (nur Container)
