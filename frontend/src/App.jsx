@@ -14,7 +14,6 @@ import {
   Home, 
   FolderOpen, 
   Puzzle, 
-  Palette, 
   Settings, 
   Sun, 
   Moon, 
@@ -158,20 +157,6 @@ const Header = ({ theme, toggleTheme, isMobileMenuOpen, setIsMobileMenuOpen }) =
             >
               <Puzzle className="w-4 h-4 inline mr-2" />
               Module
-            </NavLink>
-            
-            <NavLink
-              to="/design"
-              className={({ isActive }) =>
-                `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  isActive
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-md'
-                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
-                }`
-              }
-            >
-              <Palette className="w-4 h-4 inline mr-2" />
-              Design
             </NavLink>
             
             {isAdmin && (
@@ -388,15 +373,6 @@ const MobileMenu = ({ isOpen, onClose }) => {
             >
               <Puzzle className="mr-3 h-5 w-5" />
               Module
-            </NavLink>
-            
-            <NavLink
-              to="/design"
-              onClick={onClose}
-              className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
-            >
-              <Palette className="mr-3 h-5 w-5" />
-              Design
             </NavLink>
             
             {isAdmin && (
@@ -1098,32 +1074,6 @@ const Modules = () => (
   </div>
 );
 
-const Design = () => (
-  <div className="space-y-8 fade-in">
-    <div className="text-center">
-      <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6">Design</h1>
-      <p className="text-xl text-slate-600 dark:text-slate-400">Passen Sie das Erscheinungsbild Ihrer Anwendung an.</p>
-    </div>
-    
-    <div className="card">
-      <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Design-Einstellungen</h2>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
-          <span className="text-slate-700 dark:text-slate-300 text-lg">Theme</span>
-          <span className="text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">Automatisch</span>
-        </div>
-        <div className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
-          <span className="text-slate-700 dark:text-slate-300 text-lg">Schriftart</span>
-          <span className="text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">Inter</span>
-        </div>
-        <div className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
-          <span className="text-slate-700 dark:text-slate-300 text-lg">Farbschema</span>
-          <span className="text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">Blau</span>
-        </div>
-      </div>
-    </div>
-  </div>
-);
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -1520,21 +1470,6 @@ const AppContent = () => {
               />
               <main className="flex-1 py-8 page-container">
                 <Modules />
-              </main>
-              <Footer />
-              <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
-            </ProtectedRoute>
-          } />
-          <Route path="/design" element={
-            <ProtectedRoute>
-              <Header 
-                theme={theme} 
-                toggleTheme={toggleTheme}
-                isMobileMenuOpen={isMobileMenuOpen}
-                setIsMobileMenuOpen={setIsMobileMenuOpen}
-              />
-              <main className="flex-1 py-8 page-container">
-                <Design />
               </main>
               <Footer />
               <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
