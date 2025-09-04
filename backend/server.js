@@ -64,6 +64,31 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Debug Route - Tabellen-Status überprüfen
+app.get('/debug/tables', async (req, res) => {
+  try {
+    const pool = require('./config/database');
+    const result = await pool.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      ORDER BY table_name
+    `);
+    
+    const tables = result.rows.map(row => row.table_name);
+    res.json({ 
+      tables,
+      count: tables.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      error: 'Fehler beim Abrufen der Tabellen',
+      message: error.message 
+    });
+  }
+});
+
 // Error Handler
 app.use((err, req, res, next) => {
   console.error(err.stack);

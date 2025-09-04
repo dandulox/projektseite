@@ -299,13 +299,23 @@ router.post('/project', authenticateToken, async (req, res) => {
     if (req.user.role !== 'admin' && project.owner_id !== req.user.id) {
       // Prüfe Team-Berechtigung
       if (project.team_id) {
-        const teamMembership = await pool.query(`
-          SELECT tm.role FROM team_memberships tm
-          WHERE tm.team_id = $1 AND tm.user_id = $2
-        `, [project.team_id, req.user.id]);
-        
-        if (teamMembership.rows.length === 0 || !['leader', 'member'].includes(teamMembership.rows[0].role)) {
-          return res.status(403).json({ error: 'Keine Berechtigung zum Erstellen von Modulen in diesem Projekt' });
+        try {
+          const teamMembership = await pool.query(`
+            SELECT tm.role FROM team_memberships tm
+            WHERE tm.team_id = $1 AND tm.user_id = $2
+          `, [project.team_id, req.user.id]);
+          
+          if (teamMembership.rows.length === 0 || !['leader', 'member'].includes(teamMembership.rows[0].role)) {
+            return res.status(403).json({ error: 'Keine Berechtigung zum Erstellen von Modulen in diesem Projekt' });
+          }
+        } catch (teamError) {
+          console.warn('Team-Berechtigung konnte nicht geprüft werden:', teamError.message);
+          // Wenn teams-Tabelle nicht existiert, verweigere Zugriff
+          if (teamError.message.includes('relation "team_memberships" does not exist')) {
+            return res.status(403).json({ error: 'Keine Berechtigung zum Erstellen von Modulen in diesem Projekt' });
+          } else {
+            throw teamError;
+          }
         }
       } else {
         return res.status(403).json({ error: 'Keine Berechtigung zum Erstellen von Modulen in diesem Projekt' });
