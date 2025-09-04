@@ -6,6 +6,9 @@ const compression = require('compression');
 const path = require('path');
 require('dotenv').config();
 
+// Datenbank-Initialisierung
+const { initializeDatabase } = require('./scripts/init-database');
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -67,10 +70,27 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route nicht gefunden' });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server läuft auf Port ${PORT}`);
-  console.log(`📊 Health Check: http://localhost:${PORT}/health`);
-  console.log(`🔧 Admin API: http://localhost:${PORT}/api/admin`);
-});
+// Server starten mit Datenbank-Initialisierung
+async function startServer() {
+  try {
+    // Datenbank initialisieren
+    await initializeDatabase();
+    
+    // Server starten
+    app.listen(PORT, () => {
+      console.log(`🚀 Server läuft auf Port ${PORT}`);
+      console.log(`📊 Health Check: http://localhost:${PORT}/health`);
+      console.log(`🔧 Admin API: http://localhost:${PORT}/api/admin`);
+      console.log(`🔐 Standard-Zugangsdaten:`);
+      console.log(`   👑 Admin: admin / admin`);
+      console.log(`   👤 User: user / user123`);
+    });
+  } catch (error) {
+    console.error('❌ Fehler beim Starten des Servers:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 module.exports = app;

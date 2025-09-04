@@ -90,3 +90,10 @@ CREATE TRIGGER update_modules_updated_at BEFORE UPDATE ON project_modules
 
 CREATE TRIGGER update_design_updated_at BEFORE UPDATE ON design_settings
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Standard-Benutzer werden über das Initialisierungsskript erstellt
+-- Siehe: backend/scripts/create-default-users.js
+-- 
+-- Standard-Zugangsdaten:
+-- Admin: admin / admin
+-- User: user / user123

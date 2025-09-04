@@ -13,12 +13,15 @@ Eine modulare Website zur Dokumentation und Verfolgung von Projektstatus mit Liv
 - **Admin-Oberfläche** mit React und modernem Design
 - **Grafana-Monitoring** vorbereitet mit Prometheus-Integration
 - **Umfassende Wartungsskripte** für Updates, Backups und Wiederherstellung
+- **🔐 Vollständiges Authentifizierungssystem** mit JWT und Benutzerverwaltung
+- **👥 Benutzerverwaltung** mit Rollen (Admin, User, Viewer) und CRUD-Operationen
+- **🛡️ Geschützte Routen** und Zugriffskontrolle
+- **📱 Responsive Login/Registrierung** mit modernem Design
 
 ### 🔄 Zu implementieren
-- Backend-Routen (auth, projects, modules, design, admin)
-- Frontend-Komponenten (alle Seiten und Layout-Komponenten)
+- Backend-Routen (projects, modules, design)
+- Frontend-Komponenten (Projektverwaltung, Module, Design-Einstellungen)
 - Live-Edit-Funktionalität für Design-Einstellungen
-- Authentifizierungssystem mit JWT
 - Projektverwaltung mit CRUD-Operationen
 
 ## 📁 Projektstruktur
@@ -112,14 +115,17 @@ Nach erfolgreicher Installation sind folgende Standard-Zugangsdaten verfügbar:
 
 #### 🌐 Frontend (Admin-Interface)
 - **URL:** http://localhost:3000
+- **Login:** http://localhost:3000/login
 - **Status:** Wird nach dem ersten Build verfügbar sein
-- **Hinweis:** Noch keine Authentifizierung implementiert
+- **Authentifizierung:** Vollständig implementiert mit JWT
 
 #### 🔧 Backend API
 - **URL:** http://localhost:3001
 - **Health Check:** http://localhost:3001/health
+- **Auth API:** http://localhost:3001/api/auth
+- **Admin API:** http://localhost:3001/api/admin
 - **Status:** Läuft nach dem ersten Build
-- **Hinweis:** API-Endpunkte müssen noch implementiert werden
+- **Authentifizierung:** JWT-basiert mit bcrypt-Passwort-Hashing
 
 #### 🗄️ PostgreSQL Datenbank
 - **Host:** localhost
@@ -140,6 +146,16 @@ Nach erfolgreicher Installation sind folgende Standard-Zugangsdaten verfügbar:
 - **URL:** http://localhost:9100/metrics
 - **Status:** Läuft als System-Service
 - **Metriken:** System-Performance-Daten verfügbar
+
+#### 🔐 Standard-Zugangsdaten
+Nach der Installation sind folgende Benutzer automatisch verfügbar:
+
+| Benutzername | Passwort | Rolle | Beschreibung |
+|--------------|----------|-------|--------------|
+| **admin** | **admin** | Administrator | Vollzugriff auf alle Funktionen |
+| **user** | **user123** | Benutzer | Standard-Benutzerzugriff |
+
+**Wichtiger Hinweis:** Ändern Sie diese Standard-Passwörter nach der ersten Anmeldung!
 ```
 
 **Was wird installiert:**
@@ -313,6 +329,11 @@ docker-compose -f docker/docker-compose.yml restart backend
 - **Helmet.js** für HTTP-Sicherheitsheader
 - **CORS-Konfiguration** mit Whitelist
 - **Automatische Updates** für Sicherheitspatches
+- **🔐 JWT-basierte Authentifizierung** mit sicheren Tokens
+- **🔒 bcrypt-Passwort-Hashing** mit Salt-Rounds (12)
+- **👥 Rollenbasierte Zugriffskontrolle** (Admin, User, Viewer)
+- **🛡️ Geschützte API-Endpunkte** mit Token-Validierung
+- **⏰ Token-Ablaufzeit** (24 Stunden) für erhöhte Sicherheit
 
 ### Ports & Firewall
 - **SSH**: 22 (nur für lokale Verbindungen)
@@ -447,16 +468,48 @@ ls -lh /opt/backups/projektseite/
 ./scripts/restore-system.sh
 ```
 
+## 👥 Benutzerverwaltung
+
+### Verfügbare Rollen
+- **👑 Administrator (admin)**: Vollzugriff auf alle Funktionen
+  - Benutzerverwaltung (erstellen, bearbeiten, löschen)
+  - System-Einstellungen
+  - Alle Projekt- und Modulfunktionen
+- **👤 Benutzer (user)**: Standard-Zugriff
+  - Projektverwaltung
+  - Modulverwaltung
+  - Design-Einstellungen
+- **👁️ Betrachter (viewer)**: Nur Lesezugriff
+  - Projekte anzeigen
+  - Module anzeigen
+  - Keine Bearbeitungsrechte
+
+### Benutzerverwaltung
+- **Erstellen**: Neue Benutzer mit Rollen und Berechtigungen
+- **Bearbeiten**: Benutzername, E-Mail, Rolle und Status ändern
+- **Löschen**: Benutzer entfernen (außer eigenem Account)
+- **Passwort zurücksetzen**: Neue Passwörter für Benutzer setzen
+- **Status verwalten**: Benutzer aktivieren/deaktivieren
+
+### API-Endpunkte
+- `POST /api/auth/login` - Benutzer anmelden
+- `POST /api/auth/register` - Neuen Benutzer registrieren
+- `GET /api/auth/profile` - Benutzerprofil abrufen
+- `PUT /api/auth/change-password` - Passwort ändern
+- `GET /api/admin/users` - Alle Benutzer abrufen (Admin)
+- `POST /api/admin/users` - Benutzer erstellen (Admin)
+- `PUT /api/admin/users/:id` - Benutzer bearbeiten (Admin)
+- `DELETE /api/admin/users/:id` - Benutzer löschen (Admin)
+
 ## 📚 Nächste Schritte
 
-1. **Backend-Routen implementieren** (auth, projects, modules, design, admin)
-2. **Frontend-Komponenten erstellen** (alle Seiten und Layout-Komponenten)
+1. **Backend-Routen implementieren** (projects, modules, design)
+2. **Frontend-Komponenten erstellen** (Projektverwaltung, Module, Design-Einstellungen)
 3. **Live-Edit-Funktionalität entwickeln** für Design-Einstellungen
-4. **Authentifizierungssystem implementieren** mit JWT
-5. **Projektverwaltung entwickeln** mit CRUD-Operationen
-6. **Tests schreiben** für alle Komponenten
-7. **CI/CD-Pipeline aufsetzen** für automatische Deployments
-8. **Produktions-Deployment vorbereiten** mit SSL/TLS
+4. **Projektverwaltung entwickeln** mit CRUD-Operationen
+5. **Tests schreiben** für alle Komponenten
+6. **CI/CD-Pipeline aufsetzen** für automatische Deployments
+7. **Produktions-Deployment vorbereiten** mit SSL/TLS
 
 ## 📄 Lizenz
 

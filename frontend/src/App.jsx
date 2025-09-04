@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
+import { AuthProvider, ProtectedRoute } from './contexts/AuthContext';
+import AuthPage from './pages/AuthPage';
+import UserManagement from './components/UserManagement';
 import { 
   Home, 
   FolderOpen, 
@@ -63,7 +66,10 @@ const ThemeToggle = ({ theme, toggleTheme }) => (
 );
 
 // Header Component
-const Header = ({ theme, toggleTheme, isMobileMenuOpen, setIsMobileMenuOpen }) => (
+const Header = ({ theme, toggleTheme, isMobileMenuOpen, setIsMobileMenuOpen }) => {
+  const { user, logout, isAdmin } = useAuth();
+
+  return (
   <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/20 dark:border-slate-700/20 shadow-lg dark:shadow-slate-900/20">
     <div className="page-container">
       <div className="flex items-center justify-between h-16">
@@ -136,19 +142,21 @@ const Header = ({ theme, toggleTheme, isMobileMenuOpen, setIsMobileMenuOpen }) =
               Design
             </NavLink>
             
-            <NavLink
-              to="/admin"
-              className={({ isActive }) =>
-                `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  isActive
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-md'
-                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
-                }`
-              }
-            >
-              <Settings className="w-4 h-4 inline mr-2" />
-              Admin
-            </NavLink>
+            {isAdmin && (
+              <NavLink
+                to="/admin"
+                className={({ isActive }) =>
+                  `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-md'
+                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+                  }`
+                }
+              >
+                <Settings className="w-4 h-4 inline mr-2" />
+                Admin
+              </NavLink>
+            )}
           </nav>
         </div>
 
@@ -170,6 +178,31 @@ const Header = ({ theme, toggleTheme, isMobileMenuOpen, setIsMobileMenuOpen }) =
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
           </button>
 
+          {/* User Menu */}
+          <div className="flex items-center space-x-2">
+            <div className="hidden sm:flex items-center space-x-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2">
+              <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                <Users className="w-3 h-3 text-white" />
+              </div>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                {user?.username}
+              </span>
+              {isAdmin && (
+                <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs rounded-full">
+                  Admin
+                </span>
+              )}
+            </div>
+            
+            <button
+              onClick={logout}
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
+              title="Abmelden"
+            >
+              <LogIn className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+            </button>
+          </div>
+
           {/* Theme Toggle */}
           <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
 
@@ -184,10 +217,14 @@ const Header = ({ theme, toggleTheme, isMobileMenuOpen, setIsMobileMenuOpen }) =
       </div>
     </div>
   </header>
-);
+  );
+};
 
 // Mobile Menu Component
-const MobileMenu = ({ isOpen, onClose }) => (
+const MobileMenu = ({ isOpen, onClose }) => {
+  const { user, logout, isAdmin } = useAuth();
+
+  return (
   <>
     {isOpen && (
       <div className="fixed inset-0 z-50 md:hidden">
@@ -236,20 +273,53 @@ const MobileMenu = ({ isOpen, onClose }) => (
               Design
             </NavLink>
             
-            <NavLink
-              to="/admin"
-              onClick={onClose}
-              className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
-            >
-              <Settings className="mr-3 h-5 w-5" />
-              Admin
-            </NavLink>
+            {isAdmin && (
+              <NavLink
+                to="/admin"
+                onClick={onClose}
+                className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
+              >
+                <Settings className="mr-3 h-5 w-5" />
+                Admin
+              </NavLink>
+            )}
+            
+            {/* User Info und Logout */}
+            <div className="border-t border-slate-200 dark:border-slate-700 pt-4 mt-4">
+              <div className="px-4 py-3">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <Users className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-slate-900 dark:text-white">
+                      {user?.username}
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                      {user?.email}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => {
+                  logout();
+                  onClose();
+                }}
+                className="w-full flex items-center px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
+              >
+                <LogIn className="mr-3 h-5 w-5" />
+                Abmelden
+              </button>
+            </div>
           </div>
         </div>
       </div>
     )}
   </>
-);
+  );
+};
 
 // Dashboard Component
 const Dashboard = () => (
@@ -913,48 +983,81 @@ const Design = () => (
   </div>
 );
 
-const Admin = () => (
-  <div className="space-y-8 fade-in">
-    <div className="text-center">
-      <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6">Administration</h1>
-      <p className="text-xl text-slate-600 dark:text-slate-400">Verwalten Sie Benutzer, Einstellungen und Systemkonfigurationen.</p>
-    </div>
-    
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <div className="card">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">System-Status</h2>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
-            <span className="text-slate-700 dark:text-slate-300 text-lg">Datenbank</span>
-            <span className="status-online text-sm font-medium bg-emerald-100 dark:bg-emerald-900/30 px-3 py-1 rounded-full">Online</span>
+const Admin = () => {
+  const [activeTab, setActiveTab] = useState('overview');
+
+  return (
+    <div className="space-y-8 fade-in">
+      <div className="text-center">
+        <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6">Administration</h1>
+        <p className="text-xl text-slate-600 dark:text-slate-400">Verwalten Sie Benutzer, Einstellungen und Systemkonfigurationen.</p>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="flex space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+            activeTab === 'overview'
+              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+          }`}
+        >
+          Übersicht
+        </button>
+        <button
+          onClick={() => setActiveTab('users')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+            activeTab === 'users'
+              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+          }`}
+        >
+          Benutzerverwaltung
+        </button>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'overview' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="card">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">System-Status</h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
+                <span className="text-slate-700 dark:text-slate-300 text-lg">Datenbank</span>
+                <span className="status-online text-sm font-medium bg-emerald-100 dark:bg-emerald-900/30 px-3 py-1 rounded-full">Online</span>
+              </div>
+              <div className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
+                <span className="text-slate-700 dark:text-slate-300 text-lg">API-Server</span>
+                <span className="status-online text-sm font-medium bg-emerald-100 dark:bg-emerald-900/30 px-3 py-1 rounded-full">Online</span>
+              </div>
+              <div className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
+                <span className="text-slate-700 dark:text-slate-300 text-lg">Frontend</span>
+                <span className="status-online text-sm font-medium bg-emerald-100 dark:bg-emerald-900/30 px-3 py-1 rounded-full">Online</span>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
-            <span className="text-slate-700 dark:text-slate-300 text-lg">API-Server</span>
-            <span className="status-online text-sm font-medium bg-emerald-100 dark:bg-emerald-900/30 px-3 py-1 rounded-full">Online</span>
-          </div>
-          <div className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
-            <span className="text-slate-700 dark:text-slate-300 text-lg">Frontend</span>
-            <span className="status-online text-sm font-medium bg-emerald-100 dark:bg-emerald-900/30 px-3 py-1 rounded-full">Online</span>
+          
+          <div className="card">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">System-Informationen</h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
+                <span className="text-slate-700 dark:text-slate-300 text-lg">Version</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">1.0.0</span>
+              </div>
+              <div className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
+                <span className="text-slate-700 dark:text-slate-300 text-lg">Letztes Update</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">Heute</span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-      
-      <div className="card">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Benutzer-Verwaltung</h2>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
-            <span className="text-slate-700 dark:text-slate-300 text-lg">Aktive Benutzer</span>
-            <span className="text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">24</span>
-          </div>
-          <div className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
-            <span className="text-slate-700 dark:text-slate-300 text-lg">Neue Anmeldungen</span>
-            <span className="text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">3 heute</span>
-          </div>
-        </div>
-      </div>
+      )}
+
+      {activeTab === 'users' && <UserManagement />}
     </div>
-  </div>
-);
+  );
+};
 
 // Willkommensseite Component
 const WelcomePage = ({ onEnterApp }) => {
@@ -1093,12 +1196,18 @@ const WelcomePage = ({ onEnterApp }) => {
           </button>
           
           <div className="flex gap-3">
-            <button className="px-6 py-4 bg-white/10 backdrop-blur-lg border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2">
+            <button 
+              onClick={() => window.location.href = '/login'}
+              className="px-6 py-4 bg-white/10 backdrop-blur-lg border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2"
+            >
               <LogIn className="w-5 h-5" />
               <span>Anmelden</span>
             </button>
             
-            <button className="px-6 py-4 bg-white/10 backdrop-blur-lg border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2">
+            <button 
+              onClick={() => window.location.href = '/login'}
+              className="px-6 py-4 bg-white/10 backdrop-blur-lg border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2"
+            >
               <UserPlus className="w-5 h-5" />
               <span>Registrieren</span>
             </button>
@@ -1163,49 +1272,74 @@ function App() {
   if (showWelcome) {
     return (
       <QueryClientProvider client={queryClient}>
-        <WelcomePage onEnterApp={handleEnterApp} />
+        <AuthProvider>
+          <WelcomePage onEnterApp={handleEnterApp} />
+        </AuthProvider>
       </QueryClientProvider>
     );
   }
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300 flex flex-col">
-          <Header 
-            theme={theme} 
-            toggleTheme={toggleTheme}
-            isMobileMenuOpen={isMobileMenuOpen}
-            setIsMobileMenuOpen={setIsMobileMenuOpen}
+      <AuthProvider>
+        <Router>
+          <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300 flex flex-col">
+            <Header 
+              theme={theme} 
+              toggleTheme={toggleTheme}
+              isMobileMenuOpen={isMobileMenuOpen}
+              setIsMobileMenuOpen={setIsMobileMenuOpen}
+            />
+            
+            {/* Hauptinhalt - konsistente Breite für alle Seiten */}
+            <main className="flex-1 py-8 page-container">
+              <Routes>
+                <Route path="/login" element={<AuthPage />} />
+                <Route path="/" element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/projects" element={
+                  <ProtectedRoute>
+                    <Projects />
+                  </ProtectedRoute>
+                } />
+                <Route path="/modules" element={
+                  <ProtectedRoute>
+                    <Modules />
+                  </ProtectedRoute>
+                } />
+                <Route path="/design" element={
+                  <ProtectedRoute>
+                    <Design />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin" element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <Admin />
+                  </ProtectedRoute>
+                } />
+              </Routes>
+            </main>
+            
+            <Footer />
+          </div>
+          
+          <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+          
+          <Toaster 
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-secondary)',
+              },
+            }}
           />
-          
-          {/* Hauptinhalt - konsistente Breite für alle Seiten */}
-          <main className="flex-1 py-8 page-container">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/projects" element={<Projects />} />
-              <Route path="/modules" element={<Modules />} />
-              <Route path="/design" element={<Design />} />
-              <Route path="/admin" element={<Admin />} />
-            </Routes>
-          </main>
-          
-          <Footer />
-        </div>
-        
-        <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
-        
-        <Toaster 
-          position="top-right"
-          toastOptions={{
-            style: {
-              background: 'var(--bg-secondary)',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--border-secondary)',
-            },
-          }}
-        />
-      </Router>
+        </Router>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
