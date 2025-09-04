@@ -455,6 +455,90 @@ export const AuthProvider = ({ children }) => {
 
   };
 
+  // Modul-Funktionen
+  const moduleApi = {
+    // Alle Module abrufen
+    getModules: async (filters = {}) => {
+      const params = new URLSearchParams(filters);
+      return await apiRequest(`/modules?${params}`);
+    },
+
+    // Einzelnes Modul abrufen
+    getModule: async (moduleId, moduleType = 'project') => {
+      return await apiRequest(`/modules/${moduleId}?module_type=${moduleType}`);
+    },
+
+    // Projekt-Modul erstellen
+    createProjectModule: async (moduleData) => {
+      return await apiRequest('/modules/project', {
+        method: 'POST',
+        body: JSON.stringify(moduleData),
+      });
+    },
+
+    // Eigenständiges Modul erstellen
+    createStandaloneModule: async (moduleData) => {
+      return await apiRequest('/modules/standalone', {
+        method: 'POST',
+        body: JSON.stringify(moduleData),
+      });
+    },
+
+    // Modul aktualisieren
+    updateModule: async (moduleId, moduleData, moduleType = 'project') => {
+      return await apiRequest(`/modules/${moduleId}?module_type=${moduleType}`, {
+        method: 'PUT',
+        body: JSON.stringify(moduleData),
+      });
+    },
+
+    // Modul löschen
+    deleteModule: async (moduleId, moduleType = 'project') => {
+      return await apiRequest(`/modules/${moduleId}?module_type=${moduleType}`, {
+        method: 'DELETE',
+      });
+    },
+
+    // Modul-Berechtigung vergeben
+    grantModulePermission: async (moduleId, userId, permissionType, moduleType = 'project') => {
+      return await apiRequest(`/modules/${moduleId}/permissions`, {
+        method: 'POST',
+        body: JSON.stringify({ 
+          user_id: userId, 
+          permission_type: permissionType,
+          module_type: moduleType 
+        }),
+      });
+    },
+
+    // Modul-Berechtigung entfernen
+    revokeModulePermission: async (moduleId, userId, moduleType = 'project') => {
+      return await apiRequest(`/modules/${moduleId}/permissions/${userId}?module_type=${moduleType}`, {
+        method: 'DELETE',
+      });
+    },
+
+    // Modul-Abhängigkeit erstellen
+    createModuleDependency: async (sourceModuleId, targetModuleId, connectionType, description, moduleType = 'project') => {
+      return await apiRequest(`/modules/${sourceModuleId}/dependencies`, {
+        method: 'POST',
+        body: JSON.stringify({
+          target_module_id: targetModuleId,
+          connection_type: connectionType,
+          description,
+          module_type: moduleType
+        }),
+      });
+    },
+
+    // Modul-Abhängigkeit entfernen
+    removeModuleDependency: async (sourceModuleId, connectionId, moduleType = 'project') => {
+      return await apiRequest(`/modules/${sourceModuleId}/dependencies/${connectionId}?module_type=${moduleType}`, {
+        method: 'DELETE',
+      });
+    },
+  };
+
   const value = {
     user,
     loading,
@@ -469,6 +553,7 @@ export const AuthProvider = ({ children }) => {
     adminApi,
     teamApi,
     projectApi,
+    moduleApi,
     // Design-Funktionen
     theme,
     designSettings,

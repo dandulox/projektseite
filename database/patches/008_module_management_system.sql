@@ -1,19 +1,19 @@
--- Erweiterte Modul-Funktionalität
--- Patch 006: Advanced Module System
+-- Modulverwaltungs-System
+-- Patch 008: Module Management System
 -- Erstellt: $(date)
 
--- Erweitere die bestehende project_modules Tabelle
+-- Stelle sicher, dass die project_modules Tabelle alle notwendigen Spalten hat
 ALTER TABLE project_modules 
 ADD COLUMN IF NOT EXISTS visibility VARCHAR(20) DEFAULT 'private' CHECK (visibility IN ('private', 'team', 'public')),
 ADD COLUMN IF NOT EXISTS team_id INTEGER REFERENCES teams(id),
 ADD COLUMN IF NOT EXISTS completion_percentage INTEGER DEFAULT 0 CHECK (completion_percentage >= 0 AND completion_percentage <= 100),
 ADD COLUMN IF NOT EXISTS start_date DATE,
 ADD COLUMN IF NOT EXISTS tags TEXT[],
-ADD COLUMN IF NOT EXISTS dependencies TEXT[], -- Array von Modul-IDs als Abhängigkeiten
+ADD COLUMN IF NOT EXISTS dependencies TEXT[],
 ADD COLUMN IF NOT EXISTS is_template BOOLEAN DEFAULT false,
 ADD COLUMN IF NOT EXISTS template_id INTEGER REFERENCES project_modules(id);
 
--- Erstelle Tabelle für eigenständige Module (nicht an Projekte gebunden)
+-- Erstelle Tabelle für eigenständige Module (falls nicht vorhanden)
 CREATE TABLE IF NOT EXISTS standalone_modules (
     id SERIAL PRIMARY KEY,
     name VARCHAR(200) NOT NULL,
@@ -30,14 +30,14 @@ CREATE TABLE IF NOT EXISTS standalone_modules (
     actual_hours DECIMAL(8,2),
     assigned_to INTEGER REFERENCES users(id),
     tags TEXT[],
-    dependencies TEXT[], -- Array von Modul-IDs als Abhängigkeiten
+    dependencies TEXT[],
     is_template BOOLEAN DEFAULT false,
     template_id INTEGER REFERENCES standalone_modules(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Erstelle Tabelle für Modul-Kreuzverbindungen
+-- Erstelle Tabelle für Modul-Kreuzverbindungen (falls nicht vorhanden)
 CREATE TABLE IF NOT EXISTS module_connections (
     id SERIAL PRIMARY KEY,
     source_module_id INTEGER NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS module_connections (
     UNIQUE(source_module_id, source_module_type, target_module_id, target_module_type, connection_type)
 );
 
--- Erstelle Tabelle für Modul-Berechtigungen
+-- Erstelle Tabelle für Modul-Berechtigungen (falls nicht vorhanden)
 CREATE TABLE IF NOT EXISTS module_permissions (
     id SERIAL PRIMARY KEY,
     module_id INTEGER NOT NULL,
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS module_permissions (
     UNIQUE(module_id, module_type, user_id)
 );
 
--- Erstelle Tabelle für Modul-Logs
+-- Erstelle Tabelle für Modul-Logs (falls nicht vorhanden)
 CREATE TABLE IF NOT EXISTS module_logs (
     id SERIAL PRIMARY KEY,
     module_id INTEGER NOT NULL,
@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS module_logs (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Erstelle Tabelle für Modul-Team-Zuweisungen
+-- Erstelle Tabelle für Modul-Team-Zuweisungen (falls nicht vorhanden)
 CREATE TABLE IF NOT EXISTS module_team_assignments (
     id SERIAL PRIMARY KEY,
     module_id INTEGER NOT NULL,
@@ -101,7 +101,7 @@ CREATE INDEX IF NOT EXISTS idx_module_team_assignments_module ON module_team_ass
 CREATE INDEX IF NOT EXISTS idx_module_team_assignments_team ON module_team_assignments(team_id);
 
 -- Trigger für updated_at
-CREATE TRIGGER update_standalone_modules_updated_at BEFORE UPDATE ON standalone_modules
+CREATE TRIGGER IF NOT EXISTS update_standalone_modules_updated_at BEFORE UPDATE ON standalone_modules
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Funktionen für Modul-Berechtigungen
@@ -195,67 +195,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Funktion für Modul-Abhängigkeiten prüfen
-CREATE OR REPLACE FUNCTION check_module_dependencies(
-    p_module_id INTEGER,
-    p_module_type VARCHAR(20)
-) RETURNS TABLE(
-    dependency_id INTEGER,
-    dependency_type VARCHAR(20),
-    dependency_status VARCHAR(50),
-    is_blocked BOOLEAN
-) AS $$
-BEGIN
-    RETURN QUERY
-    WITH RECURSIVE dependency_tree AS (
-        -- Basis-Abhängigkeiten
-        SELECT 
-            mc.target_module_id as dep_id,
-            mc.target_module_type as dep_type,
-            CASE 
-                WHEN mc.target_module_type = 'project' THEN pm.status
-                ELSE sm.status
-            END as dep_status,
-            CASE 
-                WHEN mc.connection_type = 'blocks' THEN TRUE
-                ELSE FALSE
-            END as is_blocking
-        FROM module_connections mc
-        LEFT JOIN project_modules pm ON pm.id = mc.target_module_id AND mc.target_module_type = 'project'
-        LEFT JOIN standalone_modules sm ON sm.id = mc.target_module_id AND mc.target_module_type = 'standalone'
-        WHERE mc.source_module_id = p_module_id 
-        AND mc.source_module_type = p_module_type
-        AND mc.connection_type IN ('depends_on', 'blocks')
-        
-        UNION ALL
-        
-        -- Rekursive Abhängigkeiten
-        SELECT 
-            mc.target_module_id as dep_id,
-            mc.target_module_type as dep_type,
-            CASE 
-                WHEN mc.target_module_type = 'project' THEN pm.status
-                ELSE sm.status
-            END as dep_status,
-            CASE 
-                WHEN mc.connection_type = 'blocks' THEN TRUE
-                ELSE FALSE
-            END as is_blocking
-        FROM module_connections mc
-        LEFT JOIN project_modules pm ON pm.id = mc.target_module_id AND mc.target_module_type = 'project'
-        LEFT JOIN standalone_modules sm ON sm.id = mc.target_module_id AND mc.target_module_type = 'standalone'
-        INNER JOIN dependency_tree dt ON dt.dep_id = mc.source_module_id AND dt.dep_type = mc.source_module_type
-        WHERE mc.connection_type IN ('depends_on', 'blocks')
-    )
-    SELECT DISTINCT 
-        dt.dep_id::INTEGER,
-        dt.dep_type::VARCHAR(20),
-        dt.dep_status::VARCHAR(50),
-        dt.is_blocking::BOOLEAN
-    FROM dependency_tree dt;
-END;
-$$ LANGUAGE plpgsql;
-
 -- Kommentare für Dokumentation
 COMMENT ON TABLE standalone_modules IS 'Eigenständige Module, die nicht an Projekte gebunden sind';
 COMMENT ON TABLE module_connections IS 'Kreuzverbindungen zwischen Modulen (Abhängigkeiten, Blocker, etc.)';
@@ -266,3 +205,69 @@ COMMENT ON TABLE module_team_assignments IS 'Team-Zuweisungen für Module';
 COMMENT ON COLUMN module_connections.connection_type IS 'Art der Verbindung: depends_on, blocks, related_to, duplicates, supersedes';
 COMMENT ON COLUMN module_permissions.permission_type IS 'Berechtigungstyp: view, edit, admin';
 COMMENT ON COLUMN module_team_assignments.role IS 'Rolle des Teams im Modul: leader, member, viewer';
+
+-- Beispiel-Module für Tests
+INSERT INTO project_modules (project_id, name, description, status, priority, estimated_hours, assigned_to, due_date, visibility, tags, dependencies)
+SELECT 
+    p.id,
+    'Frontend-Entwicklung',
+    'Entwicklung der Benutzeroberfläche',
+    'in_progress',
+    'high',
+    40.0,
+    u.id,
+    CURRENT_DATE + INTERVAL '2 weeks',
+    'private',
+    ARRAY['frontend', 'react', 'ui'],
+    ARRAY['Design-Phase']
+FROM projects p, users u
+WHERE p.name LIKE '%Test%' AND u.username = 'user'
+LIMIT 1;
+
+INSERT INTO project_modules (project_id, name, description, status, priority, estimated_hours, assigned_to, due_date, visibility, tags, dependencies)
+SELECT 
+    p.id,
+    'Backend-API',
+    'Entwicklung der REST-API',
+    'not_started',
+    'medium',
+    60.0,
+    u.id,
+    CURRENT_DATE + INTERVAL '3 weeks',
+    'private',
+    ARRAY['backend', 'api', 'nodejs'],
+    ARRAY['Datenbank-Design']
+FROM projects p, users u
+WHERE p.name LIKE '%Test%' AND u.username = 'admin'
+LIMIT 1;
+
+-- Log-Einträge für die Beispiel-Module
+INSERT INTO module_logs (module_id, module_type, user_id, action, details)
+SELECT 
+    pm.id,
+    'project',
+    pm.assigned_to,
+    'created',
+    'Modul erstellt'
+FROM project_modules pm
+WHERE pm.name IN ('Frontend-Entwicklung', 'Backend-API');
+
+-- Aktualisiere die Projekt-Fortschritte basierend auf Modulen
+UPDATE projects 
+SET completion_percentage = (
+    SELECT COALESCE(AVG(pm.completion_percentage), 0)
+    FROM project_modules pm
+    WHERE pm.project_id = projects.id
+)
+WHERE id IN (SELECT DISTINCT project_id FROM project_modules);
+
+-- Erfolgreiche Installation melden
+INSERT INTO project_logs (project_id, user_id, action, details)
+SELECT 
+    p.id,
+    u.id,
+    'system_update',
+    'Modulverwaltungs-System erfolgreich installiert (Patch 008)'
+FROM projects p, users u
+WHERE u.username = 'admin'
+LIMIT 1;

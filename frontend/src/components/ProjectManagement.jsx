@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
+import ModuleForm from './ModuleForm';
 
 const ProjectManagement = () => {
-  const { projectApi, teamApi, user, isAdmin } = useAuth();
+  const { projectApi, teamApi, moduleApi, user, isAdmin } = useAuth();
   const [projects, setProjects] = useState([]);
   const [teams, setTeams] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [showCreateModuleForm, setShowCreateModuleForm] = useState(false);
+  const [showEditModuleForm, setShowEditModuleForm] = useState(false);
+  const [selectedModule, setSelectedModule] = useState(null);
   const [filters, setFilters] = useState({
     team_id: '',
     status: '',
@@ -111,6 +115,45 @@ const ProjectManagement = () => {
     }
   };
 
+  const handleCreateModule = async (moduleData) => {
+    try {
+      await moduleApi.createProjectModule({
+        ...moduleData,
+        project_id: selectedProject.project.id
+      });
+      toast.success('Modul erfolgreich erstellt');
+      setShowCreateModuleForm(false);
+      loadProjectDetails(selectedProject.project.id);
+    } catch (error) {
+      toast.error(error.message || 'Fehler beim Erstellen des Moduls');
+    }
+  };
+
+  const handleUpdateModule = async (moduleId, moduleData) => {
+    try {
+      await moduleApi.updateModule(moduleId, moduleData, 'project');
+      toast.success('Modul erfolgreich aktualisiert');
+      setShowEditModuleForm(false);
+      setSelectedModule(null);
+      loadProjectDetails(selectedProject.project.id);
+    } catch (error) {
+      toast.error(error.message || 'Fehler beim Aktualisieren des Moduls');
+    }
+  };
+
+  const handleDeleteModule = async (moduleId) => {
+    if (!window.confirm('Modul wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) return;
+    
+    try {
+      await moduleApi.deleteModule(moduleId, 'project');
+      toast.success('Modul erfolgreich gelöscht');
+      setSelectedModule(null);
+      loadProjectDetails(selectedProject.project.id);
+    } catch (error) {
+      toast.error(error.message || 'Fehler beim Löschen des Moduls');
+    }
+  };
+
 
 
 
@@ -121,6 +164,9 @@ const ProjectManagement = () => {
       case 'on_hold': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
       case 'completed': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
       case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case 'not_started': return 'bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-gray-200';
+      case 'in_progress': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'testing': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
       default: return 'bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-gray-200';
     }
   };
@@ -150,7 +196,10 @@ const ProjectManagement = () => {
       'active': 'Aktiv',
       'on_hold': 'Pausiert',
       'completed': 'Abgeschlossen',
-      'cancelled': 'Abgebrochen'
+      'cancelled': 'Abgebrochen',
+      'not_started': 'Nicht begonnen',
+      'in_progress': 'In Bearbeitung',
+      'testing': 'Testen'
     };
     return statusMap[status] || status;
   };
@@ -422,7 +471,7 @@ const ProjectManagement = () => {
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Module</h3>
                       <button
-                        onClick={() => {}}
+                        onClick={() => setShowCreateModuleForm(true)}
                         className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors"
                       >
                         Modul hinzufügen
@@ -474,13 +523,16 @@ const ProjectManagement = () => {
                             </div>
                             <div className="flex gap-1 ml-2">
                               <button
-                                onClick={() => {}}
+                                onClick={() => {
+                                  setSelectedModule(module);
+                                  setShowEditModuleForm(true);
+                                }}
                                 className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs transition-colors"
                               >
                                 Bearbeiten
                               </button>
                               <button
-                                onClick={() => {}}
+                                onClick={() => handleDeleteModule(module.id)}
                                 className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors"
                               >
                                 Löschen
@@ -848,7 +900,23 @@ const ProjectManagement = () => {
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                 Neues Modul für "{selectedProject.project.name}" erstellen
               </h3>
-              <form onSubmit={() => {}}>
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const moduleData = {
+                  name: formData.get('name'),
+                  description: formData.get('description'),
+                  status: formData.get('status'),
+                  priority: formData.get('priority'),
+                  estimated_hours: formData.get('estimated_hours'),
+                  assigned_to: formData.get('assigned_to') || null,
+                  due_date: formData.get('due_date') || null,
+                  visibility: formData.get('visibility'),
+                  tags: formData.get('tags') ? formData.get('tags').split(',').map(tag => tag.trim()) : [],
+                  dependencies: formData.get('dependencies') ? formData.get('dependencies').split(',').map(dep => dep.trim()) : []
+                };
+                handleCreateModule(moduleData);
+              }}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -1090,6 +1158,15 @@ const ProjectManagement = () => {
               </form>
             </div>
           </div>
+        )}
+
+        {/* Module Form */}
+        {showCreateModuleForm && selectedProject && (
+          <ModuleForm
+            projectId={selectedProject.project.id}
+            onClose={() => setShowCreateModuleForm(false)}
+            onSuccess={() => loadProjectDetails(selectedProject.project.id)}
+          />
         )}
       </div>
     </div>

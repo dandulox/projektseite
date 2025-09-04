@@ -18,13 +18,24 @@ Eine modulare Website zur Dokumentation und Verfolgung von Projektstatus mit Liv
 - **🛡️ Geschützte API-Routen** mit Token-Validierung
 - **📱 Responsive Login/Registrierung** mit modernem Design
 - **⚙️ Admin-API** mit Benutzerverwaltung und System-Statistiken
+- **📁 Vollständige Projektverwaltung** mit CRUD-Operationen, Filterung und Berechtigungen
+- **🧩 Modulverwaltung** für Projekte mit eigenständigen Modulen
+- **👥 Team-Management** mit Rollen, Mitgliederverwaltung und Berechtigungen
+- **🔔 Benachrichtigungssystem** mit Team- und Projekt-Benachrichtigungen
+- **📊 Erweiterte Datenbank-Schemas** für Projekte, Module, Teams und Berechtigungen
+- **🎨 Design-System** mit Theme-Management und CSS-Variablen
+- **📱 Responsive Navigation** mit Mobile-Menu und Benutzer-Dropdown
+- **🔍 Suchfunktionalität** und Filterung in allen Bereichen
+- **📈 Fortschrittsverfolgung** mit visuellen Indikatoren
+- **🏷️ Tag-System** und Abhängigkeitsmanagement für Module
+- **👤 Benutzerprofile** mit Einstellungen und Design-Anpassungen
 
 ### 🔄 Zu implementieren
-- Backend-Routen (projects, modules, design)
-- Frontend-Komponenten (Projektverwaltung, Module, Design-Einstellungen)
 - Live-Edit-Funktionalität für Design-Einstellungen
-- Projektverwaltung mit CRUD-Operationen
-- Modulverwaltung für Projekte
+- Erweiterte Dashboard-Widgets
+- Kalender-Integration für Deadlines
+- Datei-Upload für Projekte und Module
+- Erweiterte Reporting-Funktionen
 
 ## 📁 Projektstruktur
 
@@ -40,10 +51,16 @@ projektseite/
 │   ├── Dockerfile                         # Backend-Container
 │   ├── routes/                            # API-Routen
 │   │   ├── auth.js                        # Authentifizierung (implementiert)
-│   │   └── admin.js                       # Admin-Funktionen (implementiert)
+│   │   ├── admin.js                       # Admin-Funktionen (implementiert)
+│   │   ├── projects.js                    # Projektverwaltung (implementiert)
+│   │   ├── modules.js                     # Modulverwaltung (implementiert)
+│   │   ├── teams.js                       # Team-Management (implementiert)
+│   │   ├── notifications.js               # Benachrichtigungssystem (implementiert)
+│   │   └── greetings.js                   # Begrüßungssystem (implementiert)
 │   └── scripts/                           # Backend-Skripte
 │       ├── create-default-users.js        # Standard-Benutzer erstellen
-│       └── init-database.js               # Datenbank initialisieren
+│       ├── init-database.js               # Datenbank initialisieren
+│       └── init-greetings.js              # Begrüßungen initialisieren
 ├── 🎨 frontend/
 │   ├── package.json                       # React-Abhängigkeiten
 │   ├── Dockerfile                         # Frontend-Container
