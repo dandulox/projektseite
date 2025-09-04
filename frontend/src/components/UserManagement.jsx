@@ -237,10 +237,14 @@ const UserManagement = () => {
         filters.role
       );
       setUsers(data.users);
-      setPagination(data.pagination);
+      setPagination(prev => ({
+        ...prev,
+        total: data.total,
+        pages: data.pages
+      }));
     } catch (error) {
       toast.error('Fehler beim Laden der Benutzer');
-      console.error('Load users error:', error);
+      console.error('Error loading users:', error);
     } finally {
       setLoading(false);
     }
@@ -276,10 +280,8 @@ const UserManagement = () => {
 
   // Benutzer löschen
   const handleDeleteUser = async (userId) => {
-    if (!window.confirm('Sind Sie sicher, dass Sie diesen Benutzer löschen möchten?')) {
-      return;
-    }
-
+    if (!window.confirm('Benutzer wirklich löschen?')) return;
+    
     try {
       await adminApi.deleteUser(userId);
       toast.success('Benutzer erfolgreich gelöscht');
@@ -323,7 +325,7 @@ const UserManagement = () => {
   // Status-Badge
   const getStatusBadge = (isActive) => {
     return isActive ? (
-      <span className="px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 flex items-center space-x-1">
+      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 flex items-center space-x-1">
         <UserCheck className="w-3 h-3" />
         <span>Aktiv</span>
       </span>
@@ -414,23 +416,17 @@ const UserManagement = () => {
                 </thead>
                 <tbody>
                   {users.map((user) => (
-                    <tr key={user.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200">
+                    <tr key={user.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                       <td className="py-4 px-6">
                         <div className="flex items-center space-x-3">
                           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                            <Users className="w-5 h-5 text-white" />
+                            <span className="text-white font-semibold text-sm">
+                              {user.username.charAt(0).toUpperCase()}
+                            </span>
                           </div>
                           <div>
-                            <div className="font-medium text-slate-900 dark:text-white">
-                              {user.username}
-                              {user.id === currentUser?.id && (
-                                <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">(Sie)</span>
-                              )}
-                            </div>
-                            <div className="text-sm text-slate-500 dark:text-slate-400 flex items-center space-x-1">
-                              <Mail className="w-3 h-3" />
-                              <span>{user.email}</span>
-                            </div>
+                            <div className="font-medium text-slate-900 dark:text-white">{user.username}</div>
+                            <div className="text-sm text-slate-500 dark:text-slate-400">{user.email}</div>
                           </div>
                         </div>
                       </td>
@@ -440,37 +436,32 @@ const UserManagement = () => {
                       <td className="py-4 px-6">
                         {getStatusBadge(user.is_active)}
                       </td>
-                      <td className="py-4 px-6">
-                        <div className="text-sm text-slate-600 dark:text-slate-400 flex items-center space-x-1">
-                          <Calendar className="w-3 h-3" />
-                          <span>{new Date(user.created_at).toLocaleDateString('de-DE')}</span>
-                        </div>
+                      <td className="py-4 px-6 text-sm text-slate-500 dark:text-slate-400">
+                        {new Date(user.created_at).toLocaleDateString('de-DE')}
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center justify-end space-x-2">
                           <button
                             onClick={() => setEditingUser(user)}
-                            className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200"
+                            className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                             title="Bearbeiten"
                           >
-                            <Edit className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                            <Edit className="w-4 h-4" />
                           </button>
-                          
                           <button
                             onClick={() => setShowPasswordForm(user)}
-                            className="p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors duration-200"
+                            className="p-2 text-slate-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                             title="Passwort zurücksetzen"
                           >
-                            <Key className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            <Key className="w-4 h-4" />
                           </button>
-                          
                           {user.id !== currentUser?.id && (
                             <button
                               onClick={() => handleDeleteUser(user.id)}
-                              className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors duration-200"
+                              className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                               title="Löschen"
                             >
-                              <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           )}
                         </div>
@@ -481,27 +472,27 @@ const UserManagement = () => {
               </table>
             </div>
 
-            {/* Paginierung */}
+            {/* Pagination */}
             {pagination.pages > 1 && (
-              <div className="flex items-center justify-between mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-                <div className="text-sm text-slate-600 dark:text-slate-400">
+              <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-700">
+                <div className="text-sm text-slate-500 dark:text-slate-400">
                   Zeige {((pagination.page - 1) * pagination.limit) + 1} bis {Math.min(pagination.page * pagination.limit, pagination.total)} von {pagination.total} Benutzern
                 </div>
                 <div className="flex space-x-2">
                   <button
                     onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
                     disabled={pagination.page === 1}
-                    className="px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                    className="px-3 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Zurück
                   </button>
-                  <span className="px-3 py-2 text-slate-700 dark:text-slate-300">
+                  <span className="px-3 py-1 text-sm text-slate-700 dark:text-slate-300">
                     Seite {pagination.page} von {pagination.pages}
                   </span>
                   <button
                     onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
                     disabled={pagination.page === pagination.pages}
-                    className="px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                    className="px-3 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Weiter
                   </button>
@@ -510,227 +501,37 @@ const UserManagement = () => {
             )}
           </>
         )}
-      </div>
-
-      {/* Benutzer erstellen/bearbeiten Modal */}
-      {(showCreateForm || editingUser) && (
-        <UserForm
-          user={editingUser}
-          onSubmit={editingUser ? handleUpdateUser : handleCreateUser}
-          onCancel={() => {
-            setShowCreateForm(false);
-            setEditingUser(null);
-          }}
-        />
-      )}
-
-      {/* Passwort zurücksetzen Modal */}
-      {showPasswordForm && (
-        <PasswordResetForm
-          user={showPasswordForm}
-          onSubmit={handleResetPassword}
-          onCancel={() => setShowPasswordForm(null)}
-        />
-      )}
-    </div>
-  );
-};
-
-// Benutzer-Formular Komponente
-const UserForm = ({ user, onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({
-    username: user?.username || '',
-    email: user?.email || '',
-    role: user?.role || 'user',
-    is_active: user?.is_active ?? true
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (user) {
-      onSubmit(user.id, formData);
-    } else {
-      // Für neue Benutzer ist ein Passwort erforderlich
-      const password = prompt('Passwort für den neuen Benutzer:');
-      if (!password) return;
-      onSubmit({ ...formData, password });
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full">
-        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-            {user ? 'Benutzer bearbeiten' : 'Neuen Benutzer erstellen'}
-          </h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Benutzername
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.username}
-              onChange={(e) => setFormData({...formData, username: e.target.value})}
-              className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        {/* Modals */}
+        {showCreateForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <UserForm
+              onSubmit={handleCreateUser}
+              onCancel={() => setShowCreateForm(false)}
             />
           </div>
+        )}
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              E-Mail
-            </label>
-            <input
-              type="email"
-              required
-              value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
-              className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        {editingUser && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <UserForm
+              user={editingUser}
+              onSubmit={(data) => handleUpdateUser(editingUser.id, data)}
+              onCancel={() => setEditingUser(null)}
             />
           </div>
+        )}
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Rolle
-            </label>
-            <select
-              value={formData.role}
-              onChange={(e) => setFormData({...formData, role: e.target.value})}
-              className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="user">Benutzer</option>
-              <option value="viewer">Betrachter</option>
-              <option value="admin">Administrator</option>
-            </select>
-          </div>
-
-          {user && (
-            <div className="flex items-center space-x-3">
-              <input
-                type="checkbox"
-                id="is_active"
-                checked={formData.is_active}
-                onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
-                className="w-4 h-4 text-blue-600 bg-slate-100 border-slate-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
-              />
-              <label htmlFor="is_active" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Benutzer ist aktiv
-              </label>
-            </div>
-          )}
-
-          <div className="flex justify-end space-x-4 pt-4">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="px-6 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-lg transition-colors duration-200"
-            >
-              Abbrechen
-            </button>
-            <button
-              type="submit"
-              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium rounded-lg shadow-lg hover:shadow-blue-500/25 transition-all duration-300"
-            >
-              {user ? 'Aktualisieren' : 'Erstellen'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-// Passwort zurücksetzen Formular
-const PasswordResetForm = ({ user, onSubmit, onCancel }) => {
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      alert('Passwörter stimmen nicht überein');
-      return;
-    }
-    if (newPassword.length < 6) {
-      alert('Passwort muss mindestens 6 Zeichen lang sein');
-      return;
-    }
-    onSubmit(user.id, newPassword);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full">
-        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-            Passwort zurücksetzen
-          </h2>
-          <p className="text-slate-600 dark:text-slate-400 mt-2">
-            Neues Passwort für {user.username}
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Neues Passwort
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                required
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-4 py-3 pr-12 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2"
-              >
-                {showPassword ? (
-                  <EyeOff className="w-5 h-5 text-slate-400" />
-                ) : (
-                  <Eye className="w-5 h-5 text-slate-400" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Passwort bestätigen
-            </label>
-            <input
-              type="password"
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        {showPasswordForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <PasswordResetForm
+              user={showPasswordForm}
+              onSubmit={handleResetPassword}
+              onCancel={() => setShowPasswordForm(null)}
             />
           </div>
-
-          <div className="flex justify-end space-x-4 pt-4">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="px-6 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-lg transition-colors duration-200"
-            >
-              Abbrechen
-            </button>
-            <button
-              type="submit"
-              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium rounded-lg shadow-lg hover:shadow-blue-500/25 transition-all duration-300"
-            >
-              Passwort zurücksetzen
-            </button>
-          </div>
-        </form>
+        )}
         </div>
       </div>
     </div>
