@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 const AuthContext = createContext();
 
 // API Base URL
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
 
 // API Helper Functions
 const apiRequest = async (endpoint, options = {}) => {

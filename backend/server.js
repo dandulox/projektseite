@@ -16,8 +16,14 @@ const PORT = process.env.PORT || 3001;
 app.use(helmet());
 app.use(compression());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
+  origin: [
+    process.env.FRONTEND_URL || 'http://localhost:3000',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Rate Limiting
@@ -35,16 +41,10 @@ app.use('/shared', express.static(path.join(__dirname, '../shared')));
 
 // Modulare Routen
 const authRoutes = require('./routes/auth');
-const projectRoutes = require('./routes/projects');
-const moduleRoutes = require('./routes/modules');
-const designRoutes = require('./routes/design');
 const adminRoutes = require('./routes/admin');
 
 // API Routen
-app.use('/api/auth', authRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/modules', moduleRoutes);
-app.use('/api/design', designRoutes);
+app.use('/api/auth', authRoutes.router);
 app.use('/api/admin', adminRoutes);
 
 // Health Check
