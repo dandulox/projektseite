@@ -533,34 +533,38 @@ const ProjectManagement = () => {
                                 )}
                               </div>
                               <div className="mt-2">
-                                <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
-                                  <span>Fortschritt</span>
-                                  <span>{module.completion_percentage || 0}%</span>
-                                </div>
-                                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mt-1">
-                                  <div 
-                                    className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
-                                    style={{ width: `${module.completion_percentage || 0}%` }}
-                                  ></div>
+                                <div className="flex justify-between items-center">
+                                  <div className="flex-1">
+                                    <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
+                                      <span>Fortschritt</span>
+                                      <span>{module.completion_percentage || 0}%</span>
+                                    </div>
+                                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mt-1">
+                                      <div 
+                                        className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                                        style={{ width: `${module.completion_percentage || 0}%` }}
+                                      ></div>
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-1 ml-3">
+                                    <button
+                                      onClick={() => {
+                                        setSelectedModule(module);
+                                        setShowEditModuleForm(true);
+                                      }}
+                                      className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                                    >
+                                      Bearbeiten
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteModule(module.id)}
+                                      className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                                    >
+                                      Löschen
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                            <div className="flex gap-1 ml-2">
-                              <button
-                                onClick={() => {
-                                  setSelectedModule(module);
-                                  setShowEditModuleForm(true);
-                                }}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs transition-colors"
-                              >
-                                Bearbeiten
-                              </button>
-                              <button
-                                onClick={() => handleDeleteModule(module.id)}
-                                className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors"
-                              >
-                                Löschen
-                              </button>
                             </div>
                           </div>
                         </div>
