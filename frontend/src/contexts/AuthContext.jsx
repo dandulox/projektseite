@@ -329,6 +329,116 @@ export const AuthProvider = ({ children }) => {
     },
   };
 
+  // Team-Funktionen
+  const teamApi = {
+    // Alle Teams abrufen
+    getTeams: async () => {
+      return await apiRequest('/teams');
+    },
+
+    // Einzelnes Team abrufen
+    getTeam: async (teamId) => {
+      return await apiRequest(`/teams/${teamId}`);
+    },
+
+    // Team erstellen
+    createTeam: async (teamData) => {
+      return await apiRequest('/teams', {
+        method: 'POST',
+        body: JSON.stringify(teamData),
+      });
+    },
+
+    // Team aktualisieren
+    updateTeam: async (teamId, teamData) => {
+      return await apiRequest(`/teams/${teamId}`, {
+        method: 'PUT',
+        body: JSON.stringify(teamData),
+      });
+    },
+
+    // Team löschen
+    deleteTeam: async (teamId) => {
+      return await apiRequest(`/teams/${teamId}`, {
+        method: 'DELETE',
+      });
+    },
+
+    // Team-Mitglied hinzufügen
+    addTeamMember: async (teamId, userId, role = 'member') => {
+      return await apiRequest(`/teams/${teamId}/members`, {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, role }),
+      });
+    },
+
+    // Team-Mitglied entfernen
+    removeTeamMember: async (teamId, userId) => {
+      return await apiRequest(`/teams/${teamId}/members/${userId}`, {
+        method: 'DELETE',
+      });
+    },
+
+    // Team verlassen
+    leaveTeam: async (teamId) => {
+      return await apiRequest(`/teams/${teamId}/leave`, {
+        method: 'DELETE',
+      });
+    },
+  };
+
+  // Projekt-Funktionen
+  const projectApi = {
+    // Alle Projekte abrufen
+    getProjects: async (filters = {}) => {
+      const params = new URLSearchParams(filters);
+      return await apiRequest(`/projects?${params}`);
+    },
+
+    // Einzelnes Projekt abrufen
+    getProject: async (projectId) => {
+      return await apiRequest(`/projects/${projectId}`);
+    },
+
+    // Projekt erstellen
+    createProject: async (projectData) => {
+      return await apiRequest('/projects', {
+        method: 'POST',
+        body: JSON.stringify(projectData),
+      });
+    },
+
+    // Projekt aktualisieren
+    updateProject: async (projectId, projectData) => {
+      return await apiRequest(`/projects/${projectId}`, {
+        method: 'PUT',
+        body: JSON.stringify(projectData),
+      });
+    },
+
+    // Projekt löschen
+    deleteProject: async (projectId) => {
+      return await apiRequest(`/projects/${projectId}`, {
+        method: 'DELETE',
+      });
+    },
+
+    // Projekt-Berechtigung vergeben
+    grantProjectPermission: async (projectId, userId, permissionType) => {
+      return await apiRequest(`/projects/${projectId}/permissions`, {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, permission_type: permissionType }),
+      });
+    },
+
+    // Projekt-Berechtigung entfernen
+    revokeProjectPermission: async (projectId, userId) => {
+      return await apiRequest(`/projects/${projectId}/permissions/${userId}`, {
+        method: 'DELETE',
+      });
+    },
+  };
+
   const value = {
     user,
     loading,
@@ -341,6 +451,8 @@ export const AuthProvider = ({ children }) => {
     saveUserSettings,
     loadUserSettings,
     adminApi,
+    teamApi,
+    projectApi,
     // Design-Funktionen
     theme,
     designSettings,

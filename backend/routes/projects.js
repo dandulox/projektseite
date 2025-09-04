@@ -1,0 +1,416 @@
+const express = require('express');
+const { Pool } = require('pg');
+const { authenticateToken } = require('./auth');
+const router = express.Router();
+
+// Datenbankverbindung
+const pool = new Pool({
+  user: process.env.DB_USER || 'admin',
+  host: process.env.DB_HOST || 'localhost',
+  database: process.env.DB_NAME || 'projektseite',
+  password: process.env.DB_PASSWORD || 'secure_password_123',
+  port: process.env.DB_PORT || 5432,
+});
+
+// Hilfsfunktion: Prüft Projekt-Berechtigung
+const checkProjectPermission = async (userId, projectId, requiredPermission = 'view') => {
+  // Admin hat immer Zugriff
+  const userResult = await pool.query('SELECT role FROM users WHERE id = $1', [userId]);
+  if (userResult.rows.length > 0 && userResult.rows[0].role === 'admin') {
+    return true;
+  }
+
+  // Projekt-Details abrufen
+  const projectResult = await pool.query(`
+    SELECT p.*, t.id as team_id
+    FROM projects p
+    LEFT JOIN teams t ON t.id = p.team_id
+    WHERE p.id = $1
+  `, [projectId]);
+
+  if (projectResult.rows.length === 0) return false;
+  const project = projectResult.rows[0];
+
+  // Eigentümer hat immer Zugriff
+  if (project.owner_id === userId) return true;
+
+  // Prüfe Team-Berechtigung
+  if (project.team_id) {
+    const teamMembership = await pool.query(`
+      SELECT tm.role as team_role
+      FROM team_memberships tm
+      WHERE tm.team_id = $1 AND tm.user_id = $2
+    `, [project.team_id, userId]);
+
+    if (teamMembership.rows.length > 0) {
+      const teamRole = teamMembership.rows[0].team_role;
+      // Team-Leader hat Admin-Rechte, Mitglieder haben Edit-Rechte
+      if (teamRole === 'leader' && requiredPermission !== 'admin') return true;
+      if (teamRole === 'member' && ['view', 'edit'].includes(requiredPermission)) return true;
+      if (teamRole === 'viewer' && requiredPermission === 'view') return true;
+    }
+  }
+
+  // Prüfe explizite Projekt-Berechtigungen
+  const permissionResult = await pool.query(`
+    SELECT permission_type
+    FROM project_permissions
+    WHERE project_id = $1 AND user_id = $2
+  `, [projectId, userId]);
+
+  if (permissionResult.rows.length > 0) {
+    const permission = permissionResult.rows[0].permission_type;
+    if (permission === 'admin') return true;
+    if (permission === 'edit' && ['view', 'edit'].includes(requiredPermission)) return true;
+    if (permission === 'view' && requiredPermission === 'view') return true;
+  }
+
+  // Prüfe Sichtbarkeit
+  if (project.visibility === 'public' && requiredPermission === 'view') return true;
+
+  return false;
+};
+
+// Alle Projekte abrufen (basierend auf Berechtigung)
+router.get('/', authenticateToken, async (req, res) => {
+  try {
+    const { team_id, status, visibility } = req.query;
+    
+    let query = `
+      SELECT p.*, 
+             u.username as owner_username,
+             t.name as team_name,
+             COUNT(pm.id) as module_count
+      FROM projects p
+      LEFT JOIN users u ON u.id = p.owner_id
+      LEFT JOIN teams t ON t.id = p.team_id
+      LEFT JOIN project_modules pm ON pm.project_id = p.id
+      WHERE 1=1
+    `;
+    
+    const params = [];
+    let paramCount = 0;
+
+    // Filter basierend auf Benutzer-Berechtigung
+    if (req.user.role !== 'admin') {
+      query += `
+        AND (
+          p.owner_id = $${++paramCount} OR
+          p.visibility = 'public' OR
+          (p.team_id IS NOT NULL AND EXISTS (
+            SELECT 1 FROM team_memberships tm 
+            WHERE tm.team_id = p.team_id AND tm.user_id = $${paramCount}
+          )) OR
+          EXISTS (
+            SELECT 1 FROM project_permissions pp 
+            WHERE pp.project_id = p.id AND pp.user_id = $${paramCount}
+          )
+        )
+      `;
+      params.push(req.user.id);
+    }
+
+    // Zusätzliche Filter
+    if (team_id) {
+      query += ` AND p.team_id = $${++paramCount}`;
+      params.push(team_id);
+    }
+    
+    if (status) {
+      query += ` AND p.status = $${++paramCount}`;
+      params.push(status);
+    }
+    
+    if (visibility) {
+      query += ` AND p.visibility = $${++paramCount}`;
+      params.push(visibility);
+    }
+
+    query += ` GROUP BY p.id, u.username, t.name ORDER BY p.created_at DESC`;
+
+    const result = await pool.query(query, params);
+    res.json({ projects: result.rows });
+  } catch (error) {
+    console.error('Fehler beim Abrufen der Projekte:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
+// Einzelnes Projekt abrufen
+router.get('/:id', authenticateToken, async (req, res) => {
+  try {
+    const projectId = req.params.id;
+
+    // Prüfe Berechtigung
+    if (!(await checkProjectPermission(req.user.id, projectId, 'view'))) {
+      return res.status(403).json({ error: 'Keine Berechtigung für dieses Projekt' });
+    }
+
+    // Projekt-Details abrufen
+    const projectResult = await pool.query(`
+      SELECT p.*, 
+             u.username as owner_username,
+             t.name as team_name,
+             t.id as team_id
+      FROM projects p
+      LEFT JOIN users u ON u.id = p.owner_id
+      LEFT JOIN teams t ON t.id = p.team_id
+      WHERE p.id = $1
+    `, [projectId]);
+
+    if (projectResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Projekt nicht gefunden' });
+    }
+
+    // Projekt-Module abrufen
+    const modulesResult = await pool.query(`
+      SELECT pm.*, u.username as assigned_username
+      FROM project_modules pm
+      LEFT JOIN users u ON u.id = pm.assigned_to
+      WHERE pm.project_id = $1
+      ORDER BY pm.created_at ASC
+    `, [projectId]);
+
+    // Projekt-Logs abrufen
+    const logsResult = await pool.query(`
+      SELECT pl.*, u.username
+      FROM project_logs pl
+      LEFT JOIN users u ON u.id = pl.user_id
+      WHERE pl.project_id = $1
+      ORDER BY pl.timestamp DESC
+      LIMIT 50
+    `, [projectId]);
+
+    res.json({
+      project: projectResult.rows[0],
+      modules: modulesResult.rows,
+      logs: logsResult.rows
+    });
+  } catch (error) {
+    console.error('Fehler beim Abrufen des Projekts:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
+// Neues Projekt erstellen
+router.post('/', authenticateToken, async (req, res) => {
+  try {
+    const { 
+      name, 
+      description, 
+      status = 'planning', 
+      priority = 'medium',
+      start_date,
+      target_date,
+      team_id,
+      visibility = 'private'
+    } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ error: 'Projekt-Name ist erforderlich' });
+    }
+
+    // Prüfe Team-Berechtigung falls team_id angegeben
+    if (team_id) {
+      const teamCheck = await pool.query(`
+        SELECT id FROM team_memberships 
+        WHERE team_id = $1 AND user_id = $2
+      `, [team_id, req.user.id]);
+      
+      if (teamCheck.rows.length === 0 && req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Keine Berechtigung für das angegebene Team' });
+      }
+    }
+
+    // Projekt erstellen
+    const result = await pool.query(`
+      INSERT INTO projects (
+        name, description, status, priority, start_date, target_date, 
+        owner_id, team_id, visibility
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING *
+    `, [name, description, status, priority, start_date, target_date, req.user.id, team_id, visibility]);
+
+    const project = result.rows[0];
+
+    // Log-Eintrag erstellen
+    await pool.query(`
+      INSERT INTO project_logs (project_id, user_id, action, details)
+      VALUES ($1, $2, 'created', 'Projekt erstellt')
+    `, [project.id, req.user.id]);
+
+    res.status(201).json({
+      message: 'Projekt erfolgreich erstellt',
+      project
+    });
+  } catch (error) {
+    console.error('Fehler beim Erstellen des Projekts:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
+// Projekt aktualisieren
+router.put('/:id', authenticateToken, async (req, res) => {
+  try {
+    const projectId = req.params.id;
+    const updateData = req.body;
+
+    // Prüfe Berechtigung
+    if (!(await checkProjectPermission(req.user.id, projectId, 'edit'))) {
+      return res.status(403).json({ error: 'Keine Berechtigung zum Bearbeiten des Projekts' });
+    }
+
+    // Erlaubte Felder für Update
+    const allowedFields = [
+      'name', 'description', 'status', 'priority', 'start_date', 
+      'target_date', 'completion_percentage', 'visibility'
+    ];
+    
+    const updateFields = [];
+    const values = [];
+    let paramCount = 0;
+
+    for (const [key, value] of Object.entries(updateData)) {
+      if (allowedFields.includes(key) && value !== undefined) {
+        updateFields.push(`${key} = $${++paramCount}`);
+        values.push(value);
+      }
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({ error: 'Keine gültigen Felder zum Aktualisieren' });
+    }
+
+    updateFields.push(`updated_at = NOW()`);
+    values.push(projectId);
+
+    const query = `
+      UPDATE projects 
+      SET ${updateFields.join(', ')}
+      WHERE id = $${++paramCount}
+      RETURNING *
+    `;
+
+    const result = await pool.query(query, values);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Projekt nicht gefunden' });
+    }
+
+    // Log-Eintrag erstellen
+    await pool.query(`
+      INSERT INTO project_logs (project_id, user_id, action, details)
+      VALUES ($1, $2, 'updated', 'Projekt aktualisiert')
+    `, [projectId, req.user.id]);
+
+    res.json({
+      message: 'Projekt erfolgreich aktualisiert',
+      project: result.rows[0]
+    });
+  } catch (error) {
+    console.error('Fehler beim Aktualisieren des Projekts:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
+// Projekt löschen
+router.delete('/:id', authenticateToken, async (req, res) => {
+  try {
+    const projectId = req.params.id;
+
+    // Prüfe Berechtigung (nur Eigentümer oder Admin)
+    const projectResult = await pool.query(
+      'SELECT owner_id FROM projects WHERE id = $1',
+      [projectId]
+    );
+
+    if (projectResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Projekt nicht gefunden' });
+    }
+
+    if (projectResult.rows[0].owner_id !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Keine Berechtigung zum Löschen des Projekts' });
+    }
+
+    // Projekt löschen (CASCADE löscht auch Module und Logs)
+    await pool.query('DELETE FROM projects WHERE id = $1', [projectId]);
+
+    res.json({ message: 'Projekt erfolgreich gelöscht' });
+  } catch (error) {
+    console.error('Fehler beim Löschen des Projekts:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
+// Projekt-Berechtigung vergeben
+router.post('/:id/permissions', authenticateToken, async (req, res) => {
+  try {
+    const projectId = req.params.id;
+    const { user_id, permission_type } = req.body;
+
+    if (!user_id || !permission_type) {
+      return res.status(400).json({ error: 'Benutzer-ID und Berechtigungstyp sind erforderlich' });
+    }
+
+    // Prüfe Berechtigung (nur Eigentümer oder Admin)
+    if (!(await checkProjectPermission(req.user.id, projectId, 'admin'))) {
+      return res.status(403).json({ error: 'Keine Berechtigung zum Vergeben von Projekt-Berechtigungen' });
+    }
+
+    // Prüfe ob Benutzer existiert
+    const userResult = await pool.query('SELECT id, username FROM users WHERE id = $1', [user_id]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Benutzer nicht gefunden' });
+    }
+
+    // Berechtigung vergeben
+    const result = await pool.query(`
+      INSERT INTO project_permissions (project_id, user_id, permission_type, granted_by)
+      VALUES ($1, $2, $3, $4)
+      ON CONFLICT (project_id, user_id) 
+      DO UPDATE SET permission_type = $3, granted_by = $4, granted_at = NOW()
+      RETURNING *
+    `, [projectId, user_id, permission_type, req.user.id]);
+
+    res.status(201).json({
+      message: 'Berechtigung erfolgreich vergeben',
+      permission: result.rows[0],
+      user: userResult.rows[0]
+    });
+  } catch (error) {
+    console.error('Fehler beim Vergeben der Berechtigung:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
+// Projekt-Berechtigung entfernen
+router.delete('/:id/permissions/:userId', authenticateToken, async (req, res) => {
+  try {
+    const projectId = req.params.id;
+    const userId = req.params.userId;
+
+    // Prüfe Berechtigung
+    if (!(await checkProjectPermission(req.user.id, projectId, 'admin'))) {
+      return res.status(403).json({ error: 'Keine Berechtigung zum Entfernen von Projekt-Berechtigungen' });
+    }
+
+    // Berechtigung entfernen
+    const result = await pool.query(`
+      DELETE FROM project_permissions 
+      WHERE project_id = $1 AND user_id = $2
+      RETURNING *
+    `, [projectId, userId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Berechtigung nicht gefunden' });
+    }
+
+    res.json({ message: 'Berechtigung erfolgreich entfernt' });
+  } catch (error) {
+    console.error('Fehler beim Entfernen der Berechtigung:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
+module.exports = router;

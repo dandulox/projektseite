@@ -39,6 +39,8 @@ app.use('/shared', express.static(path.join(__dirname, '../shared')));
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const greetingsRoutes = require('./routes/greetings');
+const teamsRoutes = require('./routes/teams');
+const projectsRoutes = require('./routes/projects');
 
 console.log('🔧 Lade API-Routen...');
 
@@ -46,6 +48,8 @@ console.log('🔧 Lade API-Routen...');
 app.use('/api/auth', authRoutes.router);
 app.use('/api/admin', adminRoutes);
 app.use('/api/greetings', greetingsRoutes);
+app.use('/api/teams', teamsRoutes);
+app.use('/api/projects', projectsRoutes);
 
 // Health Check
 app.get('/health', (req, res) => {
