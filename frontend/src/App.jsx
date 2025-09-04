@@ -71,6 +71,13 @@ const ThemeToggle = ({ theme, toggleTheme }) => (
 // Header Component
 const Header = ({ theme, toggleTheme, isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const { user, logout, isAdmin } = useAuth();
+  const navigate = useNavigate();
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
 
   return (
   <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/20 dark:border-slate-700/20 shadow-lg dark:shadow-slate-900/20">
@@ -206,7 +213,7 @@ const Header = ({ theme, toggleTheme, isMobileMenuOpen, setIsMobileMenuOpen }) =
             </NavLink>
             
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
               title="Abmelden"
             >
@@ -234,6 +241,13 @@ const Header = ({ theme, toggleTheme, isMobileMenuOpen, setIsMobileMenuOpen }) =
 // Mobile Menu Component
 const MobileMenu = ({ isOpen, onClose }) => {
   const { user, logout, isAdmin } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+    onClose();
+  };
 
   return (
   <>
@@ -323,10 +337,7 @@ const MobileMenu = ({ isOpen, onClose }) => {
               </NavLink>
               
               <button
-                onClick={() => {
-                  logout();
-                  onClose();
-                }}
+                onClick={handleLogout}
                 className="w-full flex items-center px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
               >
                 <LogIn className="mr-3 h-5 w-5" />
