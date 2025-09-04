@@ -330,7 +330,7 @@ router.post('/project', authenticateToken, async (req, res) => {
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       RETURNING *
-    `, [project_id, name, description, status, priority, estimated_hours, assigned_to, due_date, visibility, team_id, tags, dependencies]);
+    `, [project_id, name, description, status, priority, estimated_hours, assigned_to, due_date, visibility, project.team_id, tags, dependencies]);
 
     const module = result.rows[0];
 

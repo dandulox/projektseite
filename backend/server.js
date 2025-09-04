@@ -89,6 +89,32 @@ app.get('/debug/tables', async (req, res) => {
   }
 });
 
+// Debug Route - Spalten einer Tabelle überprüfen
+app.get('/debug/columns/:table', async (req, res) => {
+  try {
+    const pool = require('./config/database');
+    const tableName = req.params.table;
+    const result = await pool.query(`
+      SELECT column_name, data_type, is_nullable, column_default
+      FROM information_schema.columns 
+      WHERE table_schema = 'public' AND table_name = $1
+      ORDER BY ordinal_position
+    `, [tableName]);
+    
+    res.json({ 
+      table: tableName,
+      columns: result.rows,
+      count: result.rows.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      error: 'Fehler beim Abrufen der Spalten',
+      message: error.message 
+    });
+  }
+});
+
 // Error Handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
