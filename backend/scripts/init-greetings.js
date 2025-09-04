@@ -35,26 +35,42 @@ const hourlyEmojis = [
 
 async function initGreetings() {
   try {
-    console.log('🌱 Initialisiere Begrüßungen...');
+    console.log('🌱 Initialisiere stündliche Begrüßungen...');
     
-    // Prüfe ob bereits Begrüßungen vorhanden sind
-    const existingGreetings = await pool.query('SELECT COUNT(*) FROM greetings');
-    const count = parseInt(existingGreetings.rows[0].count);
+    // Lösche alle vorhandenen Begrüßungen
+    await pool.query('DELETE FROM greetings');
+    console.log('🗑️ Vorhandene Begrüßungen gelöscht');
     
-    if (count > 0) {
-      console.log(`✅ Bereits ${count} Begrüßungen vorhanden`);
-      return;
-    }
-    
-    // Begrüßungen einfügen
-    for (const greeting of defaultGreetings) {
+    // Begrüßungen für jede Stunde einfügen
+    for (let i = 0; i < hourlyGreetings.length; i++) {
+      const greeting = hourlyGreetings[i];
+      const emoji = hourlyEmojis[i];
+      const fullText = `${greeting.text} ${emoji}`;
+      
+      // Bestimme die Tageszeit basierend auf der Stunde
+      let timePeriod;
+      if (greeting.hour >= 5 && greeting.hour < 12) {
+        timePeriod = 'morning';
+      } else if (greeting.hour >= 12 && greeting.hour < 17) {
+        timePeriod = 'afternoon';
+      } else if (greeting.hour >= 17 && greeting.hour < 22) {
+        timePeriod = 'evening';
+      } else {
+        timePeriod = 'night';
+      }
+      
       await pool.query(
-        'INSERT INTO greetings (text, time_period) VALUES ($1, $2)',
-        [greeting.text, greeting.time_period]
+        'INSERT INTO greetings (text, time_period, hour) VALUES ($1, $2, $3)',
+        [fullText, timePeriod, greeting.hour]
       );
     }
     
-    console.log(`✅ ${defaultGreetings.length} Begrüßungen erfolgreich eingefügt!`);
+    console.log(`✅ ${hourlyGreetings.length} stündliche Begrüßungen erfolgreich eingefügt!`);
+    console.log('📊 Aufgeteilt nach Tageszeiten:');
+    console.log(`   🌅 Morgen (5-11h): ${hourlyGreetings.filter(g => g.hour >= 5 && g.hour < 12).length} Begrüßungen`);
+    console.log(`   ☀️ Nachmittag (12-16h): ${hourlyGreetings.filter(g => g.hour >= 12 && g.hour < 17).length} Begrüßungen`);
+    console.log(`   🌆 Abend (17-21h): ${hourlyGreetings.filter(g => g.hour >= 17 && g.hour < 22).length} Begrüßungen`);
+    console.log(`   🌙 Nacht (22-4h): ${hourlyGreetings.filter(g => g.hour >= 22 || g.hour < 5).length} Begrüßungen`);
     
   } catch (error) {
     console.error('❌ Fehler beim Initialisieren der Begrüßungen:', error);

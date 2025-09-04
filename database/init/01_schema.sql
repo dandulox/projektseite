@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS greetings (
     id SERIAL PRIMARY KEY,
     text TEXT NOT NULL,
     time_period VARCHAR(20) NOT NULL CHECK (time_period IN ('morning', 'afternoon', 'evening', 'night')),
+    hour INTEGER CHECK (hour >= 0 AND hour <= 23),
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

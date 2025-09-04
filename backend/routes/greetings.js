@@ -13,37 +13,61 @@ function getTimePeriod() {
   return 'night';
 }
 
-// GET /api/greetings/random - Zufällige Begrüßung für aktuelle Tageszeit
+// Hilfsfunktion zur Bestimmung der aktuellen Stunde
+function getCurrentHour() {
+  return new Date().getHours();
+}
+
+// GET /api/greetings/random - Stündliche Begrüßung für aktuelle Stunde
 router.get('/random', async (req, res) => {
   try {
+    const currentHour = getCurrentHour();
     const timePeriod = getTimePeriod();
     
-    const result = await pool.query(
-      'SELECT text FROM greetings WHERE time_period = $1 AND is_active = true ORDER BY RANDOM() LIMIT 1',
-      [timePeriod]
+    // Versuche zuerst die exakte Stunde zu finden
+    const exactResult = await pool.query(
+      'SELECT text, hour FROM greetings WHERE hour = $1 AND is_active = true LIMIT 1',
+      [currentHour]
     );
 
-    if (result.rows.length === 0) {
-      // Fallback-Begrüßungen falls keine in der Datenbank
-      const fallbackGreetings = {
-        morning: ['Guten Morgen!', 'Schönen guten Morgen!', 'Morgen!'],
-        afternoon: ['Guten Tag!', 'Hallo!', 'Schönen Tag!'],
-        evening: ['Guten Abend!', 'Schönen Abend!', 'Abend!'],
-        night: ['Gute Nacht!', 'Schöne Nacht!', 'Nacht!']
-      };
-      
-      const fallbackText = fallbackGreetings[timePeriod][Math.floor(Math.random() * fallbackGreetings[timePeriod].length)];
+    if (exactResult.rows.length > 0) {
       return res.json({ 
-        text: fallbackText, 
+        text: exactResult.rows[0].text, 
         timePeriod,
-        isFallback: true 
+        hour: exactResult.rows[0].hour,
+        isFallback: false 
       });
     }
 
-    res.json({ 
-      text: result.rows[0].text, 
+    // Fallback: Zufällige Begrüßung für die aktuelle Tageszeit
+    const fallbackResult = await pool.query(
+      'SELECT text, hour FROM greetings WHERE time_period = $1 AND is_active = true ORDER BY RANDOM() LIMIT 1',
+      [timePeriod]
+    );
+
+    if (fallbackResult.rows.length > 0) {
+      return res.json({ 
+        text: fallbackResult.rows[0].text, 
+        timePeriod,
+        hour: fallbackResult.rows[0].hour,
+        isFallback: false 
+      });
+    }
+
+    // Letzter Fallback: Statische Begrüßungen
+    const fallbackGreetings = {
+      morning: ['Guten Morgen! ☀️', 'Schönen guten Morgen! 🌅', 'Morgen! ☕'],
+      afternoon: ['Guten Tag! ☀️', 'Hallo! 😊', 'Schönen Tag! ⚡'],
+      evening: ['Guten Abend! 🌆', 'Schönen Abend! 🌅', 'Abend! ✨'],
+      night: ['Gute Nacht! 🌙', 'Schöne Nacht! 🌃', 'Nacht! 💫']
+    };
+    
+    const fallbackText = fallbackGreetings[timePeriod][Math.floor(Math.random() * fallbackGreetings[timePeriod].length)];
+    return res.json({ 
+      text: fallbackText, 
       timePeriod,
-      isFallback: false 
+      hour: currentHour,
+      isFallback: true 
     });
   } catch (error) {
     console.error('Fehler beim Abrufen der Begrüßung:', error);
@@ -55,7 +79,7 @@ router.get('/random', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT * FROM greetings ORDER BY time_period, created_at DESC'
+      'SELECT * FROM greetings ORDER BY hour ASC, created_at DESC'
     );
     res.json(result.rows);
   } catch (error) {
@@ -67,7 +91,7 @@ router.get('/', async (req, res) => {
 // POST /api/greetings - Neue Begrüßung erstellen (Admin)
 router.post('/', async (req, res) => {
   try {
-    const { text, time_period } = req.body;
+    const { text, time_period, hour } = req.body;
     
     if (!text || !time_period) {
       return res.status(400).json({ error: 'Text und Tageszeit sind erforderlich' });
@@ -78,9 +102,13 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Ungültige Tageszeit' });
     }
 
+    if (hour !== undefined && (hour < 0 || hour > 23)) {
+      return res.status(400).json({ error: 'Stunde muss zwischen 0 und 23 liegen' });
+    }
+
     const result = await pool.query(
-      'INSERT INTO greetings (text, time_period) VALUES ($1, $2) RETURNING *',
-      [text, time_period]
+      'INSERT INTO greetings (text, time_period, hour) VALUES ($1, $2, $3) RETURNING *',
+      [text, time_period, hour || null]
     );
 
     res.status(201).json(result.rows[0]);
@@ -94,11 +122,15 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { text, time_period, is_active } = req.body;
+    const { text, time_period, hour, is_active } = req.body;
     
     const validPeriods = ['morning', 'afternoon', 'evening', 'night'];
     if (time_period && !validPeriods.includes(time_period)) {
       return res.status(400).json({ error: 'Ungültige Tageszeit' });
+    }
+
+    if (hour !== undefined && (hour < 0 || hour > 23)) {
+      return res.status(400).json({ error: 'Stunde muss zwischen 0 und 23 liegen' });
     }
 
     const updateFields = [];
@@ -112,6 +144,10 @@ router.put('/:id', async (req, res) => {
     if (time_period !== undefined) {
       updateFields.push(`time_period = $${paramCount++}`);
       values.push(time_period);
+    }
+    if (hour !== undefined) {
+      updateFields.push(`hour = $${paramCount++}`);
+      values.push(hour);
     }
     if (is_active !== undefined) {
       updateFields.push(`is_active = $${paramCount++}`);

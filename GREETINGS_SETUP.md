@@ -1,4 +1,4 @@
-# Begrüßungs-System Setup
+# Stündliche Begrüßungs-System Setup
 
 ## Problem
 Die API-Route `/api/greetings` gibt einen 404-Fehler zurück.
@@ -16,20 +16,20 @@ npm run dev
 npm start
 ```
 
-### 2. Datenbank testen
-Teste, ob die Datenbank korrekt funktioniert:
-
-```bash
-# Im Backend-Verzeichnis
-node test-greetings.js
-```
-
-### 3. Begrüßungen initialisieren (falls nötig)
-Falls noch keine Begrüßungen in der Datenbank sind:
+### 2. Stündliche Begrüßungen initialisieren
+Die neuen witzigen stündlichen Begrüßungen werden automatisch beim Serverstart erstellt:
 
 ```bash
 # Im Backend-Verzeichnis
 node scripts/init-greetings.js
+```
+
+### 3. Begrüßungen testen
+Teste die neuen stündlichen Begrüßungen:
+
+```bash
+# Im Backend-Verzeichnis
+node test-hourly-greetings.js
 ```
 
 ### 4. Vollständige Datenbank-Initialisierung
@@ -75,8 +75,9 @@ Nach erfolgreichem Setup sollte die API folgende Antworten geben:
 ### GET /api/greetings/random
 ```json
 {
-  "text": "Guten Morgen! Ein neuer Tag voller Möglichkeiten beginnt! 🌅",
+  "text": "6 Uhr. Kaffee, Motivation, Hoffnung – alles drei bitte doppelt. ☕",
   "timePeriod": "morning",
+  "hour": 6,
   "isFallback": false
 }
 ```
@@ -86,8 +87,9 @@ Nach erfolgreichem Setup sollte die API folgende Antworten geben:
 [
   {
     "id": 1,
-    "text": "Guten Morgen! Ein neuer Tag voller Möglichkeiten beginnt! 🌅",
-    "time_period": "morning",
+    "text": "Mitternacht! Zeit, produktiv zu wirken… oder YouTube-Katzenvideos zu schauen. 🐱",
+    "time_period": "night",
+    "hour": 0,
     "is_active": true,
     "created_at": "2024-01-01T00:00:00.000Z",
     "updated_at": "2024-01-01T00:00:00.000Z"

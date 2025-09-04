@@ -19,6 +19,11 @@ const getTimePeriod = () => {
   return 'night';
 };
 
+// Hilfsfunktion zur Bestimmung der aktuellen Stunde (Frontend)
+const getCurrentHour = () => {
+  return new Date().getHours();
+};
+
 // Emoji-Mapping für Tageszeiten
 const timeEmojis = {
   morning: '🌅',
@@ -43,6 +48,7 @@ const DynamicGreeting = ({
 }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [timePeriod, setTimePeriod] = useState(getTimePeriod());
+  const [currentHour, setCurrentHour] = useState(getCurrentHour());
 
   // Query für die Begrüßung
   const { 
@@ -68,13 +74,18 @@ const DynamicGreeting = ({
       setCurrentTime(now);
       
       const newTimePeriod = getTimePeriod();
+      const newHour = getCurrentHour();
+      
       if (newTimePeriod !== timePeriod) {
         setTimePeriod(newTimePeriod);
+      }
+      if (newHour !== currentHour) {
+        setCurrentHour(newHour);
       }
     }, 60000); // Jede Minute
 
     return () => clearInterval(timer);
-  }, [timePeriod]);
+  }, [timePeriod, currentHour]);
 
   // Auto-Refresh der Begrüßung
   useEffect(() => {
@@ -121,6 +132,14 @@ const DynamicGreeting = ({
     return periodTexts[timePeriod] || 'Tag';
   };
 
+  // Bestimme die Stunde-Anzeige
+  const getHourText = () => {
+    if (greetingData?.hour !== undefined) {
+      return `${greetingData.hour}:00 Uhr`;
+    }
+    return `${currentHour}:00 Uhr`;
+  };
+
   return (
     <div className={`dynamic-greeting ${className}`}>
       <div className="flex items-center space-x-3">
@@ -135,11 +154,14 @@ const DynamicGreeting = ({
             {getDisplayGreeting()}
           </h1>
           
-          {/* Tageszeit-Anzeige */}
+          {/* Tageszeit und Stunde-Anzeige */}
           {showTimePeriod && (
             <div className="flex items-center space-x-2 mt-2">
               <span className="text-sm md:text-base text-slate-600 dark:text-slate-400">
                 {getTimePeriodText()}
+              </span>
+              <span className="text-xs text-slate-500 dark:text-slate-500">
+                {getHourText()}
               </span>
               <span className="text-xs text-slate-500 dark:text-slate-500">
                 {currentTime.toLocaleTimeString('de-DE', { 
