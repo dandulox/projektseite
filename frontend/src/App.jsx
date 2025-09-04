@@ -6,6 +6,7 @@ import { AuthProvider, ProtectedRoute } from './contexts/AuthContext';
 import AuthPage from './pages/AuthPage';
 import UserManagement from './components/UserManagement';
 import RegisterFormStartPage from './components/RegisterFormStartPage';
+import LoginForm from './components/LoginForm';
 import { 
   Home, 
   FolderOpen, 
