@@ -459,7 +459,21 @@ router.put('/:id', authenticateToken, async (req, res) => {
     for (const [key, value] of Object.entries(updateData)) {
       if (allowedFields.includes(key) && value !== undefined) {
         updateFields.push(`${key} = $${++paramCount}`);
-        values.push(value);
+        
+        // Parse values based on field type
+        let parsedValue = value;
+        if (key === 'due_date' || key === 'start_date' || key === 'target_date') {
+          // Convert empty strings to null for date fields
+          parsedValue = value && value.trim() !== '' ? value : null;
+        } else if (key === 'team_id' || key === 'assigned_to' || key === 'completion_percentage') {
+          // Convert empty strings to null for integer fields
+          parsedValue = value && value !== '' ? parseInt(value) : null;
+        } else if (key === 'estimated_hours' || key === 'actual_hours') {
+          // Convert empty strings to null for decimal fields
+          parsedValue = value && value !== '' ? parseFloat(value) : null;
+        }
+        
+        values.push(parsedValue);
       }
     }
 
