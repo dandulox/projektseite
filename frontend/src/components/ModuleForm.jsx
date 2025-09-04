@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
-const ModuleForm = ({ projectId, onClose, onSuccess }) => {
+const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleType = 'project' }) => {
   const { moduleApi, user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -18,6 +18,24 @@ const ModuleForm = ({ projectId, onClose, onSuccess }) => {
     dependencies: ''
   });
 
+  // Formular mit bestehenden Modul-Daten füllen, wenn bearbeitet wird
+  useEffect(() => {
+    if (editModule) {
+      setFormData({
+        name: editModule.name || '',
+        description: editModule.description || '',
+        status: editModule.status || 'not_started',
+        priority: editModule.priority || 'medium',
+        estimated_hours: editModule.estimated_hours || '',
+        assigned_to: editModule.assigned_to || '',
+        due_date: editModule.due_date || '',
+        visibility: editModule.visibility || 'private',
+        tags: editModule.tags ? editModule.tags.join(', ') : '',
+        dependencies: editModule.dependencies ? editModule.dependencies.join(', ') : ''
+      });
+    }
+  }, [editModule]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -25,19 +43,30 @@ const ModuleForm = ({ projectId, onClose, onSuccess }) => {
     try {
       const moduleData = {
         ...formData,
-        project_id: projectId,
         estimated_hours: formData.estimated_hours ? parseFloat(formData.estimated_hours) : null,
         assigned_to: formData.assigned_to || null,
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
         dependencies: formData.dependencies ? formData.dependencies.split(',').map(dep => dep.trim()) : []
       };
 
-      await moduleApi.createProjectModule(moduleData);
-      toast.success('Modul erfolgreich erstellt');
+      if (editModule) {
+        // Modul bearbeiten
+        if (projectId) {
+          moduleData.project_id = projectId;
+        }
+        await moduleApi.updateModule(editModule.id, moduleData, moduleType);
+        toast.success('Modul erfolgreich aktualisiert');
+      } else {
+        // Neues Modul erstellen
+        moduleData.project_id = projectId;
+        await moduleApi.createProjectModule(moduleData);
+        toast.success('Modul erfolgreich erstellt');
+      }
+      
       onSuccess();
       onClose();
     } catch (error) {
-      toast.error(error.message || 'Fehler beim Erstellen des Moduls');
+      toast.error(error.message || `Fehler beim ${editModule ? 'Aktualisieren' : 'Erstellen'} des Moduls`);
     } finally {
       setLoading(false);
     }
@@ -54,7 +83,7 @@ const ModuleForm = ({ projectId, onClose, onSuccess }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-          Neues Modul erstellen
+          {editModule ? 'Modul bearbeiten' : 'Neues Modul erstellen'}
         </h3>
         
         <form onSubmit={handleSubmit}>
@@ -205,7 +234,7 @@ const ModuleForm = ({ projectId, onClose, onSuccess }) => {
               disabled={loading}
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
             >
-              {loading ? 'Erstelle...' : 'Erstellen'}
+              {loading ? (editModule ? 'Aktualisiere...' : 'Erstelle...') : (editModule ? 'Aktualisieren' : 'Erstellen')}
             </button>
           </div>
         </form>

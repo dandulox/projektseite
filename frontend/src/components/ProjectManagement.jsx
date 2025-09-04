@@ -1168,6 +1168,20 @@ const ProjectManagement = () => {
             onSuccess={() => loadProjectDetails(selectedProject.project.id)}
           />
         )}
+
+        {/* Edit Module Form */}
+        {showEditModuleForm && selectedModule && (
+          <ModuleForm
+            projectId={selectedProject?.project?.id}
+            editModule={selectedModule}
+            moduleType="project"
+            onClose={() => {
+              setShowEditModuleForm(false);
+              setSelectedModule(null);
+            }}
+            onSuccess={() => loadProjectDetails(selectedProject.project.id)}
+          />
+        )}
       </div>
     </div>
   );
