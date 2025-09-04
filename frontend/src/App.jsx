@@ -57,13 +57,18 @@ const queryClient = new QueryClient({
 const ThemeToggle = ({ theme, toggleTheme }) => (
   <button
     onClick={toggleTheme}
-    className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 hover:scale-105"
+    className={`p-2 rounded-full transition-all duration-200 hover:scale-105 ${
+      theme === 'dark' 
+        ? 'bg-slate-800 hover:bg-slate-700 text-yellow-400' 
+        : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+    }`}
     aria-label="Theme wechseln"
+    title={`Wechseln zu ${theme === 'light' ? 'dunklem' : 'hellem'} Modus`}
   >
     {theme === 'light' ? (
-      <Moon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+      <Moon className="w-5 h-5" />
     ) : (
-      <Sun className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+      <Sun className="w-5 h-5" />
     )}
   </button>
 );
@@ -1185,17 +1190,30 @@ const Admin = () => {
 };
 
 // Willkommensseite Component
-const WelcomePage = () => {
+const WelcomePage = ({ theme, toggleTheme }) => {
   const navigate = useNavigate();
   const [showAuthForms, setShowAuthForms] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' oder 'register'
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative">
+    <div className={`min-h-screen relative ${
+      theme === 'dark' 
+        ? 'bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900' 
+        : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'
+    }`}>
+      {/* Theme Toggle für Willkommensseite */}
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+      </div>
+      
       {/* Statischer Hintergrund */}
       <div className="absolute inset-0">
         {/* Einfacher statischer Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"></div>
+        <div className={`absolute inset-0 ${
+          theme === 'dark' 
+            ? 'bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900' 
+            : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'
+        }`}></div>
       </div>
 
       {/* Hauptinhalt */}
@@ -1205,46 +1223,84 @@ const WelcomePage = () => {
           <div className="w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-500 rounded-3xl flex items-center justify-center shadow-2xl mb-6 mx-auto">
             <Zap className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent mb-4">
+          <h1 className={`text-6xl md:text-7xl font-bold bg-gradient-to-r ${
+            theme === 'dark' 
+              ? 'from-blue-400 via-purple-400 to-indigo-400' 
+              : 'from-blue-600 via-purple-600 to-indigo-600'
+          } bg-clip-text text-transparent mb-4`}>
             Projektseite
           </h1>
-          <p className="text-xl md:text-2xl text-blue-200 max-w-2xl mx-auto leading-relaxed">
+          <p className={`text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed ${
+            theme === 'dark' ? 'text-blue-200' : 'text-slate-700'
+          }`}>
             Die moderne Plattform für effiziente Projektverwaltung und Teamzusammenarbeit
           </p>
         </div>
 
         {/* Kernfunktionen */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 max-w-6xl w-full">
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-105">
+          <div className={`${
+            theme === 'dark' 
+              ? 'bg-white/10 backdrop-blur-lg border-white/20 hover:bg-white/20' 
+              : 'bg-white/80 backdrop-blur-lg border-slate-200/50 hover:bg-white/90'
+          } rounded-2xl p-6 border transition-all duration-300 hover:scale-105`}>
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <FolderOpen className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Projektverwaltung</h3>
-            <p className="text-blue-200 text-sm">Organisieren Sie Ihre Projekte effizient und übersichtlich</p>
+            <h3 className={`text-lg font-semibold mb-2 ${
+              theme === 'dark' ? 'text-white' : 'text-slate-900'
+            }`}>Projektverwaltung</h3>
+            <p className={`text-sm ${
+              theme === 'dark' ? 'text-blue-200' : 'text-slate-600'
+            }`}>Organisieren Sie Ihre Projekte effizient und übersichtlich</p>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-105">
+          <div className={`${
+            theme === 'dark' 
+              ? 'bg-white/10 backdrop-blur-lg border-white/20 hover:bg-white/20' 
+              : 'bg-white/80 backdrop-blur-lg border-slate-200/50 hover:bg-white/90'
+          } rounded-2xl p-6 border transition-all duration-300 hover:scale-105`}>
             <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Users className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Teamzusammenarbeit</h3>
-            <p className="text-blue-200 text-sm">Arbeiten Sie nahtlos mit Ihrem Team zusammen</p>
+            <h3 className={`text-lg font-semibold mb-2 ${
+              theme === 'dark' ? 'text-white' : 'text-slate-900'
+            }`}>Teamzusammenarbeit</h3>
+            <p className={`text-sm ${
+              theme === 'dark' ? 'text-blue-200' : 'text-slate-600'
+            }`}>Arbeiten Sie nahtlos mit Ihrem Team zusammen</p>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-105">
+          <div className={`${
+            theme === 'dark' 
+              ? 'bg-white/10 backdrop-blur-lg border-white/20 hover:bg-white/20' 
+              : 'bg-white/80 backdrop-blur-lg border-slate-200/50 hover:bg-white/90'
+          } rounded-2xl p-6 border transition-all duration-300 hover:scale-105`}>
             <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <BarChart className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Fortschrittsverfolgung</h3>
-            <p className="text-blue-200 text-sm">Behalten Sie den Überblick über alle Projekte</p>
+            <h3 className={`text-lg font-semibold mb-2 ${
+              theme === 'dark' ? 'text-white' : 'text-slate-900'
+            }`}>Fortschrittsverfolgung</h3>
+            <p className={`text-sm ${
+              theme === 'dark' ? 'text-blue-200' : 'text-slate-600'
+            }`}>Behalten Sie den Überblick über alle Projekte</p>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-105">
+          <div className={`${
+            theme === 'dark' 
+              ? 'bg-white/10 backdrop-blur-lg border-white/20 hover:bg-white/20' 
+              : 'bg-white/80 backdrop-blur-lg border-slate-200/50 hover:bg-white/90'
+          } rounded-2xl p-6 border transition-all duration-300 hover:scale-105`}>
             <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Shield className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Sicherheit</h3>
-            <p className="text-blue-200 text-sm">Ihre Daten sind bei uns sicher und geschützt</p>
+            <h3 className={`text-lg font-semibold mb-2 ${
+              theme === 'dark' ? 'text-white' : 'text-slate-900'
+            }`}>Sicherheit</h3>
+            <p className={`text-sm ${
+              theme === 'dark' ? 'text-blue-200' : 'text-slate-600'
+            }`}>Ihre Daten sind bei uns sicher und geschützt</p>
           </div>
         </div>
 
@@ -1274,14 +1330,20 @@ const WelcomePage = () => {
         </div>
 
         {/* Zusätzliche Informationen */}
-        <div className="text-blue-200 text-sm max-w-2xl">
+        <div className={`text-sm max-w-2xl ${
+          theme === 'dark' ? 'text-blue-200' : 'text-slate-600'
+        }`}>
           <p>Entwickelt mit modernster Technologie • Vollständig responsive • Dark Mode Unterstützung</p>
         </div>
 
         {/* Auth-Formulare als Overlay */}
         {showAuthForms && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className={`${
+              theme === 'dark' 
+                ? 'bg-white/10 backdrop-blur-lg border-white/20' 
+                : 'bg-white/90 backdrop-blur-lg border-slate-200/50'
+            } rounded-2xl p-8 border max-w-md w-full max-h-[90vh] overflow-y-auto`}>
               {/* Header */}
               <div className="text-center mb-6">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
@@ -1291,10 +1353,12 @@ const WelcomePage = () => {
                     <UserPlus className="w-8 h-8 text-white" />
                   )}
                 </div>
-                <h2 className="text-2xl font-bold text-white mb-2">
+                <h2 className={`text-2xl font-bold mb-2 ${
+                  theme === 'dark' ? 'text-white' : 'text-slate-900'
+                }`}>
                   {authMode === 'login' ? 'Anmelden' : 'Registrieren'}
                 </h2>
-                <p className="text-blue-200">
+                <p className={theme === 'dark' ? 'text-blue-200' : 'text-slate-600'}>
                   {authMode === 'login' 
                     ? 'Melden Sie sich in Ihrem Account an' 
                     : 'Erstellen Sie Ihren neuen Account'
@@ -1325,7 +1389,11 @@ const WelcomePage = () => {
               <div className="mt-6 text-center">
                 <button
                   onClick={() => setShowAuthForms(false)}
-                  className="text-blue-200 hover:text-white text-sm font-medium transition-colors duration-200"
+                  className={`text-sm font-medium transition-colors duration-200 ${
+                    theme === 'dark' 
+                      ? 'text-blue-200 hover:text-white' 
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
                 >
                   ← Zurück zur Startseite
                 </button>
@@ -1393,10 +1461,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
-          <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300 flex flex-col">
+          <div className={`min-h-screen transition-colors duration-300 flex flex-col ${
+            theme === 'dark' ? 'bg-slate-900' : 'bg-slate-50'
+          }`}>
             <Routes>
-              <Route path="/" element={<WelcomePage />} />
-              <Route path="/welcome" element={<WelcomePage />} />
+              <Route path="/" element={<WelcomePage theme={theme} toggleTheme={toggleTheme} />} />
+              <Route path="/welcome" element={<WelcomePage theme={theme} toggleTheme={toggleTheme} />} />
               <Route path="/dashboard" element={
                 <ProtectedRoute>
                   <Header 
