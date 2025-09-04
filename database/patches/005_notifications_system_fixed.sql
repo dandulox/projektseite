@@ -1,4 +1,4 @@
--- Patch 005: Benachrichtigungssystem
+-- Patch 005: Benachrichtigungssystem (PostgreSQL-kompatibel)
 -- Erstellt die Tabellen und Strukturen für das Benachrichtigungssystem
 
 -- Benachrichtigungstypen definieren
@@ -123,9 +123,9 @@ SELECT
     u.id as user_id,
     u.username,
     COUNT(n.id) as total_notifications,
-    COUNT(CASE WHEN n.is_read = 0 THEN 1 END) as unread_count,
-    COUNT(CASE WHEN n.is_read = 0 AND n.team_id IS NULL THEN 1 END) as unread_private,
-    COUNT(CASE WHEN n.is_read = 0 AND n.team_id IS NOT NULL THEN 1 END) as unread_team,
+    COUNT(CASE WHEN n.is_read = false THEN 1 END) as unread_count,
+    COUNT(CASE WHEN n.is_read = false AND n.team_id IS NULL THEN 1 END) as unread_private,
+    COUNT(CASE WHEN n.is_read = false AND n.team_id IS NOT NULL THEN 1 END) as unread_team,
     MAX(n.created_at) as last_notification
 FROM users u
 LEFT JOIN notifications n ON u.id = n.user_id

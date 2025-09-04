@@ -33,33 +33,34 @@ router.get('/', authenticateToken, async (req, res) => {
       SELECT n.*, 
              u.username as from_username,
              t.name as team_name,
-             p.title as project_title
+             p.name as project_title
       FROM notifications n
       LEFT JOIN users u ON n.from_user_id = u.id
       LEFT JOIN teams t ON n.team_id = t.id
       LEFT JOIN projects p ON n.project_id = p.id
-      WHERE n.user_id = ? AND n.is_read = 0
+      WHERE n.user_id = $1 AND n.is_read = false
     `;
     
     const params = [userId];
+    let paramCount = 1;
 
     if (type && (type === 'private' || type === 'team')) {
       if (type === 'private') {
-        query += ' AND n.team_id IS NULL';
+        query += ` AND n.team_id IS NULL`;
       } else {
-        query += ' AND n.team_id IS NOT NULL';
+        query += ` AND n.team_id IS NOT NULL`;
       }
     }
 
-    query += ' ORDER BY n.created_at DESC LIMIT ? OFFSET ?';
+    query += ` ORDER BY n.created_at DESC LIMIT $${++paramCount} OFFSET $${++paramCount}`;
     params.push(parseInt(limit), parseInt(offset));
 
-    const notifications = await db.query(query, params);
+    const result = await db.query(query, params);
 
     res.json({
       success: true,
-      notifications: notifications,
-      total: notifications.length
+      notifications: result.rows,
+      total: result.rows.length
     });
   } catch (error) {
     console.error('Fehler beim Abrufen der Benachrichtigungen:', error);
@@ -74,11 +75,11 @@ router.put('/:id/read', authenticateToken, async (req, res) => {
     const userId = req.user.id;
 
     const result = await db.query(
-      'UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?',
+      'UPDATE notifications SET is_read = true WHERE id = $1 AND user_id = $2',
       [notificationId, userId]
     );
 
-    if (result.affectedRows === 0) {
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Benachrichtigung nicht gefunden' });
     }
 
@@ -95,7 +96,7 @@ router.put('/mark-all-read', authenticateToken, async (req, res) => {
     const userId = req.user.id;
     const { type } = req.body;
 
-    let query = 'UPDATE notifications SET is_read = 1 WHERE user_id = ?';
+    let query = 'UPDATE notifications SET is_read = true WHERE user_id = $1';
     const params = [userId];
 
     if (type && (type === 'private' || type === 'team')) {
@@ -122,11 +123,11 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     const userId = req.user.id;
 
     const result = await db.query(
-      'DELETE FROM notifications WHERE id = ? AND user_id = ?',
+      'DELETE FROM notifications WHERE id = $1 AND user_id = $2',
       [notificationId, userId]
     );
 
-    if (result.affectedRows === 0) {
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Benachrichtigung nicht gefunden' });
     }
 
@@ -142,22 +143,25 @@ router.get('/unread-count', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const [privateCount] = await db.query(
-      'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 AND team_id IS NULL',
+    const privateResult = await db.query(
+      'SELECT COUNT(*) as count FROM notifications WHERE user_id = $1 AND is_read = false AND team_id IS NULL',
       [userId]
     );
 
-    const [teamCount] = await db.query(
-      'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0 AND team_id IS NOT NULL',
+    const teamResult = await db.query(
+      'SELECT COUNT(*) as count FROM notifications WHERE user_id = $1 AND is_read = false AND team_id IS NOT NULL',
       [userId]
     );
+
+    const privateCount = privateResult.rows[0];
+    const teamCount = teamResult.rows[0];
 
     res.json({
       success: true,
       counts: {
-        private: privateCount.count,
-        team: teamCount.count,
-        total: privateCount.count + teamCount.count
+        private: parseInt(privateCount.count),
+        team: parseInt(teamCount.count),
+        total: parseInt(privateCount.count) + parseInt(teamCount.count)
       }
     });
   } catch (error) {
@@ -183,11 +187,12 @@ const createNotification = async (data) => {
     const result = await db.query(
       `INSERT INTO notifications 
        (user_id, type, title, message, from_user_id, team_id, project_id, action_url, created_at) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+       RETURNING id`,
       [userId, type, title, message, fromUserId, teamId, projectId, actionUrl]
     );
 
-    return result.insertId;
+    return result.rows[0].id;
   } catch (error) {
     console.error('Fehler beim Erstellen der Benachrichtigung:', error);
     throw error;
@@ -199,13 +204,13 @@ const createTeamNotification = async (teamId, notificationData) => {
   try {
     // Alle Team-Mitglieder abrufen
     const teamMembers = await db.query(
-      'SELECT user_id FROM team_members WHERE team_id = ?',
+      'SELECT user_id FROM team_memberships WHERE team_id = $1',
       [teamId]
     );
 
     // Benachrichtigung für jedes Team-Mitglied erstellen
     const notifications = [];
-    for (const member of teamMembers) {
+    for (const member of teamMembers.rows) {
       const notificationId = await createNotification({
         ...notificationData,
         userId: member.user_id,
