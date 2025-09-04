@@ -87,7 +87,7 @@ const Header = ({ theme, toggleTheme, isMobileMenuOpen, setIsMobileMenuOpen }) =
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
             <NavLink
-              to="/"
+              to="/dashboard"
               className={({ isActive }) =>
                 `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   isActive
@@ -238,7 +238,7 @@ const MobileMenu = ({ isOpen, onClose }) => {
           </div>
           <div className="p-6 space-y-2">
             <NavLink
-              to="/"
+              to="/dashboard"
               onClick={onClose}
               className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
             >
@@ -1261,9 +1261,10 @@ function App() {
         <Router>
           <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300 flex flex-col">
             <Routes>
+              <Route path="/" element={<WelcomePage />} />
               <Route path="/welcome" element={<WelcomePage />} />
               <Route path="/login" element={<AuthPage />} />
-              <Route path="/" element={
+              <Route path="/dashboard" element={
                 <ProtectedRoute>
                   <Header 
                     theme={theme} 
