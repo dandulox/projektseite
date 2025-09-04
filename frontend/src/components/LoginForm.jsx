@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LogIn, User, Lock, Eye, EyeOff, Mail } from 'lucide-react';
+import { LogIn, User, Lock, Eye, EyeOff, Mail, AlertCircle, CheckCircle } from 'lucide-react';
 
 const LoginForm = ({ onSwitchToRegister }) => {
   const [formData, setFormData] = useState({
@@ -9,29 +9,68 @@ const LoginForm = ({ onSwitchToRegister }) => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [success, setSuccess] = useState(false);
   const { login } = useAuth();
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.username.trim()) {
+      newErrors.username = 'Benutzername oder E-Mail ist erforderlich';
+    }
+    
+    if (!formData.password) {
+      newErrors.password = 'Passwort ist erforderlich';
+    } else if (formData.password.length < 3) {
+      newErrors.password = 'Passwort muss mindestens 3 Zeichen lang sein';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({});
+    setSuccess(false);
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setLoading(true);
 
     try {
       const result = await login(formData.username, formData.password);
       if (result.success) {
+        setSuccess(true);
         // Login erfolgreich - der AuthContext wird automatisch aktualisiert
+      } else {
+        setErrors({ general: result.message || 'Anmeldung fehlgeschlagen' });
       }
     } catch (error) {
       console.error('Login error:', error);
+      setErrors({ general: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.' });
     } finally {
       setLoading(false);
     }
   };
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+    
+    // Fehler für das Feld zurücksetzen, wenn der Benutzer tippt
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: ''
+      });
+    }
   };
 
   return (
@@ -50,6 +89,26 @@ const LoginForm = ({ onSwitchToRegister }) => {
           </p>
         </div>
 
+        {/* Erfolgsmeldung */}
+        {success && (
+          <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center space-x-3">
+            <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+            <span className="text-green-700 dark:text-green-300 text-sm font-medium">
+              Anmeldung erfolgreich! Sie werden weitergeleitet...
+            </span>
+          </div>
+        )}
+
+        {/* Allgemeine Fehlermeldung */}
+        {errors.general && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center space-x-3">
+            <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+            <span className="text-red-700 dark:text-red-300 text-sm font-medium">
+              {errors.general}
+            </span>
+          </div>
+        )}
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Benutzername/E-Mail */}
@@ -67,10 +126,20 @@ const LoginForm = ({ onSwitchToRegister }) => {
                 value={formData.username}
                 onChange={handleChange}
                 required
-                className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className={`w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 border rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                  errors.username 
+                    ? 'border-red-300 dark:border-red-600 focus:ring-red-500' 
+                    : 'border-slate-300 dark:border-slate-600'
+                }`}
                 placeholder="Benutzername oder E-Mail eingeben..."
               />
             </div>
+            {errors.username && (
+              <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center space-x-1">
+                <AlertCircle className="w-4 h-4" />
+                <span>{errors.username}</span>
+              </p>
+            )}
           </div>
 
           {/* Passwort */}
@@ -88,7 +157,11 @@ const LoginForm = ({ onSwitchToRegister }) => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="w-full pl-10 pr-12 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className={`w-full pl-10 pr-12 py-3 bg-white dark:bg-slate-800 border rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                  errors.password 
+                    ? 'border-red-300 dark:border-red-600 focus:ring-red-500' 
+                    : 'border-slate-300 dark:border-slate-600'
+                }`}
                 placeholder="Passwort eingeben..."
               />
               <button
@@ -103,6 +176,12 @@ const LoginForm = ({ onSwitchToRegister }) => {
                 )}
               </button>
             </div>
+            {errors.password && (
+              <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center space-x-1">
+                <AlertCircle className="w-4 h-4" />
+                <span>{errors.password}</span>
+              </p>
+            )}
           </div>
 
           {/* Submit Button */}

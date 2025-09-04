@@ -1198,17 +1198,17 @@ const WelcomePage = ({ onEnterApp }) => {
           <div className="flex gap-3">
             <button 
               onClick={() => window.location.href = '/login'}
-              className="px-6 py-4 bg-white/10 backdrop-blur-lg border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2"
+              className="px-6 py-4 bg-white/10 backdrop-blur-lg border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 group"
             >
-              <LogIn className="w-5 h-5" />
+              <LogIn className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
               <span>Anmelden</span>
             </button>
             
             <button 
-              onClick={() => window.location.href = '/login'}
-              className="px-6 py-4 bg-white/10 backdrop-blur-lg border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2"
+              onClick={() => window.location.href = '/login?mode=register'}
+              className="px-6 py-4 bg-white/10 backdrop-blur-lg border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 group"
             >
-              <UserPlus className="w-5 h-5" />
+              <UserPlus className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
               <span>Registrieren</span>
             </button>
           </div>
