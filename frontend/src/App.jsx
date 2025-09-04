@@ -65,7 +65,7 @@ const ThemeToggle = ({ theme, toggleTheme }) => (
 // Header Component
 const Header = ({ theme, toggleTheme, isMobileMenuOpen, setIsMobileMenuOpen }) => (
   <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/20 dark:border-slate-700/20 shadow-lg dark:shadow-slate-900/20">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="page-container">
       <div className="flex items-center justify-between h-16">
         {/* Logo und Navigation */}
         <div className="flex items-center space-x-8">
@@ -1117,7 +1117,7 @@ const WelcomePage = ({ onEnterApp }) => {
 // Footer Component
 const Footer = () => (
   <footer className="mt-auto bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 shadow-lg dark:shadow-slate-900/20">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="page-container py-12">
       <div className="text-center">
         <div className="flex items-center justify-center space-x-2 mb-4">
           <div className="w-8 h-8 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-600 rounded-lg flex items-center justify-center">
@@ -1179,8 +1179,8 @@ function App() {
             setIsMobileMenuOpen={setIsMobileMenuOpen}
           />
           
-          {/* Hauptinhalt */}
-          <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto w-full">
+          {/* Hauptinhalt - konsistente Breite für alle Seiten */}
+          <main className="flex-1 py-8 page-container">
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/projects" element={<Projects />} />
