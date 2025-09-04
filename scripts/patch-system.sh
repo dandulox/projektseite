@@ -119,6 +119,11 @@ else
     exit 1
 fi
 
+# Setze Ausführungsberechtigungen für alle Skripte
+log_info "Setze Ausführungsberechtigungen für alle Skripte..."
+chmod +x /opt/projektseite/scripts/*.sh
+log_success "Ausführungsberechtigungen für alle Skripte gesetzt"
+
 # 4. Prüfe auf neue Dependencies
 log_info "4️⃣ Prüfe auf neue Dependencies..."
 

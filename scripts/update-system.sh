@@ -69,6 +69,11 @@ git reset --hard origin/main
 
 log_success "Git-Update erfolgreich - lokale Änderungen überschrieben"
 
+# Setze Ausführungsberechtigungen für alle Skripte
+log_info "Setze Ausführungsberechtigungen für alle Skripte..."
+chmod +x /opt/projektseite/scripts/*.sh
+log_success "Ausführungsberechtigungen für alle Skripte gesetzt"
+
 # Stoppe Docker-Container
 log_info "Stoppe Docker-Container..."
 cd /opt/projektseite
