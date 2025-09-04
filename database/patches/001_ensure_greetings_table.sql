@@ -23,8 +23,8 @@ CREATE TRIGGER update_greetings_updated_at BEFORE UPDATE ON greetings
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Kommentar hinzufügen
-COMMENT ON TABLE greetings IS 'Tabelle für dynamische Begrüßungen basierend auf Tageszeit';
-COMMENT ON COLUMN greetings.text IS 'Der Begrüßungstext';
+COMMENT ON TABLE greetings IS 'Tabelle für humorvolle Begrüßungen basierend auf Tageszeit - Fun-Feature';
+COMMENT ON COLUMN greetings.text IS 'Der humorvolle Begrüßungstext';
 COMMENT ON COLUMN greetings.time_period IS 'Tageszeit (morning, afternoon, evening, night)';
 COMMENT ON COLUMN greetings.hour IS 'Spezifische Stunde (0-23) oder NULL für gesamte Tageszeit';
 COMMENT ON COLUMN greetings.is_active IS 'Ob die Begrüßung aktiv ist';

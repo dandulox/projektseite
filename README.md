@@ -310,8 +310,9 @@ docker-compose -f docker/docker-compose.yml restart backend
 # 6. Zeigt finalen Datenbank-Status
 
 # Verfügbare Patches:
-# - 001_ensure_greetings_table.sql
-# - 002_example_patch_template.sql
+# - 001_ensure_greetings_table.sql - Stellt sicher, dass die greetings-Tabelle existiert
+# - 002_example_patch_template.sql - Vorlage für zukünftige Patches
+# - 003_new_humor_greetings.sql - Neue humorvolle Begrüßungen
 # - Weitere Patches werden automatisch erkannt
 ```
 

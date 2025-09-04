@@ -1,94 +1,110 @@
-const pool = require('../config/database');
+const { Pool } = require('pg');
 
-// Stündliche Begrüßungen (24 Stunden)
-const hourlyGreetings = [
-  { hour: 0, text: 'Mitternacht! Zeit, produktiv zu wirken… oder YouTube-Katzenvideos zu schauen.' },
-  { hour: 1, text: '1 Uhr. Wow. Motivation oder Existenzkrise?' },
-  { hour: 2, text: '2 Uhr. Nenn es Nachtschicht. Nenn es Prokrastination. Wir verurteilen beides.' },
-  { hour: 3, text: '3 Uhr… auch bekannt als: ‚Vielleicht sollte ich mein Leben überdenken‘.' },
-  { hour: 4, text: '4 Uhr. Falls du gerade arbeitest: Respekt. Falls nicht: Warum bist du hier?' },
-  { hour: 5, text: '5 Uhr. Frühaufsteher oder einfach spät dran? Fühl dich nicht ertappt.' },
-  { hour: 6, text: '6 Uhr. Kaffee, Motivation, Hoffnung – alles drei bitte doppelt.' },
-  { hour: 7, text: '7 Uhr. Willkommen zum Level ‚Ich tue so, als wäre ich wach‘.' },
-  { hour: 8, text: '8 Uhr. Statistisch gesehen sind 78 % der Leute jetzt produktiver als du.' },
-  { hour: 9, text: '9 Uhr. Zeit, die ersten To-Dos nicht zu erledigen.' },
-  { hour: 10, text: '10 Uhr. Willkommen im Bermuda-Dreieck der Produktivität: To-Do, Kaffee, Ausreden.' },
-  { hour: 11, text: '11 Uhr. Du hast schon viel geschafft… zumindest auf Instagram.' },
-  { hour: 12, text: '12 Uhr. Mittagspause. Die einzige Deadline, die jeder einhält.' },
-  { hour: 13, text: '13 Uhr. Willkommen im Mittagskoma. Gehirn lädt… bitte warten.' },
-  { hour: 14, text: '14 Uhr. Die Motivation ist offiziell offline. Der Kühlschrank ist online.' },
-  { hour: 15, text: '15 Uhr. Höchste Zeit für Kaffee Nr. 4. Wir zählen nicht mit.' },
-  { hour: 16, text: '16 Uhr. Projekte im Griff? Nein? Wir auch nicht.' },
-  { hour: 17, text: '17 Uhr. Nur noch kurz Mails checken… und schwupps ist\'s 22 Uhr.' },
-  { hour: 18, text: '18 Uhr. Feierabend? Lustig. Deine Projekte lachen dich aus.' },
-  { hour: 19, text: '19 Uhr. Der Tag ist gelaufen. Deine To-Do-Liste nicht.' },
-  { hour: 20, text: '20 Uhr. Motivation tot, Snacks voll geladen.' },
-  { hour: 21, text: '21 Uhr. Offiziell zu spät für echte Arbeit, zu früh fürs Bett. Willkommen in der Hölle.' },
-  { hour: 22, text: '22 Uhr. Hier entscheiden sich Champions, ob sie noch ein Projekt oder Netflix starten.' },
-  { hour: 23, text: '23 Uhr. Letzte Chance, produktiv zu wirken. Oder einfach so tun.' }
-];
+// Datenbankverbindung
+const pool = new Pool({
+  user: process.env.DB_USER || 'admin',
+  host: process.env.DB_HOST || 'localhost',
+  database: process.env.DB_NAME || 'projektseite',
+  password: process.env.DB_PASSWORD || 'secure_password_123',
+  port: process.env.DB_PORT || 5432,
+});
 
-// Emojis für jede Stunde
-const hourlyEmojis = [
-  '🐱', '🤔', '😴', '🌌', '👀', '😏', '☕', '🛌', '📊', '✅❌', '🌀', '📸', '🥪', '💤', '🧃', '☕☕☕☕', '🫠', '📩', '😬', '📜', '🍫', '🔥', '📺', '😎'
-];
-
+/**
+ * Initialisiert die Greetings-Tabelle mit Standard-Begrüßungen
+ * Diese Funktion wird vom db-patch.sh Skript aufgerufen
+ */
 async function initGreetings() {
   try {
-    console.log('🌱 Initialisiere stündliche Begrüßungen...');
+    console.log('🎭 Initialisiere Greetings...');
     
-    // Lösche alle vorhandenen Begrüßungen
-    await pool.query('DELETE FROM greetings');
-    console.log('🗑️ Vorhandene Begrüßungen gelöscht');
-    
-    // Begrüßungen für jede Stunde einfügen
-    for (let i = 0; i < hourlyGreetings.length; i++) {
-      const greeting = hourlyGreetings[i];
-      const emoji = hourlyEmojis[i];
-      const fullText = `${greeting.text} ${emoji}`;
-      
-      // Bestimme die Tageszeit basierend auf der Stunde
-      let timePeriod;
-      if (greeting.hour >= 5 && greeting.hour < 12) {
-        timePeriod = 'morning';
-      } else if (greeting.hour >= 12 && greeting.hour < 17) {
-        timePeriod = 'afternoon';
-      } else if (greeting.hour >= 17 && greeting.hour < 22) {
-        timePeriod = 'evening';
-      } else {
-        timePeriod = 'night';
-      }
-      
-      await pool.query(
-        'INSERT INTO greetings (text, time_period, hour) VALUES ($1, $2, $3)',
-        [fullText, timePeriod, greeting.hour]
+    // Prüfe ob die greetings-Tabelle existiert
+    const tableCheck = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'greetings'
       );
+    `);
+    
+    if (!tableCheck.rows[0].exists) {
+      console.log('⚠️ Greetings-Tabelle existiert nicht. Verwende db-patch.sh um die Datenbank zu reparieren.');
+      return;
     }
     
-    console.log(`✅ ${hourlyGreetings.length} stündliche Begrüßungen erfolgreich eingefügt!`);
-    console.log('📊 Aufgeteilt nach Tageszeiten:');
-    console.log(`   🌅 Morgen (5-11h): ${hourlyGreetings.filter(g => g.hour >= 5 && g.hour < 12).length} Begrüßungen`);
-    console.log(`   ☀️ Nachmittag (12-16h): ${hourlyGreetings.filter(g => g.hour >= 12 && g.hour < 17).length} Begrüßungen`);
-    console.log(`   🌆 Abend (17-21h): ${hourlyGreetings.filter(g => g.hour >= 17 && g.hour < 22).length} Begrüßungen`);
-    console.log(`   🌙 Nacht (22-4h): ${hourlyGreetings.filter(g => g.hour >= 22 || g.hour < 5).length} Begrüßungen`);
+    // Prüfe ob bereits Greetings vorhanden sind
+    const countResult = await pool.query('SELECT COUNT(*) FROM greetings');
+    const count = parseInt(countResult.rows[0].count);
+    
+    if (count > 0) {
+      console.log(`✅ ${count} Greetings bereits vorhanden.`);
+      return;
+    }
+    
+    console.log('📝 Keine Greetings gefunden. Das db-patch.sh Skript wird die Standard-Greetings laden.');
     
   } catch (error) {
-    console.error('❌ Fehler beim Initialisieren der Begrüßungen:', error);
+    console.error('❌ Fehler bei der Greetings-Initialisierung:', error.message);
     throw error;
   }
 }
 
-// Script ausführen
-if (require.main === module) {
-  initGreetings()
-    .then(() => {
-      console.log('🎉 Begrüßungen erfolgreich initialisiert!');
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('💥 Fehler:', error);
-      process.exit(1);
+/**
+ * Lädt die Greetings aus der Datenbank und zeigt sie an
+ */
+async function showGreetings() {
+  try {
+    const result = await pool.query(`
+      SELECT time_period, text, is_active 
+      FROM greetings 
+      ORDER BY time_period, id
+    `);
+    
+    console.log('\n🎭 Aktuelle Greetings:');
+    console.log('====================');
+    
+    const grouped = {};
+    result.rows.forEach(row => {
+      if (!grouped[row.time_period]) {
+        grouped[row.time_period] = [];
+      }
+      grouped[row.time_period].push(row.text);
     });
+    
+    Object.keys(grouped).forEach(period => {
+      const emoji = {
+        'morning': '🌅',
+        'afternoon': '🥪', 
+        'evening': '🌇',
+        'night': '🌙'
+      }[period] || '⏰';
+      
+      console.log(`\n${emoji} ${period.toUpperCase()}:`);
+      grouped[period].forEach(text => {
+        console.log(`  • ${text}`);
+      });
+    });
+    
+  } catch (error) {
+    console.error('❌ Fehler beim Anzeigen der Greetings:', error.message);
+  }
 }
 
-module.exports = { initGreetings };
+// Hauptfunktion
+async function main() {
+  try {
+    await initGreetings();
+    await showGreetings();
+  } catch (error) {
+    console.error('❌ Fehler:', error.message);
+    process.exit(1);
+  } finally {
+    await pool.end();
+  }
+}
+
+// Skript ausführen wenn direkt aufgerufen
+if (require.main === module) {
+  main();
+}
+
+module.exports = { initGreetings, showGreetings };
