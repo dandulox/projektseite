@@ -10,9 +10,6 @@ const ProjectManagement = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [showCreateModuleForm, setShowCreateModuleForm] = useState(false);
-  const [showEditModuleForm, setShowEditModuleForm] = useState(false);
-  const [selectedModule, setSelectedModule] = useState(null);
   const [filters, setFilters] = useState({
     team_id: '',
     status: '',
@@ -27,19 +24,6 @@ const ProjectManagement = () => {
     target_date: '',
     team_id: '',
     visibility: 'private'
-  });
-  const [newModule, setNewModule] = useState({
-    name: '',
-    description: '',
-    status: 'not_started',
-    priority: 'medium',
-    estimated_hours: '',
-    assigned_to: '',
-    due_date: '',
-    team_id: '',
-    visibility: 'private',
-    tags: '',
-    dependencies: ''
   });
 
   useEffect(() => {
@@ -127,60 +111,8 @@ const ProjectManagement = () => {
     }
   };
 
-  const handleCreateModule = async (e) => {
-    e.preventDefault();
-    try {
-      await projectApi.createProjectModule(selectedProject.project.id, newModule);
-      toast.success('Modul erfolgreich erstellt');
-      setNewModule({
-        name: '',
-        description: '',
-        status: 'not_started',
-        priority: 'medium',
-        estimated_hours: '',
-        assigned_to: '',
-        due_date: '',
-        team_id: '',
-        visibility: 'private',
-        tags: '',
-        dependencies: ''
-      });
-      setShowCreateModuleForm(false);
-      loadProjectDetails(selectedProject.project.id);
-    } catch (error) {
-      toast.error(error.message || 'Fehler beim Erstellen des Moduls');
-    }
-  };
 
-  const handleEditModule = (module) => {
-    setSelectedModule(module);
-    setShowEditModuleForm(true);
-  };
 
-  const handleUpdateModule = async (e) => {
-    e.preventDefault();
-    try {
-      await projectApi.updateModule(selectedModule.id, 'project', selectedModule);
-      toast.success('Modul erfolgreich aktualisiert');
-      setShowEditModuleForm(false);
-      setSelectedModule(null);
-      loadProjectDetails(selectedProject.project.id);
-    } catch (error) {
-      toast.error(error.message || 'Fehler beim Aktualisieren des Moduls');
-    }
-  };
-
-  const handleDeleteModule = async (moduleId) => {
-    if (!window.confirm('Modul wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) return;
-    
-    try {
-      await projectApi.deleteModule(moduleId, 'project');
-      toast.success('Modul erfolgreich gelöscht');
-      loadProjectDetails(selectedProject.project.id);
-    } catch (error) {
-      toast.error(error.message || 'Fehler beim Löschen des Moduls');
-    }
-  };
 
   const getStatusBadgeColor = (status) => {
     switch (status) {

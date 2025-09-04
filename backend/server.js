@@ -41,7 +41,6 @@ const adminRoutes = require('./routes/admin');
 const greetingsRoutes = require('./routes/greetings');
 const teamsRoutes = require('./routes/teams');
 const projectsRoutes = require('./routes/projects');
-const modulesRoutes = require('./routes/modules');
 const notificationsRoutes = require('./routes/notifications');
 
 console.log('🔧 Lade API-Routen...');
@@ -52,7 +51,6 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/greetings', greetingsRoutes);
 app.use('/api/teams', teamsRoutes);
 app.use('/api/projects', projectsRoutes);
-app.use('/api/modules', modulesRoutes);
 app.use('/api/notifications', notificationsRoutes.router);
 
 // Health Check

@@ -9,7 +9,6 @@ import UserSettings from './components/UserSettings';
 import GreetingManagement from './components/GreetingManagement';
 import TeamManagement from './components/TeamManagement';
 import ProjectManagement from './components/ProjectManagement';
-import ModuleManagement from './components/ModuleManagement';
 import RegisterFormStartPage from './components/RegisterFormStartPage';
 import LoginForm from './components/LoginForm';
 import DynamicGreeting from './components/DynamicGreeting';
@@ -163,19 +162,6 @@ const Header = ({ theme, toggleTheme, isMobileMenuOpen, setIsMobileMenuOpen }) =
               Teams
             </NavLink>
             
-            <NavLink
-              to="/modules"
-              className={({ isActive }) =>
-                `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  isActive
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-md'
-                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
-                }`
-              }
-            >
-              <Puzzle className="w-4 h-4 inline mr-2" />
-              Module
-            </NavLink>
             
             {isAdmin && (
               <NavLink
@@ -390,14 +376,6 @@ const MobileMenu = ({ isOpen, onClose }) => {
               Teams
             </NavLink>
             
-            <NavLink
-              to="/modules"
-              onClick={onClose}
-              className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
-            >
-              <Puzzle className="mr-3 h-5 w-5" />
-              Module
-            </NavLink>
             
             {isAdmin && (
               <NavLink
@@ -546,8 +524,6 @@ const Dashboard = () => (
 const Projects = () => <ProjectManagement />;
 
 
-// Modulverwaltung Component - jetzt mit echter Backend-Integration
-const Modules = () => <ModuleManagement />;
 
 
 const Admin = () => {
@@ -956,21 +932,6 @@ const AppContent = () => {
               />
               <main className="flex-1">
                 <TeamManagement />
-              </main>
-              <Footer />
-              <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
-            </ProtectedRoute>
-          } />
-          <Route path="/modules" element={
-            <ProtectedRoute>
-              <Header 
-                theme={theme} 
-                toggleTheme={toggleTheme}
-                isMobileMenuOpen={isMobileMenuOpen}
-                setIsMobileMenuOpen={setIsMobileMenuOpen}
-              />
-              <main className="flex-1 py-8 page-container">
-                <Modules />
               </main>
               <Footer />
               <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
