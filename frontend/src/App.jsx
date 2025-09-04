@@ -6,8 +6,10 @@ import { AuthProvider, ProtectedRoute, useAuth } from './contexts/AuthContext';
 import AuthPage from './pages/AuthPage';
 import UserManagement from './components/UserManagement';
 import UserSettings from './components/UserSettings';
+import GreetingManagement from './components/GreetingManagement';
 import RegisterFormStartPage from './components/RegisterFormStartPage';
 import LoginForm from './components/LoginForm';
+import DynamicGreeting from './components/DynamicGreeting';
 import { 
   Home, 
   FolderOpen, 
@@ -455,8 +457,18 @@ const MobileMenu = ({ isOpen, onClose }) => {
 const Dashboard = () => (
   <div className="space-y-8 fade-in">
     <div className="text-center">
-      <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6">
-        Willkommen zurück
+      {/* Dynamische Begrüßung für Dashboard */}
+      <div className="mb-6">
+        <DynamicGreeting 
+          className="text-center"
+          showTimePeriod={true}
+          refreshInterval={1800000} // 30 Minuten
+          autoRefresh={true}
+        />
+      </div>
+      
+      <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6">
+        Dashboard
       </h1>
       <p className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
         Hier ist eine Übersicht über Ihre aktuellen Projekte und den Fortschritt.
@@ -1145,6 +1157,16 @@ const Admin = () => {
         >
           Benutzerverwaltung
         </button>
+        <button
+          onClick={() => setActiveTab('greetings')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+            activeTab === 'greetings'
+              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+          }`}
+        >
+          Begrüßungen
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -1185,6 +1207,7 @@ const Admin = () => {
       )}
 
       {activeTab === 'users' && <UserManagement />}
+      {activeTab === 'greetings' && <GreetingManagement />}
     </div>
   );
 };
@@ -1223,7 +1246,18 @@ const WelcomePage = ({ theme, toggleTheme }) => {
           <div className="w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-500 rounded-3xl flex items-center justify-center shadow-2xl mb-6 mx-auto">
             <Zap className="w-12 h-12 text-white" />
           </div>
-          <h1 className={`text-6xl md:text-7xl font-bold bg-gradient-to-r ${
+          
+          {/* Dynamische Begrüßung */}
+          <div className="mb-6">
+            <DynamicGreeting 
+              className="text-center"
+              showTimePeriod={true}
+              refreshInterval={3600000} // 1 Stunde
+              autoRefresh={true}
+            />
+          </div>
+          
+          <h1 className={`text-4xl md:text-5xl font-bold bg-gradient-to-r ${
             theme === 'dark' 
               ? 'from-blue-400 via-purple-400 to-indigo-400' 
               : 'from-blue-600 via-purple-600 to-indigo-600'

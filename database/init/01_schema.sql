@@ -53,6 +53,15 @@ CREATE TABLE IF NOT EXISTS design_settings (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS greetings (
+    id SERIAL PRIMARY KEY,
+    text TEXT NOT NULL,
+    time_period VARCHAR(20) NOT NULL CHECK (time_period IN ('morning', 'afternoon', 'evening', 'night')),
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS project_logs (
     id SERIAL PRIMARY KEY,
     project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
@@ -89,6 +98,9 @@ CREATE TRIGGER update_modules_updated_at BEFORE UPDATE ON project_modules
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_design_updated_at BEFORE UPDATE ON design_settings
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_greetings_updated_at BEFORE UPDATE ON greetings
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Standard-Benutzer werden über das Initialisierungsskript erstellt

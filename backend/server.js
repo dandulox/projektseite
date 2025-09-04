@@ -38,10 +38,12 @@ app.use('/shared', express.static(path.join(__dirname, '../shared')));
 // Modulare Routen
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
+const greetingsRoutes = require('./routes/greetings');
 
 // API Routen
 app.use('/api/auth', authRoutes.router);
 app.use('/api/admin', adminRoutes);
+app.use('/api/greetings', greetingsRoutes);
 
 // Health Check
 app.get('/health', (req, res) => {
