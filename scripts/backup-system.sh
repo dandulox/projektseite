@@ -32,6 +32,44 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# Funktion zur Überprüfung der Container-Namen
+check_container_names() {
+    log_info "Überprüfe verfügbare Container..."
+    log_info "Alle Container:"
+    docker ps -a --format "table {{.Names}}\t{{.Image}}\t{{.Status}}" | head -10
+    
+    log_info "Projektseite-bezogene Container:"
+    docker ps -a --format "table {{.Names}}\t{{.Image}}\t{{.Status}}" | grep -E "(projektseite|postgres)" || log_warning "Keine projektseite-bezogenen Container gefunden"
+}
+
+# Funktion zur Suche nach PostgreSQL-Container
+find_postgres_container() {
+    # Suche nach verschiedenen möglichen PostgreSQL-Container-Namen
+    local postgres_containers=(
+        "projektseite-postgres"
+        "projektseite_postgres_1"
+        "projektseite_postgres"
+        "postgres"
+        "db"
+    )
+    
+    for container in "${postgres_containers[@]}"; do
+        if docker ps -a | grep -q "$container"; then
+            echo "$container"
+            return 0
+        fi
+    done
+    
+    # Suche nach PostgreSQL-Containern mit Image-Namen
+    local postgres_image_containers=$(docker ps -a --format "{{.Names}}" | grep -E "(postgres|db)" | head -1)
+    if [ -n "$postgres_image_containers" ]; then
+        echo "$postgres_image_containers"
+        return 0
+    fi
+    
+    return 1
+}
+
 # Konfiguration
 BACKUP_DIR="/opt/backups/projektseite"
 PROJECT_DIR="/opt/projektseite"
@@ -65,6 +103,9 @@ if [ "$AVAILABLE_SPACE" -lt "$REQUIRED_SPACE" ]; then
     find "$BACKUP_DIR" -name "*.tar.gz" -mtime +$RETENTION_DAYS -delete
 fi
 
+# Überprüfe Container-Namen
+check_container_names
+
 # Stoppe Docker-Container für konsistente Backups
 log_info "Stoppe Docker-Container für konsistente Backups..."
 cd "$PROJECT_DIR"
@@ -88,22 +129,51 @@ cp -r "$PROJECT_DIR/.git" "$TEMP_BACKUP_DIR/" 2>/dev/null || true
 
 # Backup der Datenbank
 log_info "Erstelle Datenbank-Backup..."
-if docker ps -a | grep -q "projektseite-postgres"; then
-    # Starte PostgreSQL temporär für Backup
-    if [ -f "docker/docker-compose.yml" ]; then
-        docker-compose -f docker/docker-compose.yml up -d postgres
-        sleep 10
+if [ -f "docker/docker-compose.yml" ]; then
+    # Suche nach PostgreSQL-Container
+    POSTGRES_CONTAINER=$(find_postgres_container)
+    
+    if [ -n "$POSTGRES_CONTAINER" ]; then
+        log_info "PostgreSQL-Container gefunden: $POSTGRES_CONTAINER"
+        
+        # Starte PostgreSQL temporär für Backup (falls nicht läuft)
+        if ! docker ps | grep -q "$POSTGRES_CONTAINER"; then
+            log_info "Starte PostgreSQL-Container für Backup..."
+            docker-compose -f docker/docker-compose.yml up -d postgres
+            sleep 15
+        fi
+        
+        # Warte bis PostgreSQL bereit ist
+        log_info "Warte auf PostgreSQL-Bereitschaft..."
+        for i in {1..30}; do
+            if docker exec "$POSTGRES_CONTAINER" pg_isready -U admin > /dev/null 2>&1; then
+                log_success "PostgreSQL ist bereit"
+                break
+            fi
+            log_info "Warte auf PostgreSQL... ($i/30)"
+            sleep 2
+        done
         
         # Erstelle Datenbank-Dump
-        docker exec projektseite-postgres pg_dump -U admin -d projektseite > "$TEMP_BACKUP_DIR/database-backup.sql"
+        log_info "Erstelle Datenbank-Dump..."
+        if docker exec "$POSTGRES_CONTAINER" pg_dump -U admin -d projektseite > "$TEMP_BACKUP_DIR/database-backup.sql" 2>/dev/null; then
+            log_success "Datenbank-Backup erfolgreich erstellt"
+        else
+            log_warning "Datenbank-Backup fehlgeschlagen, aber fortfahren..."
+        fi
         
-        # Stoppe PostgreSQL wieder
-        docker-compose -f docker/docker-compose.yml down
+        # Stoppe PostgreSQL wieder (nur wenn wir ihn gestartet haben)
+        if ! docker ps | grep -q "$POSTGRES_CONTAINER"; then
+            log_info "Stoppe PostgreSQL-Container nach Backup..."
+            docker-compose -f docker/docker-compose.yml down
+        fi
     else
-        log_warning "Docker-Compose-Datei nicht gefunden, überspringe Datenbank-Backup"
+        log_warning "Kein PostgreSQL-Container gefunden, überspringe Datenbank-Backup"
+        log_info "Verfügbare Container:"
+        docker ps -a --format "table {{.Names}}\t{{.Status}}" | grep -E "(postgres|projektseite)" || log_info "Keine relevanten Container gefunden"
     fi
 else
-    log_warning "PostgreSQL-Container nicht gefunden, überspringe Datenbank-Backup"
+    log_warning "Docker-Compose-Datei nicht gefunden, überspringe Datenbank-Backup"
 fi
 
 # Backup der System-Konfiguration

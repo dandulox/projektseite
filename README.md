@@ -56,6 +56,7 @@ projektseite/
     ├── setup-server.sh                    # Server-Setup (Ubuntu 24.04)
     ├── start-docker.sh                    # Docker-Container starten
     ├── check-logs.sh                      # Container-Logs überprüfen
+
     ├── patch-system.sh                    # System-Patch (Git + Docker)
     ├── fix-systemd.sh                     # Systemd Service reparieren
     ├── update-system.sh                   # System-Updates
@@ -253,6 +254,26 @@ docker-compose -f docker/docker-compose.yml restart backend
 # 5. Baut Docker-Container neu
 # 6. Startet alle Services
 # 7. Überprüft Service-Verfügbarkeit
+```
+
+### App-Update (Nur Container)
+```bash
+# Schnelles App-Update (nur Container)
+./scripts/update-app.sh
+
+# Das Skript führt folgende Schritte aus:
+# 1. Stoppt nur die App-Container (Frontend, Backend, PostgreSQL, Grafana)
+# 2. Erstellt schnelles Backup
+# 3. Führt Git-Update durch
+# 4. Aktualisiert Dependencies
+# 5. Baut Docker-Images neu
+# 6. Startet App-Container neu
+# 7. Überprüft Service-Verfügbarkeit
+
+# Vorteile gegenüber patch-system.sh:
+# - Schneller (nur App-Container)
+# - Weniger Systemausfall
+# - Fokussiert auf Anwendungsupdates
 ```
 
 ### Systemd Service reparieren

@@ -164,8 +164,20 @@ fi
 
 # 5. Baue neue Docker-Images
 log_info "5️⃣ Baue neue Docker-Images..."
-docker-compose -f docker/docker-compose.yml build --no-cache
-log_success "Docker-Images neu gebaut"
+if docker-compose -f docker/docker-compose.yml build --no-cache; then
+    log_success "Docker-Images neu gebaut"
+else
+    log_error "Docker-Build fehlgeschlagen!"
+    log_info "Versuche Build ohne Cache..."
+    if docker-compose -f docker/docker-compose.yml build; then
+        log_success "Docker-Images mit Cache gebaut"
+    else
+        log_error "Docker-Build auch mit Cache fehlgeschlagen!"
+        log_info "Prüfe Docker-Logs für Details..."
+        docker-compose -f docker/docker-compose.yml logs --tail=50
+        exit 1
+    fi
+fi
 
 # 6. Starte App-Container neu
 log_info "6️⃣ Starte App-Container neu..."
