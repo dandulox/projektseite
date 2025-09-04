@@ -5,24 +5,26 @@ Eine modulare Website zur Dokumentation und Verfolgung von Projektstatus mit Liv
 ## 🚀 Features
 
 ### ✅ Implementiert
-- **Modulares Backend-Design** mit Express.js und Live-Edit-Funktionalität
-- **Zentrale CSS-Design-Datei** mit CSS-Variablen für konsistentes Styling
-- **Einheitliches Basis-Layout** für alle Seiten
-- **PostgreSQL-Datenbank** mit vollständigem Schema und Triggers
+- **Modulares Backend-Design** mit Express.js
+- **Tailwind CSS** mit CSS-Variablen für konsistentes Styling
+- **Vite Build-System** für schnelle Entwicklung
+- **PostgreSQL-Datenbank** mit vollständigem Schema
 - **Docker-Container** mit Ubuntu 24.04 Server-Unterstützung
-- **Admin-Oberfläche** mit React und modernem Design
+- **React Admin-Interface** mit modernem Design
 - **Grafana-Monitoring** vorbereitet mit Prometheus-Integration
 - **Umfassende Wartungsskripte** für Updates, Backups und Wiederherstellung
-- **🔐 Vollständiges Authentifizierungssystem** mit JWT und Benutzerverwaltung
+- **🔐 Vollständiges Authentifizierungssystem** mit JWT und bcrypt
 - **👥 Benutzerverwaltung** mit Rollen (Admin, User, Viewer) und CRUD-Operationen
-- **🛡️ Geschützte Routen** und Zugriffskontrolle
+- **🛡️ Geschützte API-Routen** mit Token-Validierung
 - **📱 Responsive Login/Registrierung** mit modernem Design
+- **⚙️ Admin-API** mit Benutzerverwaltung und System-Statistiken
 
 ### 🔄 Zu implementieren
 - Backend-Routen (projects, modules, design)
 - Frontend-Komponenten (Projektverwaltung, Module, Design-Einstellungen)
 - Live-Edit-Funktionalität für Design-Einstellungen
 - Projektverwaltung mit CRUD-Operationen
+- Modulverwaltung für Projekte
 
 ## 📁 Projektstruktur
 
@@ -36,21 +38,38 @@ projektseite/
 │   ├── package.json                       # Node.js-Abhängigkeiten
 │   ├── server.js                          # Hauptserver mit modularem Design
 │   ├── Dockerfile                         # Backend-Container
-│   └── routes/                            # API-Routen (zu implementieren)
+│   ├── routes/                            # API-Routen
+│   │   ├── auth.js                        # Authentifizierung (implementiert)
+│   │   └── admin.js                       # Admin-Funktionen (implementiert)
+│   └── scripts/                           # Backend-Skripte
+│       ├── create-default-users.js        # Standard-Benutzer erstellen
+│       └── init-database.js               # Datenbank initialisieren
 ├── 🎨 frontend/
 │   ├── package.json                       # React-Abhängigkeiten
 │   ├── Dockerfile                         # Frontend-Container
+│   ├── index.html                         # HTML-Template
+│   ├── nginx.conf                         # Nginx-Konfiguration
+│   ├── vite.config.js                     # Vite-Konfiguration
+│   ├── tailwind.config.cjs                # Tailwind CSS-Konfiguration
+│   ├── postcss.config.cjs                 # PostCSS-Konfiguration
+│   ├── README.md                          # Frontend-Dokumentation
 │   └── src/
 │       ├── App.jsx                        # Haupt-App-Komponente
+│       ├── main.jsx                       # React Entry Point
+│       ├── index.css                      # Globale Styles mit CSS-Variablen
 │       ├── components/                    # React-Komponenten
+│       │   ├── LoginForm.jsx              # Login-Formular
+│       │   ├── RegisterForm.jsx           # Registrierungs-Formular
+│       │   └── UserManagement.jsx         # Benutzerverwaltung
 │       ├── pages/                         # Seiten-Komponenten
+│       │   └── AuthPage.jsx               # Authentifizierungs-Seite
 │       └── contexts/                      # React Contexts
+│           └── AuthContext.jsx            # Authentifizierungs-Context
 ├── 🗄️ database/
 │   └── init/
 │       └── 01_schema.sql                  # PostgreSQL-Datenbankschema
 ├── 🎨 shared/
-│   └── styles/
-│       └── main.css                       # Zentrale CSS-Design-Datei
+│   └── styles/                            # Geteilte Styles (aktuell leer)
 ├── 📊 monitoring/
 │   └── grafana/
 │       └── dashboards/
@@ -59,10 +78,12 @@ projektseite/
     ├── setup-server.sh                    # Server-Setup (Ubuntu 24.04)
     ├── start-docker.sh                    # Docker-Container starten
     ├── check-logs.sh                      # Container-Logs überprüfen
-
+    ├── create-admin-user.sh               # Admin-Benutzer erstellen
+    ├── debug-build.sh                     # Build-Probleme debuggen
     ├── patch-system.sh                    # System-Patch (Git + Docker)
     ├── fix-systemd.sh                     # Systemd Service reparieren
     ├── update-system.sh                   # System-Updates
+    ├── update-app.sh                      # App-Update (nur Container)
     ├── backup-system.sh                   # System-Backups
     └── restore-system.sh                  # System-Wiederherstellung
 ```
@@ -79,7 +100,10 @@ projektseite/
 - **React 18** mit modernen Hooks
 - **React Router 6** für Navigation
 - **React Query** für Server-State-Management
-- **Zentrale CSS** mit CSS-Variablen
+- **Tailwind CSS** für Styling mit CSS-Variablen
+- **Vite** als Build-Tool und Development Server
+- **TypeScript** für Typsicherheit
+- **CSS-Variablen** für Light/Dark Mode Support
 - **Responsive Design** mit Mobile-First-Ansatz
 
 ### Infrastructure
@@ -303,6 +327,29 @@ docker-compose -f docker/docker-compose.yml restart backend
 # - Automatischen Start der Container
 ```
 
+### Admin-Benutzer erstellen
+```bash
+# Erstellt einen neuen Admin-Benutzer
+./scripts/create-admin-user.sh
+
+# Das Skript ermöglicht:
+# - Interaktive Erstellung von Admin-Benutzern
+# - Sichere Passwort-Eingabe
+# - Automatische Datenbank-Integration
+```
+
+### Build-Probleme debuggen
+```bash
+# Debuggt Build-Probleme und Container-Issues
+./scripts/debug-build.sh
+
+# Das Skript überprüft:
+# - Docker-Container-Status
+# - Build-Logs und Fehler
+# - Abhängigkeiten und Konfiguration
+# - Netzwerk-Verbindungen
+```
+
 ## 📊 Monitoring & Überwachung
 
 ### Grafana-Dashboards
@@ -373,6 +420,35 @@ cd frontend
 npm install
 npm run dev
 ```
+
+### CSS-Variablen und Design-System
+Das Frontend verwendet ein zentrales Design-System mit CSS-Variablen in `frontend/src/index.css`:
+
+```css
+:root {
+  /* Light Mode Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --text-primary: #0f172a;
+  --accent-primary: #3b82f6;
+  /* ... weitere Variablen */
+}
+
+[data-theme="dark"] {
+  /* Dark Mode Colors */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --text-primary: #f8fafc;
+  /* ... weitere Variablen */
+}
+```
+
+**Verfügbare Design-Tokens:**
+- **Farben**: Primary, Secondary, Tertiary für Background und Text
+- **Accent-Farben**: Primary und Secondary für Buttons und Links
+- **Border-Farben**: Primary und Secondary für Rahmen
+- **Schatten**: Primary und Secondary für verschiedene Tiefen
+- **Glass-Effekte**: Für moderne UI-Elemente
 
 ### Datenbank-Schema erweitern
 ```sql
@@ -492,14 +568,23 @@ ls -lh /opt/backups/projektseite/
 - **Status verwalten**: Benutzer aktivieren/deaktivieren
 
 ### API-Endpunkte
+
+#### Authentifizierung (`/api/auth`)
 - `POST /api/auth/login` - Benutzer anmelden
 - `POST /api/auth/register` - Neuen Benutzer registrieren
 - `GET /api/auth/profile` - Benutzerprofil abrufen
 - `PUT /api/auth/change-password` - Passwort ändern
-- `GET /api/admin/users` - Alle Benutzer abrufen (Admin)
-- `POST /api/admin/users` - Benutzer erstellen (Admin)
-- `PUT /api/admin/users/:id` - Benutzer bearbeiten (Admin)
-- `DELETE /api/admin/users/:id` - Benutzer löschen (Admin)
+- `GET /api/auth/validate` - Token validieren
+- `POST /api/auth/logout` - Benutzer abmelden
+
+#### Admin-Funktionen (`/api/admin`)
+- `GET /api/admin/users` - Alle Benutzer abrufen (mit Paginierung und Filter)
+- `GET /api/admin/users/:id` - Einzelnen Benutzer abrufen
+- `POST /api/admin/users` - Benutzer erstellen
+- `PUT /api/admin/users/:id` - Benutzer bearbeiten
+- `PUT /api/admin/users/:id/reset-password` - Benutzer-Passwort zurücksetzen
+- `DELETE /api/admin/users/:id` - Benutzer löschen
+- `GET /api/admin/stats` - System-Statistiken abrufen
 
 ## 📚 Nächste Schritte
 
