@@ -51,6 +51,11 @@ const calculateProjectProgress = async (projectId) => {
   }
 };
 
+// Hilfsfunktion: Berechnet Modul-Fortschritt basierend auf Status
+const calculateModuleProgress = (status) => {
+  return statusProgressMapping[status] || 0;
+};
+
 // Hilfsfunktion: Aktualisiert Projektfortschritt
 const updateProjectProgress = async (projectId) => {
   try {
@@ -73,5 +78,6 @@ const updateProjectProgress = async (projectId) => {
 module.exports = {
   calculateProjectProgress,
   updateProjectProgress,
+  calculateModuleProgress,
   statusProgressMapping
 };

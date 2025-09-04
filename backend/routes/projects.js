@@ -2,7 +2,7 @@ const express = require('express');
 const { Pool } = require('pg');
 const { authenticateToken } = require('./auth');
 const { createNotification, createTeamNotification } = require('./notifications');
-const { calculateProjectProgress, updateProjectProgress } = require('../utils/progressCalculator');
+const { calculateProjectProgress, updateProjectProgress, calculateModuleProgress } = require('../utils/progressCalculator');
 const router = express.Router();
 
 // Datenbankverbindung
@@ -197,6 +197,12 @@ router.get('/:id', authenticateToken, async (req, res) => {
       WHERE pm.project_id = $1
       ORDER BY pm.created_at ASC
     `, [projectId]);
+    
+    // Berechne Fortschritt für jedes Modul basierend auf Status
+    const modulesWithProgress = modulesResult.rows.map(module => ({
+      ...module,
+      completion_percentage: calculateModuleProgress(module.status)
+    }));
 
     // Projekt-Logs abrufen
     const logsResult = await pool.query(`
@@ -210,7 +216,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
     res.json({
       project: projectResult.rows[0],
-      modules: modulesResult.rows,
+      modules: modulesWithProgress,
       logs: logsResult.rows
     });
   } catch (error) {

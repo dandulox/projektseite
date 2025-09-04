@@ -532,20 +532,18 @@ const ProjectManagement = () => {
                                   </span>
                                 )}
                               </div>
-                              {module.completion_percentage !== undefined && (
-                                <div className="mt-2">
-                                  <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
-                                    <span>Fortschritt</span>
-                                    <span>{module.completion_percentage}%</span>
-                                  </div>
-                                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mt-1">
-                                    <div 
-                                      className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
-                                      style={{ width: `${module.completion_percentage}%` }}
-                                    ></div>
-                                  </div>
+                              <div className="mt-2">
+                                <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
+                                  <span>Fortschritt</span>
+                                  <span>{module.completion_percentage || 0}%</span>
                                 </div>
-                              )}
+                                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mt-1">
+                                  <div 
+                                    className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                                    style={{ width: `${module.completion_percentage || 0}%` }}
+                                  ></div>
+                                </div>
+                              </div>
                             </div>
                             <div className="flex gap-1 ml-2">
                               <button

@@ -2,7 +2,7 @@ const express = require('express');
 const { Pool } = require('pg');
 const { authenticateToken } = require('./auth');
 const { createNotification, createTeamNotification } = require('./notifications');
-const { updateProjectProgress } = require('../utils/progressCalculator');
+const { updateProjectProgress, calculateModuleProgress } = require('../utils/progressCalculator');
 const router = express.Router();
 
 // Datenbankverbindung
@@ -165,7 +165,12 @@ router.get('/', authenticateToken, async (req, res) => {
     
     // Versuche, zusätzliche Details hinzuzufügen (falls Tabellen existieren)
     const modulesWithDetails = await Promise.all(result.rows.map(async (module) => {
-      const moduleWithDetails = { ...module, assigned_username: null, team_name: null };
+      const moduleWithDetails = { 
+        ...module, 
+        assigned_username: null, 
+        team_name: null,
+        completion_percentage: calculateModuleProgress(module.status)
+      };
       
       try {
         // Zugewiesenen Benutzer-Namen hinzufügen
@@ -250,8 +255,11 @@ router.get('/:id', authenticateToken, async (req, res) => {
       LIMIT 50
     `, [moduleId, module_type]);
 
+    const module = moduleResult.rows[0];
+    module.completion_percentage = calculateModuleProgress(module.status);
+    
     res.json({
-      module: moduleResult.rows[0],
+      module: module,
       logs: logsResult.rows
     });
   } catch (error) {
