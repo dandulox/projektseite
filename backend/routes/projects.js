@@ -237,12 +237,12 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 
     // Prüfe Team-Berechtigung falls team_id angegeben
-    if (team_id) {
+    if (team_id && team_id !== '') {
       try {
         const teamCheck = await pool.query(`
           SELECT id FROM team_memberships 
           WHERE team_id = $1 AND user_id = $2
-        `, [team_id, req.user.id]);
+        `, [parseInt(team_id), req.user.id]);
         
         if (teamCheck.rows.length === 0 && req.user.role !== 'admin') {
           return res.status(403).json({ error: 'Keine Berechtigung für das angegebene Team' });
@@ -274,7 +274,7 @@ router.post('/', authenticateToken, async (req, res) => {
       start_date && start_date.trim() !== '' ? start_date : null, 
       target_date && target_date.trim() !== '' ? target_date : null, 
       req.user.id, 
-      team_id, 
+      team_id && team_id !== '' ? parseInt(team_id) : null, 
       visibility
     ]);
 
