@@ -9,6 +9,7 @@ import UserSettings from './components/UserSettings';
 import GreetingManagement from './components/GreetingManagement';
 import TeamManagement from './components/TeamManagement';
 import ProjectManagement from './components/ProjectManagement';
+import ModuleManagement from './components/ModuleManagement';
 import RegisterFormStartPage from './components/RegisterFormStartPage';
 import LoginForm from './components/LoginForm';
 import DynamicGreeting from './components/DynamicGreeting';
@@ -545,32 +546,8 @@ const Dashboard = () => (
 const Projects = () => <ProjectManagement />;
 
 
-const Modules = () => (
-  <div className="space-y-8 fade-in">
-    <div className="text-center">
-      <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6">Module</h1>
-      <p className="text-xl text-slate-600 dark:text-slate-400">Übersicht über alle verfügbaren Module und deren Status.</p>
-    </div>
-    
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {['Authentication', 'Database', 'API', 'Frontend', 'Backend', 'Testing'].map((module, i) => (
-        <div key={module} className="card group cursor-pointer transform hover:scale-105 transition-all duration-300">
-          <div className="flex items-center justify-between mb-6">
-            <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <Puzzle className="w-7 h-7 text-white" />
-            </div>
-            <span className="text-sm font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">{module}</span>
-          </div>
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{module} Modul</h3>
-          <p className="text-slate-600 dark:text-slate-400 mb-6">Modulbeschreibung und aktuelle Implementierung.</p>
-          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 shadow-inner">
-            <div className="bg-gradient-to-r from-emerald-500 to-blue-600 h-3 rounded-full shadow-lg" style={{ width: `${Math.random() * 100}%` }}></div>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+// Modulverwaltung Component - jetzt mit echter Backend-Integration
+const Modules = () => <ModuleManagement />;
 
 
 const Admin = () => {

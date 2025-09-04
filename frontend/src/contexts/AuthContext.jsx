@@ -437,6 +437,105 @@ export const AuthProvider = ({ children }) => {
         method: 'DELETE',
       });
     },
+
+    // Projekt-Modul erstellen
+    createProjectModule: async (projectId, moduleData) => {
+      return await apiRequest(`/modules/project/${projectId}`, {
+        method: 'POST',
+        body: JSON.stringify(moduleData),
+      });
+    },
+
+    // Modul aktualisieren
+    updateModule: async (moduleId, moduleType, moduleData) => {
+      return await apiRequest(`/modules/${moduleType}/${moduleId}`, {
+        method: 'PUT',
+        body: JSON.stringify(moduleData),
+      });
+    },
+
+    // Modul löschen
+    deleteModule: async (moduleId, moduleType) => {
+      return await apiRequest(`/modules/${moduleType}/${moduleId}`, {
+        method: 'DELETE',
+      });
+    },
+  };
+
+  // Modul-Funktionen
+  const moduleApi = {
+    // Alle Module abrufen
+    getModules: async (filters = {}) => {
+      const params = new URLSearchParams(filters);
+      return await apiRequest(`/modules?${params}`);
+    },
+
+    // Einzelnes Modul abrufen
+    getModule: async (moduleId, moduleType) => {
+      return await apiRequest(`/modules/${moduleType}/${moduleId}`);
+    },
+
+    // Eigenständiges Modul erstellen
+    createStandaloneModule: async (moduleData) => {
+      return await apiRequest('/modules/standalone', {
+        method: 'POST',
+        body: JSON.stringify(moduleData),
+      });
+    },
+
+    // Projekt-Modul erstellen
+    createProjectModule: async (projectId, moduleData) => {
+      return await apiRequest(`/modules/project/${projectId}`, {
+        method: 'POST',
+        body: JSON.stringify(moduleData),
+      });
+    },
+
+    // Modul aktualisieren
+    updateModule: async (moduleId, moduleType, moduleData) => {
+      return await apiRequest(`/modules/${moduleType}/${moduleId}`, {
+        method: 'PUT',
+        body: JSON.stringify(moduleData),
+      });
+    },
+
+    // Modul löschen
+    deleteModule: async (moduleId, moduleType) => {
+      return await apiRequest(`/modules/${moduleType}/${moduleId}`, {
+        method: 'DELETE',
+      });
+    },
+
+    // Modul-Verbindung erstellen
+    createModuleConnection: async (moduleId, moduleType, connectionData) => {
+      return await apiRequest(`/modules/${moduleType}/${moduleId}/connections`, {
+        method: 'POST',
+        body: JSON.stringify(connectionData),
+      });
+    },
+
+    // Modul-Verbindung löschen
+    deleteModuleConnection: async (moduleId, moduleType, connectionId) => {
+      return await apiRequest(`/modules/${moduleType}/${moduleId}/connections/${connectionId}`, {
+        method: 'DELETE',
+      });
+    },
+
+    // Modul-Berechtigung vergeben
+    grantModulePermission: async (moduleId, moduleType, userId, permissionType) => {
+      return await apiRequest(`/modules/${moduleType}/${moduleId}/permissions`, {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, permission_type: permissionType }),
+      });
+    },
+
+    // Modul-Team zuweisen
+    assignModuleToTeam: async (moduleId, moduleType, teamId, role = 'member') => {
+      return await apiRequest(`/modules/${moduleType}/${moduleId}/teams`, {
+        method: 'POST',
+        body: JSON.stringify({ team_id: teamId, role }),
+      });
+    },
   };
 
   const value = {
@@ -453,6 +552,7 @@ export const AuthProvider = ({ children }) => {
     adminApi,
     teamApi,
     projectApi,
+    moduleApi,
     // Design-Funktionen
     theme,
     designSettings,

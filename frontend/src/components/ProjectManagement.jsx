@@ -10,6 +10,9 @@ const ProjectManagement = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [showCreateModuleForm, setShowCreateModuleForm] = useState(false);
+  const [showEditModuleForm, setShowEditModuleForm] = useState(false);
+  const [selectedModule, setSelectedModule] = useState(null);
   const [filters, setFilters] = useState({
     team_id: '',
     status: '',
@@ -24,6 +27,19 @@ const ProjectManagement = () => {
     target_date: '',
     team_id: '',
     visibility: 'private'
+  });
+  const [newModule, setNewModule] = useState({
+    name: '',
+    description: '',
+    status: 'not_started',
+    priority: 'medium',
+    estimated_hours: '',
+    assigned_to: '',
+    due_date: '',
+    team_id: '',
+    visibility: 'private',
+    tags: '',
+    dependencies: ''
   });
 
   useEffect(() => {
@@ -108,6 +124,61 @@ const ProjectManagement = () => {
       loadProjects();
     } catch (error) {
       toast.error(error.message || 'Fehler beim Löschen des Projekts');
+    }
+  };
+
+  const handleCreateModule = async (e) => {
+    e.preventDefault();
+    try {
+      await projectApi.createProjectModule(selectedProject.project.id, newModule);
+      toast.success('Modul erfolgreich erstellt');
+      setNewModule({
+        name: '',
+        description: '',
+        status: 'not_started',
+        priority: 'medium',
+        estimated_hours: '',
+        assigned_to: '',
+        due_date: '',
+        team_id: '',
+        visibility: 'private',
+        tags: '',
+        dependencies: ''
+      });
+      setShowCreateModuleForm(false);
+      loadProjectDetails(selectedProject.project.id);
+    } catch (error) {
+      toast.error(error.message || 'Fehler beim Erstellen des Moduls');
+    }
+  };
+
+  const handleEditModule = (module) => {
+    setSelectedModule(module);
+    setShowEditModuleForm(true);
+  };
+
+  const handleUpdateModule = async (e) => {
+    e.preventDefault();
+    try {
+      await projectApi.updateModule(selectedModule.id, 'project', selectedModule);
+      toast.success('Modul erfolgreich aktualisiert');
+      setShowEditModuleForm(false);
+      setSelectedModule(null);
+      loadProjectDetails(selectedProject.project.id);
+    } catch (error) {
+      toast.error(error.message || 'Fehler beim Aktualisieren des Moduls');
+    }
+  };
+
+  const handleDeleteModule = async (moduleId) => {
+    if (!window.confirm('Modul wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) return;
+    
+    try {
+      await projectApi.deleteModule(moduleId, 'project');
+      toast.success('Modul erfolgreich gelöscht');
+      loadProjectDetails(selectedProject.project.id);
+    } catch (error) {
+      toast.error(error.message || 'Fehler beim Löschen des Moduls');
     }
   };
 
@@ -416,13 +487,26 @@ const ProjectManagement = () => {
                   </div>
 
                   <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Module</h3>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Module</h3>
+                      <button
+                        onClick={() => setShowCreateModuleForm(true)}
+                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                      >
+                        Modul hinzufügen
+                      </button>
+                    </div>
                     <div className="space-y-3">
                       {selectedProject.modules.map((module) => (
                         <div key={module.id} className="border border-slate-200 dark:border-slate-600 rounded-lg p-3">
                           <div className="flex justify-between items-start">
-                            <div>
-                              <h4 className="font-medium text-slate-900 dark:text-white">{module.name}</h4>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-medium text-slate-900 dark:text-white">{module.name}</h4>
+                                <span className="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-600 text-slate-600 dark:text-slate-300 rounded">
+                                  Projekt-Modul
+                                </span>
+                              </div>
                               {module.description && (
                                 <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                                   {module.description}
@@ -432,12 +516,43 @@ const ProjectManagement = () => {
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(module.status)}`}>
                                   {getStatusText(module.status)}
                                 </span>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityBadgeColor(module.priority)}`}>
+                                  {getPriorityText(module.priority)}
+                                </span>
                                 {module.assigned_username && (
                                   <span className="text-xs text-slate-500 dark:text-slate-400">
                                     {module.assigned_username}
                                   </span>
                                 )}
                               </div>
+                              {module.completion_percentage !== undefined && (
+                                <div className="mt-2">
+                                  <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
+                                    <span>Fortschritt</span>
+                                    <span>{module.completion_percentage}%</span>
+                                  </div>
+                                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mt-1">
+                                    <div 
+                                      className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                                      style={{ width: `${module.completion_percentage}%` }}
+                                    ></div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex gap-1 ml-2">
+                              <button
+                                onClick={() => handleEditModule(module)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                              >
+                                Bearbeiten
+                              </button>
+                              <button
+                                onClick={() => handleDeleteModule(module.id)}
+                                className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                              >
+                                Löschen
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -778,6 +893,257 @@ const ProjectManagement = () => {
                   <button
                     type="button"
                     onClick={() => setShowEditForm(false)}
+                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    Abbrechen
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Speichern
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Create Module Modal */}
+        {showCreateModuleForm && selectedProject && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+                Neues Modul für "{selectedProject.project.name}" erstellen
+              </h3>
+              <form onSubmit={handleCreateModule}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Modul-Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={newModule.name}
+                      onChange={(e) => setNewModule({ ...newModule, name: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Status
+                    </label>
+                    <select
+                      value={newModule.status}
+                      onChange={(e) => setNewModule({ ...newModule, status: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    >
+                      <option value="not_started">Nicht begonnen</option>
+                      <option value="in_progress">In Bearbeitung</option>
+                      <option value="testing">Testen</option>
+                      <option value="completed">Abgeschlossen</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Priorität
+                    </label>
+                    <select
+                      value={newModule.priority}
+                      onChange={(e) => setNewModule({ ...newModule, priority: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    >
+                      <option value="low">Niedrig</option>
+                      <option value="medium">Mittel</option>
+                      <option value="high">Hoch</option>
+                      <option value="critical">Kritisch</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Geschätzte Stunden
+                    </label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={newModule.estimated_hours}
+                      onChange={(e) => setNewModule({ ...newModule, estimated_hours: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Fälligkeitsdatum
+                    </label>
+                    <input
+                      type="date"
+                      value={newModule.due_date}
+                      onChange={(e) => setNewModule({ ...newModule, due_date: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Sichtbarkeit
+                    </label>
+                    <select
+                      value={newModule.visibility}
+                      onChange={(e) => setNewModule({ ...newModule, visibility: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    >
+                      <option value="private">Privat</option>
+                      <option value="team">Team</option>
+                      <option value="public">Öffentlich</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Beschreibung
+                  </label>
+                  <textarea
+                    value={newModule.description}
+                    onChange={(e) => setNewModule({ ...newModule, description: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    rows={3}
+                  />
+                </div>
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Tags (kommagetrennt)
+                  </label>
+                  <input
+                    type="text"
+                    value={newModule.tags}
+                    onChange={(e) => setNewModule({ ...newModule, tags: e.target.value })}
+                    placeholder="frontend, backend, api"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                  />
+                </div>
+                <div className="flex gap-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModuleForm(false)}
+                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    Abbrechen
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Erstellen
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Module Modal */}
+        {showEditModuleForm && selectedModule && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+                Modul bearbeiten
+              </h3>
+              <form onSubmit={handleUpdateModule}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Modul-Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedModule.name}
+                      onChange={(e) => setSelectedModule({ ...selectedModule, name: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Status
+                    </label>
+                    <select
+                      value={selectedModule.status}
+                      onChange={(e) => setSelectedModule({ ...selectedModule, status: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    >
+                      <option value="not_started">Nicht begonnen</option>
+                      <option value="in_progress">In Bearbeitung</option>
+                      <option value="testing">Testen</option>
+                      <option value="completed">Abgeschlossen</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Priorität
+                    </label>
+                    <select
+                      value={selectedModule.priority}
+                      onChange={(e) => setSelectedModule({ ...selectedModule, priority: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    >
+                      <option value="low">Niedrig</option>
+                      <option value="medium">Mittel</option>
+                      <option value="high">Hoch</option>
+                      <option value="critical">Kritisch</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Fortschritt (%)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={selectedModule.completion_percentage || 0}
+                      onChange={(e) => setSelectedModule({ ...selectedModule, completion_percentage: parseInt(e.target.value) })}
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Geschätzte Stunden
+                    </label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={selectedModule.estimated_hours || ''}
+                      onChange={(e) => setSelectedModule({ ...selectedModule, estimated_hours: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Fälligkeitsdatum
+                    </label>
+                    <input
+                      type="date"
+                      value={selectedModule.due_date || ''}
+                      onChange={(e) => setSelectedModule({ ...selectedModule, due_date: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    />
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Beschreibung
+                  </label>
+                  <textarea
+                    value={selectedModule.description || ''}
+                    onChange={(e) => setSelectedModule({ ...selectedModule, description: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    rows={3}
+                  />
+                </div>
+                <div className="flex gap-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModuleForm(false)}
                     className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     Abbrechen
