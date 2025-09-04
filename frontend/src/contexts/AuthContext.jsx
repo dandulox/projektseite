@@ -48,10 +48,76 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [theme, setTheme] = useState('light');
+  const [designSettings, setDesignSettings] = useState({
+    theme: 'light',
+    language: 'de',
+    compactMode: false,
+    fontSize: 'medium',
+    colorScheme: 'blue',
+    animations: true
+  });
 
-  // Token aus localStorage laden
+  // Theme-Management
+  const applyTheme = (themeName) => {
+    const root = document.documentElement;
+    
+    if (themeName === 'auto') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      themeName = prefersDark ? 'dark' : 'light';
+    }
+    
+    root.setAttribute('data-theme', themeName);
+    setTheme(themeName);
+  };
+
+  // Design-Einstellungen anwenden
+  const applyDesignSettings = (settings) => {
+    const root = document.documentElement;
+    
+    // Theme anwenden
+    applyTheme(settings.theme);
+    
+    // Schriftgröße anwenden
+    const fontSizeMap = {
+      small: '14px',
+      medium: '16px',
+      large: '18px',
+      xlarge: '20px'
+    };
+    root.style.fontSize = fontSizeMap[settings.fontSize] || '16px';
+    
+    // Kompakter Modus
+    if (settings.compactMode) {
+      root.classList.add('compact-mode');
+    } else {
+      root.classList.remove('compact-mode');
+    }
+    
+    // Animationen
+    if (!settings.animations) {
+      root.classList.add('no-animations');
+    } else {
+      root.classList.remove('no-animations');
+    }
+    
+    // Farbschema
+    root.setAttribute('data-color-scheme', settings.colorScheme);
+  };
+
+  // Token und Einstellungen aus localStorage laden
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const savedSettings = loadUserSettings();
+    
+    if (savedSettings?.design) {
+      setDesignSettings(savedSettings.design);
+      applyDesignSettings(savedSettings.design);
+    } else {
+      // Standard-Einstellungen anwenden
+      applyDesignSettings(designSettings);
+    }
+    
     if (token) {
       validateToken();
     } else {
@@ -178,12 +244,33 @@ export const AuthProvider = ({ children }) => {
   const saveUserSettings = (settings) => {
     try {
       localStorage.setItem('userSettings', JSON.stringify(settings));
+      
+      // Design-Einstellungen sofort anwenden
+      if (settings.design) {
+        setDesignSettings(settings.design);
+        applyDesignSettings(settings.design);
+      }
+      
       toast.success('Einstellungen gespeichert');
       return { success: true };
     } catch (error) {
       toast.error('Fehler beim Speichern der Einstellungen');
       return { success: false, error: error.message };
     }
+  };
+
+  // Design-Einstellungen aktualisieren
+  const updateDesignSettings = (newSettings) => {
+    const updatedSettings = { ...designSettings, ...newSettings };
+    setDesignSettings(updatedSettings);
+    applyDesignSettings(updatedSettings);
+    
+    // In localStorage speichern
+    const currentSettings = loadUserSettings() || {};
+    saveUserSettings({
+      ...currentSettings,
+      design: updatedSettings
+    });
   };
 
   // Benutzereinstellungen laden (lokal)
@@ -254,6 +341,12 @@ export const AuthProvider = ({ children }) => {
     saveUserSettings,
     loadUserSettings,
     adminApi,
+    // Design-Funktionen
+    theme,
+    designSettings,
+    updateDesignSettings,
+    applyTheme,
+    applyDesignSettings,
     // Hilfsfunktionen
     isAdmin: user?.role === 'admin',
     isUser: user?.role === 'user',

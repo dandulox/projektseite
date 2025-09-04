@@ -1462,149 +1462,137 @@ const Footer = () => (
   </footer>
 );
 
-// Hauptkomponente
-function App() {
-  const [theme, setTheme] = useState('light');
+// App Content Component - verwendet AuthContext
+const AppContent = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(true);
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    setTheme(savedTheme);
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    if (savedTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
+  const { theme, designSettings, updateDesignSettings } = useAuth();
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    updateDesignSettings({ ...designSettings, theme: newTheme });
   };
 
   return (
+    <Router>
+      <div className={`min-h-screen transition-colors duration-300 flex flex-col ${
+        theme === 'dark' ? 'bg-slate-900' : 'bg-slate-50'
+      }`}>
+        <Routes>
+          <Route path="/" element={<WelcomePage theme={theme} toggleTheme={toggleTheme} />} />
+          <Route path="/welcome" element={<WelcomePage theme={theme} toggleTheme={toggleTheme} />} />
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Header 
+                theme={theme} 
+                toggleTheme={toggleTheme}
+                isMobileMenuOpen={isMobileMenuOpen}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+              />
+              <main className="flex-1 py-8 page-container">
+                <Dashboard />
+              </main>
+              <Footer />
+              <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+            </ProtectedRoute>
+          } />
+          <Route path="/projects" element={
+            <ProtectedRoute>
+              <Header 
+                theme={theme} 
+                toggleTheme={toggleTheme}
+                isMobileMenuOpen={isMobileMenuOpen}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+              />
+              <main className="flex-1 py-8 page-container">
+                <Projects />
+              </main>
+              <Footer />
+              <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+            </ProtectedRoute>
+          } />
+          <Route path="/modules" element={
+            <ProtectedRoute>
+              <Header 
+                theme={theme} 
+                toggleTheme={toggleTheme}
+                isMobileMenuOpen={isMobileMenuOpen}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+              />
+              <main className="flex-1 py-8 page-container">
+                <Modules />
+              </main>
+              <Footer />
+              <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+            </ProtectedRoute>
+          } />
+          <Route path="/design" element={
+            <ProtectedRoute>
+              <Header 
+                theme={theme} 
+                toggleTheme={toggleTheme}
+                isMobileMenuOpen={isMobileMenuOpen}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+              />
+              <main className="flex-1 py-8 page-container">
+                <Design />
+              </main>
+              <Footer />
+              <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin" element={
+            <ProtectedRoute requireAdmin={true}>
+              <Header 
+                theme={theme} 
+                toggleTheme={toggleTheme}
+                isMobileMenuOpen={isMobileMenuOpen}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+              />
+              <main className="flex-1 py-8 page-container">
+                <Admin />
+              </main>
+              <Footer />
+              <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+            </ProtectedRoute>
+          } />
+          <Route path="/settings" element={
+            <ProtectedRoute>
+              <Header 
+                theme={theme} 
+                toggleTheme={toggleTheme}
+                isMobileMenuOpen={isMobileMenuOpen}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+              />
+              <main className="flex-1 py-8 page-container">
+                <UserSettings />
+              </main>
+              <Footer />
+              <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+            </ProtectedRoute>
+          } />
+        </Routes>
+        
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: 'var(--bg-secondary)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border-secondary)',
+            },
+          }}
+        />
+      </div>
+    </Router>
+  );
+};
+
+// Hauptkomponente
+function App() {
+  return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router>
-          <div className={`min-h-screen transition-colors duration-300 flex flex-col ${
-            theme === 'dark' ? 'bg-slate-900' : 'bg-slate-50'
-          }`}>
-            <Routes>
-              <Route path="/" element={<WelcomePage theme={theme} toggleTheme={toggleTheme} />} />
-              <Route path="/welcome" element={<WelcomePage theme={theme} toggleTheme={toggleTheme} />} />
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <Header 
-                    theme={theme} 
-                    toggleTheme={toggleTheme}
-                    isMobileMenuOpen={isMobileMenuOpen}
-                    setIsMobileMenuOpen={setIsMobileMenuOpen}
-                  />
-                  <main className="flex-1 py-8 page-container">
-                    <Dashboard />
-                  </main>
-                  <Footer />
-                  <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
-                </ProtectedRoute>
-              } />
-              <Route path="/projects" element={
-                <ProtectedRoute>
-                  <Header 
-                    theme={theme} 
-                    toggleTheme={toggleTheme}
-                    isMobileMenuOpen={isMobileMenuOpen}
-                    setIsMobileMenuOpen={setIsMobileMenuOpen}
-                  />
-                  <main className="flex-1 py-8 page-container">
-                    <Projects />
-                  </main>
-                  <Footer />
-                  <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
-                </ProtectedRoute>
-              } />
-              <Route path="/modules" element={
-                <ProtectedRoute>
-                  <Header 
-                    theme={theme} 
-                    toggleTheme={toggleTheme}
-                    isMobileMenuOpen={isMobileMenuOpen}
-                    setIsMobileMenuOpen={setIsMobileMenuOpen}
-                  />
-                  <main className="flex-1 py-8 page-container">
-                    <Modules />
-                  </main>
-                  <Footer />
-                  <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
-                </ProtectedRoute>
-              } />
-              <Route path="/design" element={
-                <ProtectedRoute>
-                  <Header 
-                    theme={theme} 
-                    toggleTheme={toggleTheme}
-                    isMobileMenuOpen={isMobileMenuOpen}
-                    setIsMobileMenuOpen={setIsMobileMenuOpen}
-                  />
-                  <main className="flex-1 py-8 page-container">
-                    <Design />
-                  </main>
-                  <Footer />
-                  <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin" element={
-                <ProtectedRoute requireAdmin={true}>
-                  <Header 
-                    theme={theme} 
-                    toggleTheme={toggleTheme}
-                    isMobileMenuOpen={isMobileMenuOpen}
-                    setIsMobileMenuOpen={setIsMobileMenuOpen}
-                  />
-                  <main className="flex-1 py-8 page-container">
-                    <Admin />
-                  </main>
-                  <Footer />
-                  <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
-                </ProtectedRoute>
-              } />
-              <Route path="/settings" element={
-                <ProtectedRoute>
-                  <Header 
-                    theme={theme} 
-                    toggleTheme={toggleTheme}
-                    isMobileMenuOpen={isMobileMenuOpen}
-                    setIsMobileMenuOpen={setIsMobileMenuOpen}
-                  />
-                  <main className="flex-1 py-8 page-container">
-                    <UserSettings />
-                  </main>
-                  <Footer />
-                  <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
-                </ProtectedRoute>
-              } />
-            </Routes>
-            
-            <Toaster 
-              position="top-right"
-              toastOptions={{
-                style: {
-                  background: 'var(--bg-secondary)',
-                  color: 'var(--text-primary)',
-                  border: '1px solid var(--border-secondary)',
-                },
-              }}
-            />
-          </div>
-        </Router>
+        <AppContent />
       </AuthProvider>
     </QueryClientProvider>
   );

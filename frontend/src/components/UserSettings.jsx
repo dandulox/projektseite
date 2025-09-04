@@ -13,11 +13,26 @@ import {
   Shield,
   Bell,
   Palette,
-  Globe
+  Globe,
+  Type,
+  Palette as ColorPalette,
+  Zap,
+  Monitor,
+  Sun,
+  Moon,
+  Smartphone
 } from 'lucide-react';
 
 const UserSettings = () => {
-  const { user, updateProfile, changePassword, saveUserSettings, loadUserSettings } = useAuth();
+  const { 
+    user, 
+    updateProfile, 
+    changePassword, 
+    saveUserSettings, 
+    loadUserSettings,
+    designSettings,
+    updateDesignSettings
+  } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
   
@@ -49,11 +64,14 @@ const UserSettings = () => {
     systemAlerts: true
   });
   
-  // Design-Einstellungen
-  const [designSettings, setDesignSettings] = useState({
+  // Lokale Design-Einstellungen für die UI
+  const [localDesignSettings, setLocalDesignSettings] = useState({
     theme: 'light',
     language: 'de',
-    compactMode: false
+    compactMode: false,
+    fontSize: 'medium',
+    colorScheme: 'blue',
+    animations: true
   });
 
   // Einstellungen beim Laden der Komponente laden
@@ -64,10 +82,12 @@ const UserSettings = () => {
         setNotifications(savedSettings.notifications);
       }
       if (savedSettings.design) {
-        setDesignSettings(savedSettings.design);
+        setLocalDesignSettings(savedSettings.design);
       }
+    } else if (designSettings) {
+      setLocalDesignSettings(designSettings);
     }
-  }, [loadUserSettings]);
+  }, [loadUserSettings, designSettings]);
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
@@ -126,17 +146,20 @@ const UserSettings = () => {
   const handleNotificationsSave = () => {
     const settings = {
       notifications,
-      design: designSettings
+      design: localDesignSettings
     };
     saveUserSettings(settings);
   };
 
   const handleDesignSave = () => {
-    const settings = {
-      notifications,
-      design: designSettings
-    };
-    saveUserSettings(settings);
+    updateDesignSettings(localDesignSettings);
+  };
+
+  const handleDesignChange = (key, value) => {
+    const newSettings = { ...localDesignSettings, [key]: value };
+    setLocalDesignSettings(newSettings);
+    // Sofortige Vorschau anwenden
+    updateDesignSettings(newSettings);
   };
 
   const tabs = [
@@ -445,29 +468,68 @@ const UserSettings = () => {
                 </div>
 
                 <div className="space-y-6">
+                  {/* Theme-Einstellungen */}
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
                       Theme
                     </label>
                     <div className="grid grid-cols-3 gap-4">
                       {[
-                        { value: 'light', label: 'Hell', description: 'Helles Theme' },
-                        { value: 'dark', label: 'Dunkel', description: 'Dunkles Theme' },
-                        { value: 'auto', label: 'Automatisch', description: 'System-Einstellung' }
-                      ].map((theme) => (
-                        <label key={theme.value} className="relative cursor-pointer">
+                        { value: 'light', label: 'Hell', description: 'Helles Theme', icon: Sun },
+                        { value: 'dark', label: 'Dunkel', description: 'Dunkles Theme', icon: Moon },
+                        { value: 'auto', label: 'Automatisch', description: 'System-Einstellung', icon: Monitor }
+                      ].map((theme) => {
+                        const Icon = theme.icon;
+                        return (
+                          <label key={theme.value} className="relative cursor-pointer">
+                            <input
+                              type="radio"
+                              name="theme"
+                              value={theme.value}
+                              checked={localDesignSettings.theme === theme.value}
+                              onChange={(e) => handleDesignChange('theme', e.target.value)}
+                              className="sr-only peer"
+                            />
+                            <div className="p-4 border-2 border-slate-200 dark:border-slate-700 rounded-lg peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 transition-all duration-200">
+                              <div className="text-center">
+                                <Icon className="w-6 h-6 mx-auto mb-2 text-slate-600 dark:text-slate-400" />
+                                <div className="text-sm font-medium text-slate-900 dark:text-white">{theme.label}</div>
+                                <div className="text-xs text-slate-600 dark:text-slate-400">{theme.description}</div>
+                              </div>
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Farbschema */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                      Farbschema
+                    </label>
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { value: 'blue', label: 'Blau', color: 'bg-blue-500' },
+                        { value: 'purple', label: 'Lila', color: 'bg-purple-500' },
+                        { value: 'green', label: 'Grün', color: 'bg-green-500' },
+                        { value: 'red', label: 'Rot', color: 'bg-red-500' },
+                        { value: 'orange', label: 'Orange', color: 'bg-orange-500' },
+                        { value: 'pink', label: 'Pink', color: 'bg-pink-500' }
+                      ].map((scheme) => (
+                        <label key={scheme.value} className="relative cursor-pointer">
                           <input
                             type="radio"
-                            name="theme"
-                            value={theme.value}
-                            checked={designSettings.theme === theme.value}
-                            onChange={(e) => setDesignSettings({...designSettings, theme: e.target.value})}
+                            name="colorScheme"
+                            value={scheme.value}
+                            checked={localDesignSettings.colorScheme === scheme.value}
+                            onChange={(e) => handleDesignChange('colorScheme', e.target.value)}
                             className="sr-only peer"
                           />
-                          <div className="p-4 border-2 border-slate-200 dark:border-slate-700 rounded-lg peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 transition-all duration-200">
+                          <div className="p-3 border-2 border-slate-200 dark:border-slate-700 rounded-lg peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 transition-all duration-200">
                             <div className="text-center">
-                              <div className="text-sm font-medium text-slate-900 dark:text-white">{theme.label}</div>
-                              <div className="text-xs text-slate-600 dark:text-slate-400">{theme.description}</div>
+                              <div className={`w-8 h-8 ${scheme.color} rounded-full mx-auto mb-2`}></div>
+                              <div className="text-xs font-medium text-slate-900 dark:text-white">{scheme.label}</div>
                             </div>
                           </div>
                         </label>
@@ -475,13 +537,46 @@ const UserSettings = () => {
                     </div>
                   </div>
 
+                  {/* Schriftgröße */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                      Schriftgröße
+                    </label>
+                    <div className="grid grid-cols-4 gap-3">
+                      {[
+                        { value: 'small', label: 'Klein', size: 'text-sm' },
+                        { value: 'medium', label: 'Normal', size: 'text-base' },
+                        { value: 'large', label: 'Groß', size: 'text-lg' },
+                        { value: 'xlarge', label: 'Sehr groß', size: 'text-xl' }
+                      ].map((size) => (
+                        <label key={size.value} className="relative cursor-pointer">
+                          <input
+                            type="radio"
+                            name="fontSize"
+                            value={size.value}
+                            checked={localDesignSettings.fontSize === size.value}
+                            onChange={(e) => handleDesignChange('fontSize', e.target.value)}
+                            className="sr-only peer"
+                          />
+                          <div className="p-3 border-2 border-slate-200 dark:border-slate-700 rounded-lg peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 transition-all duration-200">
+                            <div className="text-center">
+                              <div className={`${size.size} font-medium text-slate-900 dark:text-white mb-1`}>Aa</div>
+                              <div className="text-xs text-slate-600 dark:text-slate-400">{size.label}</div>
+                            </div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sprache */}
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
                       Sprache
                     </label>
                     <select
-                      value={designSettings.language}
-                      onChange={(e) => setDesignSettings({...designSettings, language: e.target.value})}
+                      value={localDesignSettings.language}
+                      onChange={(e) => handleDesignChange('language', e.target.value)}
                       className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="de">Deutsch</option>
@@ -491,16 +586,44 @@ const UserSettings = () => {
                     </select>
                   </div>
 
+                  {/* Kompakter Modus */}
                   <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div>
-                      <h3 className="text-sm font-medium text-slate-900 dark:text-white">Kompakter Modus</h3>
-                      <p className="text-xs text-slate-600 dark:text-slate-400">Reduziert Abstände für mehr Inhalt</p>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-slate-200 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+                        <Smartphone className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-slate-900 dark:text-white">Kompakter Modus</h3>
+                        <p className="text-xs text-slate-600 dark:text-slate-400">Reduziert Abstände für mehr Inhalt</p>
+                      </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={designSettings.compactMode}
-                        onChange={(e) => setDesignSettings({...designSettings, compactMode: e.target.checked})}
+                        checked={localDesignSettings.compactMode}
+                        onChange={(e) => handleDesignChange('compactMode', e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
+                    </label>
+                  </div>
+
+                  {/* Animationen */}
+                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-slate-200 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+                        <Zap className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-slate-900 dark:text-white">Animationen</h3>
+                        <p className="text-xs text-slate-600 dark:text-slate-400">Übergänge und Animationen aktivieren</p>
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={localDesignSettings.animations}
+                        onChange={(e) => handleDesignChange('animations', e.target.checked)}
                         className="sr-only peer"
                       />
                       <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>

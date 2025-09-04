@@ -19,6 +19,13 @@
   --shadow-secondary: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --glass-bg: rgba(255, 255, 255, 0.9);
   --glass-border: rgba(255, 255, 255, 0.2);
+  
+  /* Design System Variables */
+  --font-size-base: 16px;
+  --spacing-compact: 0.75;
+  --animation-duration: 0.3s;
+  --border-radius: 0.75rem;
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 [data-theme="dark"] {
@@ -37,6 +44,37 @@
   --shadow-secondary: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
   --glass-bg: rgba(15, 23, 42, 0.9);
   --glass-border: rgba(148, 163, 184, 0.1);
+}
+
+/* Farbschema-Varianten */
+[data-color-scheme="blue"] {
+  --accent-primary: #3b82f6;
+  --accent-secondary: #2563eb;
+}
+
+[data-color-scheme="purple"] {
+  --accent-primary: #8b5cf6;
+  --accent-secondary: #7c3aed;
+}
+
+[data-color-scheme="green"] {
+  --accent-primary: #10b981;
+  --accent-secondary: #059669;
+}
+
+[data-color-scheme="red"] {
+  --accent-primary: #ef4444;
+  --accent-secondary: #dc2626;
+}
+
+[data-color-scheme="orange"] {
+  --accent-primary: #f97316;
+  --accent-secondary: #ea580c;
+}
+
+[data-color-scheme="pink"] {
+  --accent-primary: #ec4899;
+  --accent-secondary: #db2777;
 }
 
 @layer base {
@@ -70,6 +108,38 @@
   /* Smooth transitions for theme switching */
   * {
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  }
+
+  /* Kompakter Modus */
+  .compact-mode .card {
+    @apply p-4;
+  }
+  
+  .compact-mode .space-y-6 > * + * {
+    margin-top: 1rem;
+  }
+  
+  .compact-mode .space-y-4 > * + * {
+    margin-top: 0.75rem;
+  }
+  
+  .compact-mode .space-y-8 > * + * {
+    margin-top: 1.5rem;
+  }
+  
+  .compact-mode .py-3 {
+    @apply py-2;
+  }
+  
+  .compact-mode .px-6 {
+    @apply px-4;
+  }
+
+  /* Animationen deaktivieren */
+  .no-animations * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 
   /* Ensure all elements use the correct font */
