@@ -30,7 +30,6 @@ import {
   FileText,
   Zap,
   Bell,
-  Search,
   LogIn,
   UserPlus,
   Star,
@@ -164,36 +163,11 @@ const Header = ({ theme, toggleTheme, isMobileMenuOpen, setIsMobileMenuOpen }) =
             </NavLink>
             
             
-            {isAdmin && (
-              <NavLink
-                to="/admin"
-                className={({ isActive }) =>
-                  `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isActive
-                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-md'
-                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
-                  }`
-                }
-              >
-                <Settings className="w-4 h-4 inline mr-2" />
-                Admin
-              </NavLink>
-            )}
           </nav>
         </div>
 
-        {/* Right side - Search, Notifications, Theme, Mobile Menu */}
+        {/* Right side - Notifications, Theme, Mobile Menu */}
         <div className="flex items-center space-x-4">
-          {/* Search */}
-          <div className="hidden sm:flex items-center space-x-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2">
-            <Search className="w-4 h-4 text-slate-500" />
-            <input
-              type="text"
-              placeholder="Suchen..."
-              className="bg-transparent border-none outline-none text-sm text-slate-700 dark:text-slate-300 placeholder-slate-500 w-32"
-            />
-          </div>
-
           {/* Notifications */}
           <NotificationBell />
 
@@ -378,16 +352,6 @@ const MobileMenu = ({ isOpen, onClose }) => {
             </NavLink>
             
             
-            {isAdmin && (
-              <NavLink
-                to="/admin"
-                onClick={onClose}
-                className="flex items-center px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
-              >
-                <Settings className="mr-3 h-5 w-5" />
-                Admin
-              </NavLink>
-            )}
             
             {/* User Info und Aktionen */}
             <div className="border-t border-slate-200 dark:border-slate-700 pt-4 mt-4">
