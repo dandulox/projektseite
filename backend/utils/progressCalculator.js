@@ -9,33 +9,42 @@ const pool = new Pool({
   port: process.env.DB_PORT || 5432,
 });
 
+// Status-zu-Prozent-Mapping
+const statusProgressMapping = {
+  'not_started': 0,
+  'in_progress': 30,
+  'testing': 80,
+  'completed': 100
+};
+
 // Hilfsfunktion: Berechnet Projektfortschritt basierend auf Modulen
 const calculateProjectProgress = async (projectId) => {
   try {
-    // Zähle alle Module des Projekts
-    const totalModulesResult = await pool.query(
-      'SELECT COUNT(*) as total FROM project_modules WHERE project_id = $1',
+    // Hole alle Module des Projekts mit ihren Status
+    const modulesResult = await pool.query(
+      'SELECT status FROM project_modules WHERE project_id = $1',
       [projectId]
     );
     
-    const totalModules = parseInt(totalModulesResult.rows[0].total);
+    const modules = modulesResult.rows;
     
-    if (totalModules === 0) {
+    if (modules.length === 0) {
       return 0; // Keine Module = 0% Fortschritt
     }
     
-    // Zähle abgeschlossene Module (Status = 'completed')
-    const completedModulesResult = await pool.query(
-      'SELECT COUNT(*) as completed FROM project_modules WHERE project_id = $1 AND status = $2',
-      [projectId, 'completed']
-    );
+    // Berechne Gesamtfortschritt basierend auf Status-Werten
+    let totalProgress = 0;
     
-    const completedModules = parseInt(completedModulesResult.rows[0].completed);
+    modules.forEach(module => {
+      const status = module.status;
+      const progressValue = statusProgressMapping[status] || 0;
+      totalProgress += progressValue;
+    });
     
-    // Berechne Fortschritt in Prozent
-    const progress = Math.round((completedModules / totalModules) * 100);
+    // Berechne Durchschnittsfortschritt in Prozent
+    const averageProgress = Math.round(totalProgress / modules.length);
     
-    return progress;
+    return averageProgress;
   } catch (error) {
     console.error('Fehler bei der Fortschrittsberechnung:', error);
     return 0;
@@ -63,5 +72,6 @@ const updateProjectProgress = async (projectId) => {
 
 module.exports = {
   calculateProjectProgress,
-  updateProjectProgress
+  updateProjectProgress,
+  statusProgressMapping
 };
