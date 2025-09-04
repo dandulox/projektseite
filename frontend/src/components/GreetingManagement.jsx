@@ -230,7 +230,7 @@ const GreetingManagement = () => {
     return (
       <div className="card">
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
           <span className="ml-3 text-slate-600 dark:text-slate-400">Lade Begrüßungen...</span>
         </div>
       </div>
@@ -244,7 +244,7 @@ const GreetingManagement = () => {
           <div className="text-red-600 dark:text-red-400 mb-4">Fehler beim Laden der Begrüßungen</div>
           <button 
             onClick={() => queryClient.invalidateQueries(['greetings'])}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg transition-colors"
           >
             Erneut versuchen
           </button>
@@ -254,26 +254,29 @@ const GreetingManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Begrüßungsverwaltung</h2>
-          <p className="text-slate-600 dark:text-slate-400">
-            Verwalten Sie die zeitbasierten Begrüßungen für Ihre Anwendung
-          </p>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Begrüßungsverwaltung</h1>
+              <p className="text-slate-600 dark:text-slate-400">
+                Verwalten Sie die zeitbasierten Begrüßungen für Ihre Anwendung
+              </p>
+            </div>
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Neue Begrüßung
+            </button>
+          </div>
         </div>
-        <button
-          onClick={() => setShowCreateForm(true)}
-          className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center space-x-2"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Neue Begrüßung</span>
-        </button>
-      </div>
 
-      {/* Statistiken */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* Statistiken */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {Object.entries(timePeriodLabels).map(([period, label]) => {
           const count = groupedGreetings[period]?.length || 0;
           const activeCount = groupedGreetings[period]?.filter(g => g.is_active).length || 0;
@@ -293,10 +296,10 @@ const GreetingManagement = () => {
             </div>
           );
         })}
-      </div>
+        </div>
 
-      {/* Begrüßungen nach Stunden (0-23) */}
-      <div className="card">
+        {/* Begrüßungen nach Stunden (0-23) */}
+        <div className="card">
         <div className="flex items-center space-x-3 mb-6">
           <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400">
             <Clock className="w-4 h-4" />
@@ -500,7 +503,9 @@ const GreetingManagement = () => {
             </form>
           </div>
         </div>
+        </div>
       )}
+      </div>
     </div>
   );
 };

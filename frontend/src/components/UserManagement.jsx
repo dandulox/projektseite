@@ -147,29 +147,32 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="space-y-8 fade-in">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-        <div>
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4">
-            Benutzerverwaltung
-          </h1>
-          <p className="text-xl text-slate-600 dark:text-slate-400">
-            Verwalten Sie Benutzer, Rollen und Berechtigungen.
-          </p>
-        </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
+                Benutzerverwaltung
+              </h1>
+              <p className="text-slate-600 dark:text-slate-400">
+                Verwalten Sie Benutzer, Rollen und Berechtigungen.
+              </p>
+            </div>
         
-        <button
-          onClick={() => setShowCreateForm(true)}
-          className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 flex items-center space-x-2"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Neuer Benutzer</span>
-        </button>
-      </div>
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Neuer Benutzer
+            </button>
+          </div>
+        </div>
 
-      {/* Filter */}
-      <div className="card">
+        {/* Filter */}
+        <div className="card">
         <div className="flex flex-wrap gap-6 items-center">
           <div className="flex items-center space-x-4">
             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Suche:</label>
@@ -199,10 +202,10 @@ const UserManagement = () => {
             </select>
           </div>
         </div>
-      </div>
+        </div>
 
-      {/* Benutzer-Tabelle */}
-      <div className="card">
+        {/* Benutzer-Tabelle */}
+        <div className="card">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -539,6 +542,7 @@ const PasswordResetForm = ({ user, onSubmit, onCancel }) => {
             </button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );

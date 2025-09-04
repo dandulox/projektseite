@@ -170,17 +170,20 @@ const UserSettings = () => {
   ];
 
   return (
-    <div className="space-y-8 fade-in">
-      <div className="text-center">
-        <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6">
-          Benutzereinstellungen
-        </h1>
-        <p className="text-xl text-slate-600 dark:text-slate-400">
-          Verwalten Sie Ihre Kontoeinstellungen und Präferenzen
-        </p>
-      </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
+              Benutzereinstellungen
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400">
+              Verwalten Sie Ihre Kontoeinstellungen und Präferenzen
+            </p>
+          </div>
+        </div>
 
-      <div className="max-w-4xl mx-auto">
         <div className="card">
           {/* Tab Navigation */}
           <div className="flex flex-wrap gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg mb-8">
@@ -643,6 +646,7 @@ const UserSettings = () => {
               </div>
             )}
           </div>
+        </div>
         </div>
       </div>
     </div>
