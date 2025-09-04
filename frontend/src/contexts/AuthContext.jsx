@@ -174,6 +174,29 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Benutzereinstellungen speichern (lokal)
+  const saveUserSettings = (settings) => {
+    try {
+      localStorage.setItem('userSettings', JSON.stringify(settings));
+      toast.success('Einstellungen gespeichert');
+      return { success: true };
+    } catch (error) {
+      toast.error('Fehler beim Speichern der Einstellungen');
+      return { success: false, error: error.message };
+    }
+  };
+
+  // Benutzereinstellungen laden (lokal)
+  const loadUserSettings = () => {
+    try {
+      const settings = localStorage.getItem('userSettings');
+      return settings ? JSON.parse(settings) : null;
+    } catch (error) {
+      console.error('Fehler beim Laden der Einstellungen:', error);
+      return null;
+    }
+  };
+
   // Admin-Funktionen
   const adminApi = {
     // Alle Benutzer abrufen
@@ -228,6 +251,8 @@ export const AuthProvider = ({ children }) => {
     logout,
     changePassword,
     updateProfile,
+    saveUserSettings,
+    loadUserSettings,
     adminApi,
     // Hilfsfunktionen
     isAdmin: user?.role === 'admin',

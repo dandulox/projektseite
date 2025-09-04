@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, ProtectedRoute, useAuth } from './contexts/AuthContext';
 import AuthPage from './pages/AuthPage';
 import UserManagement from './components/UserManagement';
+import UserSettings from './components/UserSettings';
 import RegisterFormStartPage from './components/RegisterFormStartPage';
 import LoginForm from './components/LoginForm';
 import { 
@@ -196,6 +197,14 @@ const Header = ({ theme, toggleTheme, isMobileMenuOpen, setIsMobileMenuOpen }) =
               )}
             </div>
             
+            <NavLink
+              to="/settings"
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
+              title="Einstellungen"
+            >
+              <Settings className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+            </NavLink>
+            
             <button
               onClick={logout}
               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
@@ -286,7 +295,7 @@ const MobileMenu = ({ isOpen, onClose }) => {
               </NavLink>
             )}
             
-            {/* User Info und Logout */}
+            {/* User Info und Aktionen */}
             <div className="border-t border-slate-200 dark:border-slate-700 pt-4 mt-4">
               <div className="px-4 py-3">
                 <div className="flex items-center space-x-3">
@@ -303,6 +312,15 @@ const MobileMenu = ({ isOpen, onClose }) => {
                   </div>
                 </div>
               </div>
+              
+              <NavLink
+                to="/settings"
+                onClick={onClose}
+                className="w-full flex items-center px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
+              >
+                <Settings className="mr-3 h-5 w-5" />
+                Einstellungen
+              </NavLink>
               
               <button
                 onClick={() => {
@@ -1334,6 +1352,21 @@ function App() {
                   />
                   <main className="flex-1 py-8 page-container">
                     <Admin />
+                  </main>
+                  <Footer />
+                  <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute>
+                  <Header 
+                    theme={theme} 
+                    toggleTheme={toggleTheme}
+                    isMobileMenuOpen={isMobileMenuOpen}
+                    setIsMobileMenuOpen={setIsMobileMenuOpen}
+                  />
+                  <main className="flex-1 py-8 page-container">
+                    <UserSettings />
                   </main>
                   <Footer />
                   <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />

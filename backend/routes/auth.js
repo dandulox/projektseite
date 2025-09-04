@@ -170,6 +170,44 @@ router.get('/profile', authenticateToken, async (req, res) => {
   }
 });
 
+// Benutzerprofil aktualisieren
+router.put('/profile', authenticateToken, async (req, res) => {
+  try {
+    const { username, email } = req.body;
+
+    if (!username || !email) {
+      return res.status(400).json({ error: 'Benutzername und E-Mail sind erforderlich' });
+    }
+
+    // Prüfe ob Benutzername oder E-Mail bereits von anderen Benutzern verwendet wird
+    const existingUser = await pool.query(
+      'SELECT id FROM users WHERE (username = $1 OR email = $2) AND id != $3',
+      [username, email, req.user.id]
+    );
+
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ error: 'Benutzername oder E-Mail bereits vergeben' });
+    }
+
+    // Profil aktualisieren
+    const result = await pool.query(
+      'UPDATE users SET username = $1, email = $2, updated_at = NOW() WHERE id = $3 RETURNING id, username, email, role, created_at, updated_at',
+      [username, email, req.user.id]
+    );
+
+    const updatedUser = result.rows[0];
+
+    res.json({
+      message: 'Profil erfolgreich aktualisiert',
+      user: updatedUser
+    });
+
+  } catch (error) {
+    console.error('Profil-Update-Fehler:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
 // Passwort ändern
 router.put('/change-password', authenticateToken, async (req, res) => {
   try {
