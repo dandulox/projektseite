@@ -167,6 +167,44 @@ const DynamicGreeting = ({
     return `${currentHour}:00 Uhr`;
   };
 
+  // Trenne Text und Emojis für bessere Darstellung
+  const parseGreetingText = (text) => {
+    // Regex für Emojis (Unicode-Bereiche für Emojis)
+    const emojiRegex = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu;
+    
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = emojiRegex.exec(text)) !== null) {
+      // Text vor dem Emoji
+      if (match.index > lastIndex) {
+        parts.push({
+          type: 'text',
+          content: text.slice(lastIndex, match.index)
+        });
+      }
+      
+      // Emoji
+      parts.push({
+        type: 'emoji',
+        content: match[0]
+      });
+      
+      lastIndex = match.index + match[0].length;
+    }
+    
+    // Restlicher Text nach dem letzten Emoji
+    if (lastIndex < text.length) {
+      parts.push({
+        type: 'text',
+        content: text.slice(lastIndex)
+      });
+    }
+    
+    return parts.length > 0 ? parts : [{ type: 'text', content: text }];
+  };
+
   return (
     <div className={`dynamic-greeting ${className}`}>
       <div className="flex items-center space-x-3">
@@ -177,8 +215,18 @@ const DynamicGreeting = ({
         
         {/* Begrüßungstext */}
         <div className="flex flex-col">
-          <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-            {getDisplayGreeting()}
+          <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold">
+            {parseGreetingText(getDisplayGreeting()).map((part, index) => (
+              part.type === 'emoji' ? (
+                <span key={index} className="filter-none" style={{ filter: 'none' }}>
+                  {part.content}
+                </span>
+              ) : (
+                <span key={index} className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                  {part.content}
+                </span>
+              )
+            ))}
           </h1>
           
           {/* Tageszeit und Stunde-Anzeige */}
