@@ -503,7 +503,6 @@ const GreetingManagement = () => {
             </form>
           </div>
         </div>
-        </div>
       )}
       </div>
     </div>
