@@ -16,11 +16,7 @@ const PORT = process.env.PORT || 3001;
 app.use(helmet());
 app.use(compression());
 app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL || 'http://localhost:3000',
-    'http://localhost:3000',
-    'http://127.0.0.1:3000'
-  ],
+  origin: true, // Erlaubt alle Origins für Flexibilität
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']

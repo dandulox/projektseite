@@ -3,8 +3,18 @@ import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
 
-// API Base URL
-const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
+// API Base URL - dynamisch basierend auf der aktuellen Domain
+const getApiBaseUrl = () => {
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // Verwende die aktuelle Domain mit Port 3001 für das Backend
+  const currentHost = window.location.hostname;
+  return `http://${currentHost}:3001/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // API Helper Functions
 const apiRequest = async (endpoint, options = {}) => {
