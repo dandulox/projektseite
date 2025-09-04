@@ -50,11 +50,11 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
           onSuccess();
         }
       } else {
-        setErrors({ general: result.message || 'Anmeldung fehlgeschlagen' });
+        setErrors({ general: result.error || result.message || 'Anmeldung fehlgeschlagen' });
       }
     } catch (error) {
       console.error('Login error:', error);
-      setErrors({ general: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.' });
+      setErrors({ general: error.message || 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.' });
     } finally {
       setLoading(false);
     }

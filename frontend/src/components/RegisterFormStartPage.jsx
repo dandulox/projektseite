@@ -72,11 +72,11 @@ const RegisterFormStartPage = ({ onSwitchToLogin, onSuccess }) => {
           onSuccess();
         }
       } else {
-        setErrors({ general: result.message || 'Registrierung fehlgeschlagen' });
+        setErrors({ general: result.error || result.message || 'Registrierung fehlgeschlagen' });
       }
     } catch (error) {
       console.error('Registration error:', error);
-      setErrors({ general: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.' });
+      setErrors({ general: error.message || 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.' });
     } finally {
       setLoading(false);
     }

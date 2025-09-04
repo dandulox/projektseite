@@ -1272,10 +1272,10 @@ const WelcomePage = () => {
           <p>Entwickelt mit modernster Technologie • Vollständig responsive • Dark Mode Unterstützung</p>
         </div>
 
-        {/* Auth-Formulare */}
+        {/* Auth-Formulare als Overlay */}
         {showAuthForms && (
-          <div className="mt-12 max-w-md mx-auto">
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 max-w-md w-full max-h-[90vh] overflow-y-auto">
               {/* Header */}
               <div className="text-center mb-6">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
@@ -1300,12 +1300,18 @@ const WelcomePage = () => {
               {authMode === 'login' ? (
                 <LoginForm 
                   onSwitchToRegister={() => setAuthMode('register')}
-                  onSuccess={() => navigate('/dashboard')}
+                  onSuccess={() => {
+                    setShowAuthForms(false);
+                    navigate('/dashboard');
+                  }}
                 />
               ) : (
                 <RegisterFormStartPage 
                   onSwitchToLogin={() => setAuthMode('login')}
-                  onSuccess={() => navigate('/dashboard')}
+                  onSuccess={() => {
+                    setShowAuthForms(false);
+                    navigate('/dashboard');
+                  }}
                 />
               )}
 
