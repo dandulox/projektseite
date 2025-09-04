@@ -1,6 +1,7 @@
 const express = require('express');
 const { Pool } = require('pg');
 const { authenticateToken } = require('./auth');
+const { createNotification, createTeamNotification } = require('./notifications');
 const router = express.Router();
 
 // Datenbankverbindung
@@ -240,6 +241,27 @@ router.post('/', authenticateToken, async (req, res) => {
       VALUES ($1, $2, 'created', 'Projekt erstellt')
     `, [project.id, req.user.id]);
 
+    // Benachrichtigungen erstellen
+    try {
+      if (team_id) {
+        // Team-Benachrichtigung für alle Team-Mitglieder
+        await createTeamNotification(team_id, {
+          type: 'project_created',
+          title: 'Neues Projekt erstellt',
+          message: `"${name}" wurde in Ihrem Team erstellt.`,
+          fromUserId: req.user.id,
+          projectId: project.id,
+          actionUrl: `/projects/${project.id}`
+        });
+      } else {
+        // Private Benachrichtigung für den Eigentümer (falls gewünscht)
+        // Hier könnten weitere private Benachrichtigungen hinzugefügt werden
+      }
+    } catch (notificationError) {
+      console.error('Fehler beim Erstellen der Benachrichtigungen:', notificationError);
+      // Benachrichtigungsfehler sollten das Projekt-Erstellen nicht blockieren
+    }
+
     res.status(201).json({
       message: 'Projekt erfolgreich erstellt',
       project
@@ -303,6 +325,25 @@ router.put('/:id', authenticateToken, async (req, res) => {
       INSERT INTO project_logs (project_id, user_id, action, details)
       VALUES ($1, $2, 'updated', 'Projekt aktualisiert')
     `, [projectId, req.user.id]);
+
+    // Benachrichtigungen erstellen
+    try {
+      const project = result.rows[0];
+      if (project.team_id) {
+        // Team-Benachrichtigung für alle Team-Mitglieder (außer dem Aktualisierer)
+        await createTeamNotification(project.team_id, {
+          type: 'project_updated',
+          title: 'Projekt aktualisiert',
+          message: `"${project.name}" wurde aktualisiert.`,
+          fromUserId: req.user.id,
+          projectId: project.id,
+          actionUrl: `/projects/${project.id}`
+        });
+      }
+    } catch (notificationError) {
+      console.error('Fehler beim Erstellen der Benachrichtigungen:', notificationError);
+      // Benachrichtigungsfehler sollten das Projekt-Update nicht blockieren
+    }
 
     res.json({
       message: 'Projekt erfolgreich aktualisiert',

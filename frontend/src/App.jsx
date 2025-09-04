@@ -12,6 +12,7 @@ import ProjectManagement from './components/ProjectManagement';
 import RegisterFormStartPage from './components/RegisterFormStartPage';
 import LoginForm from './components/LoginForm';
 import DynamicGreeting from './components/DynamicGreeting';
+import NotificationBell from './components/NotificationBell';
 import { 
   Home, 
   FolderOpen, 
@@ -206,10 +207,7 @@ const Header = ({ theme, toggleTheme, isMobileMenuOpen, setIsMobileMenuOpen }) =
           </div>
 
           {/* Notifications */}
-          <button className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 hover:scale-105 relative">
-            <Bell className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
-          </button>
+          <NotificationBell />
 
           {/* User Menu */}
           <div className="flex items-center space-x-2">

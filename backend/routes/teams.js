@@ -1,6 +1,7 @@
 const express = require('express');
 const { Pool } = require('pg');
 const { authenticateToken } = require('./auth');
+const { createNotification, createTeamNotification } = require('./notifications');
 const router = express.Router();
 
 // Datenbankverbindung
@@ -242,6 +243,37 @@ router.post('/:id/members', authenticateToken, async (req, res) => {
       RETURNING *
     `, [teamId, user_id, role]);
 
+    // Team-Informationen für Benachrichtigung abrufen
+    const teamResult = await pool.query('SELECT name FROM teams WHERE id = $1', [teamId]);
+    const teamName = teamResult.rows[0]?.name || 'Unbekanntes Team';
+
+    // Benachrichtigungen erstellen
+    try {
+      // Benachrichtigung für das neue Mitglied
+      await createNotification({
+        userId: user_id,
+        type: 'team_invite',
+        title: 'Team-Einladung',
+        message: `Sie wurden zu dem Team "${teamName}" hinzugefügt.`,
+        fromUserId: req.user.id,
+        teamId: teamId,
+        actionUrl: `/teams/${teamId}`
+      });
+
+      // Benachrichtigung für andere Team-Mitglieder
+      await createTeamNotification(teamId, {
+        type: 'team_join',
+        title: 'Neues Team-Mitglied',
+        message: `${userResult.rows[0].username} ist dem Team "${teamName}" beigetreten.`,
+        fromUserId: req.user.id,
+        teamId: teamId,
+        actionUrl: `/teams/${teamId}`
+      });
+    } catch (notificationError) {
+      console.error('Fehler beim Erstellen der Benachrichtigungen:', notificationError);
+      // Benachrichtigungsfehler sollten das Hinzufügen nicht blockieren
+    }
+
     res.status(201).json({
       message: 'Mitglied erfolgreich hinzugefügt',
       membership: result.rows[0],
@@ -319,6 +351,25 @@ router.delete('/:id/leave', authenticateToken, async (req, res) => {
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Sie sind kein Mitglied dieses Teams' });
+    }
+
+    // Team-Informationen für Benachrichtigung abrufen
+    const teamResult = await pool.query('SELECT name FROM teams WHERE id = $1', [teamId]);
+    const teamName = teamResult.rows[0]?.name || 'Unbekanntes Team';
+
+    // Benachrichtigung für andere Team-Mitglieder
+    try {
+      await createTeamNotification(teamId, {
+        type: 'team_leave',
+        title: 'Mitglied hat Team verlassen',
+        message: `${req.user.username} hat das Team "${teamName}" verlassen.`,
+        fromUserId: req.user.id,
+        teamId: teamId,
+        actionUrl: `/teams/${teamId}`
+      });
+    } catch (notificationError) {
+      console.error('Fehler beim Erstellen der Benachrichtigungen:', notificationError);
+      // Benachrichtigungsfehler sollten das Verlassen nicht blockieren
     }
 
     res.json({ message: 'Team erfolgreich verlassen' });
