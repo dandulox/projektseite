@@ -118,7 +118,14 @@ app.get('/debug/columns/:table', async (req, res) => {
 // Debug Route - Test der Modul-Erstellung
 app.post('/debug/test-module', async (req, res) => {
   try {
-    const pool = require('./config/database');
+    const { Pool } = require('pg');
+    const pool = new Pool({
+      user: process.env.DB_USER || 'admin',
+      host: process.env.DB_HOST || 'localhost',
+      database: process.env.DB_NAME || 'projektseite',
+      password: process.env.DB_PASSWORD || 'secure_password_123',
+      port: process.env.DB_PORT || 5432,
+    });
     
     // Teste einfache Modul-Erstellung
     const result = await pool.query(`
@@ -128,6 +135,8 @@ app.post('/debug/test-module', async (req, res) => {
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `, [1, 'Debug Test Modul', 'Test Beschreibung', 'not_started', 'medium']);
+    
+    await pool.end();
     
     res.json({ 
       success: true,

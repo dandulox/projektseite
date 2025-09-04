@@ -258,7 +258,7 @@ router.post('/', authenticateToken, async (req, res) => {
       }
     }
 
-    // Projekt erstellen
+    // Projekt erstellen - konvertiere leere Strings zu null für Datum-Felder
     const result = await pool.query(`
       INSERT INTO projects (
         name, description, status, priority, start_date, target_date, 
@@ -266,7 +266,17 @@ router.post('/', authenticateToken, async (req, res) => {
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
-    `, [name, description, status, priority, start_date, target_date, req.user.id, team_id, visibility]);
+    `, [
+      name, 
+      description, 
+      status, 
+      priority, 
+      start_date && start_date.trim() !== '' ? start_date : null, 
+      target_date && target_date.trim() !== '' ? target_date : null, 
+      req.user.id, 
+      team_id, 
+      visibility
+    ]);
 
     const project = result.rows[0];
 
