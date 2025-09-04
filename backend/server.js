@@ -115,6 +115,34 @@ app.get('/debug/columns/:table', async (req, res) => {
   }
 });
 
+// Debug Route - Test der Modul-Erstellung
+app.post('/debug/test-module', async (req, res) => {
+  try {
+    const pool = require('./config/database');
+    
+    // Teste einfache Modul-Erstellung
+    const result = await pool.query(`
+      INSERT INTO project_modules (
+        project_id, name, description, status, priority
+      )
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+    `, [1, 'Debug Test Modul', 'Test Beschreibung', 'not_started', 'medium']);
+    
+    res.json({ 
+      success: true,
+      module: result.rows[0],
+      message: 'Test-Modul erfolgreich erstellt'
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      error: 'Fehler beim Testen der Modul-Erstellung',
+      message: error.message,
+      stack: error.stack
+    });
+  }
+});
+
 // Error Handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
