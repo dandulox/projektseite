@@ -1,13 +1,4 @@
-const { Pool } = require('pg');
-
-// Datenbankverbindung
-const pool = new Pool({
-  user: process.env.DB_USER || 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'projektseite',
-  password: process.env.DB_PASSWORD || 'password',
-  port: process.env.DB_PORT || 5432,
-});
+const pool = require('../config/database');
 
 // Standard-Begrüßungen
 const defaultGreetings = [
@@ -72,8 +63,6 @@ async function seedGreetings() {
   } catch (error) {
     console.error('❌ Fehler beim Einfügen der Begrüßungen:', error);
     throw error;
-  } finally {
-    await pool.end();
   }
 }
 
@@ -99,8 +88,6 @@ async function forceSeedGreetings() {
   } catch (error) {
     console.error('❌ Fehler beim Ersetzen der Begrüßungen:', error);
     throw error;
-  } finally {
-    await pool.end();
   }
 }
 

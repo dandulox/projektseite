@@ -40,6 +40,8 @@ const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const greetingsRoutes = require('./routes/greetings');
 
+console.log('🔧 Lade API-Routen...');
+
 // API Routen
 app.use('/api/auth', authRoutes.router);
 app.use('/api/admin', adminRoutes);

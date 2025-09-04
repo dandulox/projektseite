@@ -1,16 +1,8 @@
-const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
+const pool = require('../config/database');
 const { createDefaultUsers } = require('./create-default-users');
-
-// Datenbankverbindung
-const pool = new Pool({
-  user: process.env.DB_USER || 'admin',
-  host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'projektseite',
-  password: process.env.DB_PASSWORD || 'secure_password_123',
-  port: process.env.DB_PORT || 5432,
-});
+const { initGreetings } = require('./init-greetings');
 
 async function initializeDatabase() {
   try {
@@ -56,13 +48,15 @@ async function initializeDatabase() {
       console.log(`✅ ${count} Benutzer bereits in der Datenbank vorhanden`);
     }
 
+    // Initialisiere Begrüßungen
+    console.log('📝 Initialisiere Begrüßungen...');
+    await initGreetings();
+
     console.log('🎉 Datenbank-Initialisierung abgeschlossen');
 
   } catch (error) {
     console.error('❌ Fehler bei der Datenbank-Initialisierung:', error);
     throw error;
-  } finally {
-    await pool.end();
   }
 }
 
