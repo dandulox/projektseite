@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { UserPlus, User, Mail, Lock, Eye, EyeOff, Shield, AlertCircle, CheckCircle } from 'lucide-react';
 
-const RegisterForm = ({ onSwitchToLogin }) => {
+const RegisterFormStartPage = ({ onSwitchToLogin, onSuccess }) => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -68,7 +68,9 @@ const RegisterForm = ({ onSwitchToLogin }) => {
       );
       if (result.success) {
         setSuccess(true);
-        // Registrierung erfolgreich - der AuthContext wird automatisch aktualisiert
+        if (onSuccess) {
+          onSuccess();
+        }
       } else {
         setErrors({ general: result.message || 'Registrierung fehlgeschlagen' });
       }
@@ -87,7 +89,6 @@ const RegisterForm = ({ onSwitchToLogin }) => {
       [name]: value,
     });
     
-    // Fehler für das Feld zurücksetzen, wenn der Benutzer tippt
     if (errors[name]) {
       setErrors({
         ...errors,
@@ -97,26 +98,13 @@ const RegisterForm = ({ onSwitchToLogin }) => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-200 dark:border-slate-700">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <UserPlus className="w-8 h-8 text-white" />
-          </div>
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-            Registrieren
-          </h2>
-          <p className="text-slate-600 dark:text-slate-400">
-            Erstellen Sie Ihren neuen Account
-          </p>
-        </div>
-
+    <div className="w-full">
+      <div className="bg-transparent">
         {/* Erfolgsmeldung */}
         {success && (
-          <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center space-x-3">
-            <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
-            <span className="text-green-700 dark:text-green-300 text-sm font-medium">
+          <div className="mb-6 p-4 bg-green-500/20 border border-green-400/30 rounded-lg flex items-center space-x-3">
+            <CheckCircle className="w-5 h-5 text-green-300" />
+            <span className="text-green-200 text-sm font-medium">
               Registrierung erfolgreich! Sie werden weitergeleitet...
             </span>
           </div>
@@ -124,9 +112,9 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
         {/* Allgemeine Fehlermeldung */}
         {errors.general && (
-          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center space-x-3">
-            <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-            <span className="text-red-700 dark:text-red-300 text-sm font-medium">
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-400/30 rounded-lg flex items-center space-x-3">
+            <AlertCircle className="w-5 h-5 text-red-300" />
+            <span className="text-red-200 text-sm font-medium">
               {errors.general}
             </span>
           </div>
@@ -136,12 +124,12 @@ const RegisterForm = ({ onSwitchToLogin }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Benutzername */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-white mb-2">
               Benutzername
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <User className="h-5 w-5 text-slate-400" />
+                <User className="h-5 w-5 text-white/70" />
               </div>
               <input
                 type="text"
@@ -149,16 +137,16 @@ const RegisterForm = ({ onSwitchToLogin }) => {
                 value={formData.username}
                 onChange={handleChange}
                 required
-                className={`w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 border rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                className={`w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-sm border rounded-lg text-white placeholder-white/70 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 ${
                   errors.username 
-                    ? 'border-red-300 dark:border-red-600 focus:ring-red-500' 
-                    : 'border-slate-300 dark:border-slate-600'
+                    ? 'border-red-400 focus:ring-red-400' 
+                    : 'border-white/30'
                 }`}
                 placeholder="Benutzername eingeben..."
               />
             </div>
             {errors.username && (
-              <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center space-x-1">
+              <p className="mt-2 text-sm text-red-300 flex items-center space-x-1">
                 <AlertCircle className="w-4 h-4" />
                 <span>{errors.username}</span>
               </p>
@@ -167,12 +155,12 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
           {/* E-Mail */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-white mb-2">
               E-Mail-Adresse
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-slate-400" />
+                <Mail className="h-5 w-5 text-white/70" />
               </div>
               <input
                 type="email"
@@ -180,16 +168,16 @@ const RegisterForm = ({ onSwitchToLogin }) => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className={`w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 border rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                className={`w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-sm border rounded-lg text-white placeholder-white/70 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 ${
                   errors.email 
-                    ? 'border-red-300 dark:border-red-600 focus:ring-red-500' 
-                    : 'border-slate-300 dark:border-slate-600'
+                    ? 'border-red-400 focus:ring-red-400' 
+                    : 'border-white/30'
                 }`}
                 placeholder="E-Mail-Adresse eingeben..."
               />
             </div>
             {errors.email && (
-              <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center space-x-1">
+              <p className="mt-2 text-sm text-red-300 flex items-center space-x-1">
                 <AlertCircle className="w-4 h-4" />
                 <span>{errors.email}</span>
               </p>
@@ -198,12 +186,12 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
           {/* Passwort */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-white mb-2">
               Passwort
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-slate-400" />
+                <Lock className="h-5 w-5 text-white/70" />
               </div>
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -211,10 +199,10 @@ const RegisterForm = ({ onSwitchToLogin }) => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className={`w-full pl-10 pr-12 py-3 bg-white dark:bg-slate-800 border rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                className={`w-full pl-10 pr-12 py-3 bg-white/10 backdrop-blur-sm border rounded-lg text-white placeholder-white/70 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 ${
                   errors.password 
-                    ? 'border-red-300 dark:border-red-600 focus:ring-red-500' 
-                    : 'border-slate-300 dark:border-slate-600'
+                    ? 'border-red-400 focus:ring-red-400' 
+                    : 'border-white/30'
                 }`}
                 placeholder="Passwort eingeben..."
               />
@@ -224,14 +212,14 @@ const RegisterForm = ({ onSwitchToLogin }) => {
                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
               >
                 {showPassword ? (
-                  <EyeOff className="h-5 w-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
+                  <EyeOff className="h-5 w-5 text-white/70 hover:text-white" />
                 ) : (
-                  <Eye className="h-5 w-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
+                  <Eye className="h-5 w-5 text-white/70 hover:text-white" />
                 )}
               </button>
             </div>
             {errors.password && (
-              <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center space-x-1">
+              <p className="mt-2 text-sm text-red-300 flex items-center space-x-1">
                 <AlertCircle className="w-4 h-4" />
                 <span>{errors.password}</span>
               </p>
@@ -240,12 +228,12 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
           {/* Passwort bestätigen */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-white mb-2">
               Passwort bestätigen
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-slate-400" />
+                <Lock className="h-5 w-5 text-white/70" />
               </div>
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
@@ -253,10 +241,10 @@ const RegisterForm = ({ onSwitchToLogin }) => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
-                className={`w-full pl-10 pr-12 py-3 bg-white dark:bg-slate-800 border rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                className={`w-full pl-10 pr-12 py-3 bg-white/10 backdrop-blur-sm border rounded-lg text-white placeholder-white/70 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 ${
                   errors.confirmPassword 
-                    ? 'border-red-300 dark:border-red-600 focus:ring-red-500' 
-                    : 'border-slate-300 dark:border-slate-600'
+                    ? 'border-red-400 focus:ring-red-400' 
+                    : 'border-white/30'
                 }`}
                 placeholder="Passwort bestätigen..."
               />
@@ -266,14 +254,14 @@ const RegisterForm = ({ onSwitchToLogin }) => {
                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
               >
                 {showConfirmPassword ? (
-                  <EyeOff className="h-5 w-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
+                  <EyeOff className="h-5 w-5 text-white/70 hover:text-white" />
                 ) : (
-                  <Eye className="h-5 w-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
+                  <Eye className="h-5 w-5 text-white/70 hover:text-white" />
                 )}
               </button>
             </div>
             {errors.confirmPassword && (
-              <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center space-x-1">
+              <p className="mt-2 text-sm text-red-300 flex items-center space-x-1">
                 <AlertCircle className="w-4 h-4" />
                 <span>{errors.confirmPassword}</span>
               </p>
@@ -282,21 +270,21 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
           {/* Rolle */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-white mb-2">
               Rolle
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Shield className="h-5 w-5 text-slate-400" />
+                <Shield className="h-5 w-5 text-white/70" />
               </div>
               <select
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-sm border border-white/30 rounded-lg text-white focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
               >
-                <option value="user">Benutzer</option>
-                <option value="viewer">Betrachter</option>
+                <option value="user" className="bg-slate-800 text-white">Benutzer</option>
+                <option value="viewer" className="bg-slate-800 text-white">Betrachter</option>
               </select>
             </div>
           </div>
@@ -323,11 +311,11 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
         {/* Switch to Login */}
         <div className="mt-6 text-center">
-          <p className="text-slate-600 dark:text-slate-400">
+          <p className="text-white/80">
             Bereits ein Account?{' '}
             <button
               onClick={onSwitchToLogin}
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors duration-200"
+              className="text-blue-300 hover:text-blue-200 font-medium transition-colors duration-200"
             >
               Jetzt anmelden
             </button>
@@ -338,4 +326,4 @@ const RegisterForm = ({ onSwitchToLogin }) => {
   );
 };
 
-export default RegisterForm;
+export default RegisterFormStartPage;

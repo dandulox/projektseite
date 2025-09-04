@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, ProtectedRoute } from './contexts/AuthContext';
 import AuthPage from './pages/AuthPage';
 import UserManagement from './components/UserManagement';
+import RegisterFormStartPage from './components/RegisterFormStartPage';
 import { 
   Home, 
   FolderOpen, 
@@ -1064,6 +1065,8 @@ const WelcomePage = () => {
   const navigate = useNavigate();
   const [stars, setStars] = useState([]);
   const [networks, setNetworks] = useState([]);
+  const [showAuthForms, setShowAuthForms] = useState(false);
+  const [authMode, setAuthMode] = useState('login'); // 'login' oder 'register'
 
   useEffect(() => {
     // Sterne erstellen
@@ -1189,7 +1192,10 @@ const WelcomePage = () => {
         {/* Call-to-Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8 justify-center">
           <button 
-            onClick={() => navigate('/login')}
+            onClick={() => {
+              setAuthMode('login');
+              setShowAuthForms(true);
+            }}
             className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-2xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 group"
           >
             <LogIn className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
@@ -1197,7 +1203,10 @@ const WelcomePage = () => {
           </button>
           
           <button 
-            onClick={() => navigate('/login?mode=register')}
+            onClick={() => {
+              setAuthMode('register');
+              setShowAuthForms(true);
+            }}
             className="px-8 py-4 bg-white/10 backdrop-blur-lg border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 group"
           >
             <UserPlus className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
@@ -1209,6 +1218,56 @@ const WelcomePage = () => {
         <div className="text-blue-200 text-sm max-w-2xl">
           <p>Entwickelt mit modernster Technologie • Vollständig responsive • Dark Mode Unterstützung</p>
         </div>
+
+        {/* Auth-Formulare */}
+        {showAuthForms && (
+          <div className="mt-12 max-w-md mx-auto">
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
+              {/* Header */}
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  {authMode === 'login' ? (
+                    <LogIn className="w-8 h-8 text-white" />
+                  ) : (
+                    <UserPlus className="w-8 h-8 text-white" />
+                  )}
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  {authMode === 'login' ? 'Anmelden' : 'Registrieren'}
+                </h2>
+                <p className="text-blue-200">
+                  {authMode === 'login' 
+                    ? 'Melden Sie sich in Ihrem Account an' 
+                    : 'Erstellen Sie Ihren neuen Account'
+                  }
+                </p>
+              </div>
+
+              {/* Formulare */}
+              {authMode === 'login' ? (
+                <LoginForm 
+                  onSwitchToRegister={() => setAuthMode('register')}
+                  onSuccess={() => navigate('/dashboard')}
+                />
+              ) : (
+                <RegisterFormStartPage 
+                  onSwitchToLogin={() => setAuthMode('login')}
+                  onSuccess={() => navigate('/dashboard')}
+                />
+              )}
+
+              {/* Schließen-Button */}
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => setShowAuthForms(false)}
+                  className="text-blue-200 hover:text-white text-sm font-medium transition-colors duration-200"
+                >
+                  ← Zurück zur Startseite
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1263,7 +1322,6 @@ function App() {
             <Routes>
               <Route path="/" element={<WelcomePage />} />
               <Route path="/welcome" element={<WelcomePage />} />
-              <Route path="/login" element={<AuthPage />} />
               <Route path="/dashboard" element={
                 <ProtectedRoute>
                   <Header 
