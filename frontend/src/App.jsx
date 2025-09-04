@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
@@ -73,11 +73,26 @@ const Header = ({ theme, toggleTheme, isMobileMenuOpen, setIsMobileMenuOpen }) =
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
 
   const handleLogout = async () => {
     await logout();
     navigate('/');
   };
+
+  // Click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
   <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/20 dark:border-slate-700/20 shadow-lg dark:shadow-slate-900/20">
@@ -190,34 +205,113 @@ const Header = ({ theme, toggleTheme, isMobileMenuOpen, setIsMobileMenuOpen }) =
 
           {/* User Menu */}
           <div className="flex items-center space-x-2">
-            <div className="hidden sm:flex items-center space-x-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2">
-              <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <Users className="w-3 h-3 text-white" />
-              </div>
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                {user?.username}
-              </span>
-              {isAdmin && (
-                <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs rounded-full">
-                  Admin
+            {/* User Dropdown */}
+            <div className="relative" ref={userMenuRef}>
+              <button
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="hidden sm:flex items-center space-x-2 bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200 cursor-pointer"
+              >
+                <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <Users className="w-3 h-3 text-white" />
+                </div>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  {user?.username}
                 </span>
+                {isAdmin && (
+                  <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs rounded-full">
+                    Admin
+                  </span>
+                )}
+                <ChevronRight className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${isUserMenuOpen ? 'rotate-90' : ''}`} />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isUserMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50">
+                  {/* User Info */}
+                  <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <Users className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-slate-900 dark:text-white">
+                          {user?.username}
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          {user?.email}
+                        </div>
+                        {isAdmin && (
+                          <div className="text-xs text-red-600 dark:text-red-400 font-medium">
+                            Administrator
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Menu Items */}
+                  <div className="py-2">
+                    <button
+                      onClick={() => {
+                        navigate('/settings');
+                        setIsUserMenuOpen(false);
+                      }}
+                      className="w-full flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
+                    >
+                      <Settings className="w-4 h-4 mr-3" />
+                      Einstellungen
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        navigate('/dashboard');
+                        setIsUserMenuOpen(false);
+                      }}
+                      className="w-full flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
+                    >
+                      <Home className="w-4 h-4 mr-3" />
+                      Dashboard
+                    </button>
+
+                    {isAdmin && (
+                      <button
+                        onClick={() => {
+                          navigate('/admin');
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
+                      >
+                        <Settings className="w-4 h-4 mr-3" />
+                        Administration
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Logout */}
+                  <div className="border-t border-slate-200 dark:border-slate-700 pt-2">
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsUserMenuOpen(false);
+                      }}
+                      className="w-full flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
+                    >
+                      <LogIn className="w-4 h-4 mr-3" />
+                      Abmelden
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
-            
-            <NavLink
-              to="/settings"
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
-              title="Einstellungen"
-            >
-              <Settings className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-            </NavLink>
-            
+
+            {/* Mobile User Button */}
             <button
-              onClick={handleLogout}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
-              title="Abmelden"
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="sm:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
+              title="Menü öffnen"
             >
-              <LogIn className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              <Users className="w-5 h-5 text-slate-600 dark:text-slate-400" />
             </button>
           </div>
 
