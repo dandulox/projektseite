@@ -647,7 +647,6 @@ const UserSettings = () => {
             )}
           </div>
         </div>
-        </div>
       </div>
     </div>
   );
