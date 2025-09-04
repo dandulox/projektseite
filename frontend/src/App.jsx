@@ -13,6 +13,7 @@ import ProjectDashboard from './components/ProjectDashboard';
 import RegisterFormStartPage from './components/RegisterFormStartPage';
 import LoginForm from './components/LoginForm';
 import DynamicGreeting from './components/DynamicGreeting';
+import AnonymousStats from './components/AnonymousStats';
 import NotificationBell from './components/NotificationBell';
 import { 
   Home, 
@@ -558,7 +559,7 @@ const WelcomePage = ({ theme, toggleTheme }) => {
           <p className={`text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed ${
             theme === 'dark' ? 'text-blue-200' : 'text-slate-700'
           }`}>
-            Die moderne Plattform für effiziente Projektverwaltung und Teamzusammenarbeit
+            Die moderne Plattform für effiziente Projektverwaltung, Teamzusammenarbeit und Fortschrittsverfolgung
           </p>
         </div>
 
@@ -577,7 +578,7 @@ const WelcomePage = ({ theme, toggleTheme }) => {
             }`}>Projektverwaltung</h3>
             <p className={`text-sm ${
               theme === 'dark' ? 'text-blue-200' : 'text-slate-600'
-            }`}>Organisieren Sie Ihre Projekte effizient und übersichtlich</p>
+            }`}>Erstellen, verwalten und verfolgen Sie Projekte mit detaillierten Fortschrittsbalken</p>
           </div>
 
           <div className={`${
@@ -593,7 +594,7 @@ const WelcomePage = ({ theme, toggleTheme }) => {
             }`}>Teamzusammenarbeit</h3>
             <p className={`text-sm ${
               theme === 'dark' ? 'text-blue-200' : 'text-slate-600'
-            }`}>Arbeiten Sie nahtlos mit Ihrem Team zusammen</p>
+            }`}>Verwalten Sie Teams, Rollen und Berechtigungen für optimale Zusammenarbeit</p>
           </div>
 
           <div className={`${
@@ -606,10 +607,10 @@ const WelcomePage = ({ theme, toggleTheme }) => {
             </div>
             <h3 className={`text-lg font-semibold mb-2 ${
               theme === 'dark' ? 'text-white' : 'text-slate-900'
-            }`}>Fortschrittsverfolgung</h3>
+            }`}>Dashboard & Analytics</h3>
             <p className={`text-sm ${
               theme === 'dark' ? 'text-blue-200' : 'text-slate-600'
-            }`}>Behalten Sie den Überblick über alle Projekte</p>
+            }`}>Umfassende Dashboards mit Statistiken und Fortschrittsverfolgung</p>
           </div>
 
           <div className={`${
@@ -622,10 +623,10 @@ const WelcomePage = ({ theme, toggleTheme }) => {
             </div>
             <h3 className={`text-lg font-semibold mb-2 ${
               theme === 'dark' ? 'text-white' : 'text-slate-900'
-            }`}>Sicherheit</h3>
+            }`}>Sicherheit & Benachrichtigungen</h3>
             <p className={`text-sm ${
               theme === 'dark' ? 'text-blue-200' : 'text-slate-600'
-            }`}>Ihre Daten sind bei uns sicher und geschützt</p>
+            }`}>Sichere Datenverwaltung mit Echtzeit-Benachrichtigungen</p>
           </div>
         </div>
 
@@ -654,11 +655,16 @@ const WelcomePage = ({ theme, toggleTheme }) => {
           </button>
         </div>
 
+        {/* Anonymisierte Statistiken */}
+        <div className="mb-8">
+          <AnonymousStats theme={theme} />
+        </div>
+
         {/* Zusätzliche Informationen */}
         <div className={`text-sm max-w-2xl ${
           theme === 'dark' ? 'text-blue-200' : 'text-slate-600'
         }`}>
-          <p>Entwickelt mit modernster Technologie • Vollständig responsive • Dark Mode Unterstützung</p>
+          <p>Entwickelt mit React, Node.js und modernster Technologie • Vollständig responsive • Dark Mode Unterstützung • Echtzeit-Updates</p>
         </div>
 
         {/* Auth-Formulare als Overlay */}
