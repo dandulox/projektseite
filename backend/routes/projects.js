@@ -2,6 +2,7 @@ const express = require('express');
 const { Pool } = require('pg');
 const { authenticateToken } = require('./auth');
 const { createNotification, createTeamNotification } = require('./notifications');
+const { calculateProjectProgress, updateProjectProgress } = require('../utils/progressCalculator');
 const router = express.Router();
 
 // Datenbankverbindung
@@ -513,6 +514,35 @@ router.delete('/:id/permissions/:userId', authenticateToken, async (req, res) =>
     res.json({ message: 'Berechtigung erfolgreich entfernt' });
   } catch (error) {
     console.error('Fehler beim Entfernen der Berechtigung:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
+// Projektfortschritt aktualisieren
+router.post('/:id/update-progress', authenticateToken, async (req, res) => {
+  try {
+    const projectId = req.params.id;
+
+    // Prüfe Berechtigung
+    if (!(await checkProjectPermission(req.user.id, projectId, 'edit'))) {
+      return res.status(403).json({ error: 'Keine Berechtigung zum Aktualisieren des Projektfortschritts' });
+    }
+
+    // Prüfe ob Projekt existiert
+    const projectResult = await pool.query('SELECT id FROM projects WHERE id = $1', [projectId]);
+    if (projectResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Projekt nicht gefunden' });
+    }
+
+    // Berechne und aktualisiere Fortschritt
+    const progress = await updateProjectProgress(projectId);
+
+    res.json({
+      message: 'Projektfortschritt erfolgreich aktualisiert',
+      progress: progress
+    });
+  } catch (error) {
+    console.error('Fehler beim Aktualisieren des Projektfortschritts:', error);
     res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });

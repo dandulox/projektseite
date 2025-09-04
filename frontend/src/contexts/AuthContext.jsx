@@ -453,6 +453,13 @@ export const AuthProvider = ({ children }) => {
       });
     },
 
+    // Projektfortschritt aktualisieren
+    updateProjectProgress: async (projectId) => {
+      return await apiRequest(`/projects/${projectId}/update-progress`, {
+        method: 'POST',
+      });
+    },
+
   };
 
   // Modul-Funktionen

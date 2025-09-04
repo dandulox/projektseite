@@ -154,6 +154,19 @@ const ProjectManagement = () => {
     }
   };
 
+  const handleUpdateProjectProgress = async () => {
+    if (!selectedProject) return;
+    
+    try {
+      const response = await projectApi.updateProjectProgress(selectedProject.project.id);
+      toast.success(`Projektfortschritt aktualisiert: ${response.progress}%`);
+      loadProjectDetails(selectedProject.project.id);
+      loadProjects(); // Aktualisiere auch die Projektliste
+    } catch (error) {
+      toast.error(error.message || 'Fehler beim Aktualisieren des Projektfortschritts');
+    }
+  };
+
 
 
 
@@ -340,7 +353,7 @@ const ProjectManagement = () => {
                         <div className="mt-2">
                           <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
                             <span>{project.owner_username}</span>
-                            <span>{project.completion_percentage}%</span>
+                            <span>{project.completion_percentage}% ({project.module_count} Module)</span>
                           </div>
                           <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mt-1">
                             <div 
@@ -411,6 +424,13 @@ const ProjectManagement = () => {
                               Bearbeiten
                             </button>
                             <button
+                              onClick={handleUpdateProjectProgress}
+                              className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                              title="Fortschritt basierend auf Modulen neu berechnen"
+                            >
+                              Fortschritt aktualisieren
+                            </button>
+                            <button
                               onClick={() => handleDeleteProject(selectedProject.project.id)}
                               className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
                             >
@@ -433,12 +453,18 @@ const ProjectManagement = () => {
                         <div className="mt-1">
                           <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
                             <span>{selectedProject.project.completion_percentage}% abgeschlossen</span>
+                            <span>
+                              {selectedProject.modules.filter(m => m.status === 'completed').length} / {selectedProject.modules.length} Module
+                            </span>
                           </div>
                           <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mt-1">
                             <div 
                               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                               style={{ width: `${selectedProject.project.completion_percentage}%` }}
                             ></div>
+                          </div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            Automatisch berechnet basierend auf abgeschlossenen Modulen
                           </div>
                         </div>
                       </div>

@@ -2,6 +2,7 @@ const express = require('express');
 const { Pool } = require('pg');
 const { authenticateToken } = require('./auth');
 const { createNotification, createTeamNotification } = require('./notifications');
+const { updateProjectProgress } = require('../utils/progressCalculator');
 const router = express.Router();
 
 // Datenbankverbindung
@@ -358,6 +359,14 @@ router.post('/project', authenticateToken, async (req, res) => {
       // Log-Fehler sollten das Modul-Erstellen nicht blockieren
     }
 
+    // Aktualisiere Projektfortschritt
+    try {
+      await updateProjectProgress(project_id);
+    } catch (progressError) {
+      console.warn('Konnte Projektfortschritt nicht aktualisieren:', progressError.message);
+      // Fortschrittsfehler sollten das Modul-Erstellen nicht blockieren
+    }
+
     res.status(201).json({
       message: 'Modul erfolgreich erstellt',
       module
@@ -504,6 +513,17 @@ router.put('/:id', authenticateToken, async (req, res) => {
       VALUES ($1, $2, $3, 'updated', 'Modul aktualisiert')
     `, [moduleId, module_type, req.user.id]);
 
+    // Aktualisiere Projektfortschritt, wenn es sich um ein Projekt-Modul handelt
+    if (module_type === 'project') {
+      try {
+        const module = result.rows[0];
+        await updateProjectProgress(module.project_id);
+      } catch (progressError) {
+        console.warn('Konnte Projektfortschritt nicht aktualisieren:', progressError.message);
+        // Fortschrittsfehler sollten das Modul-Update nicht blockieren
+      }
+    }
+
     res.json({
       message: 'Modul erfolgreich aktualisiert',
       module: result.rows[0]
@@ -549,6 +569,16 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     // Modul löschen (CASCADE löscht auch Logs und Verbindungen)
     const tableName = module_type === 'project' ? 'project_modules' : 'standalone_modules';
     await pool.query(`DELETE FROM ${tableName} WHERE id = $1`, [moduleId]);
+
+    // Aktualisiere Projektfortschritt, wenn es sich um ein Projekt-Modul handelt
+    if (module_type === 'project') {
+      try {
+        await updateProjectProgress(module.project_id);
+      } catch (progressError) {
+        console.warn('Konnte Projektfortschritt nicht aktualisieren:', progressError.message);
+        // Fortschrittsfehler sollten das Modul-Löschen nicht blockieren
+      }
+    }
 
     res.json({ message: 'Modul erfolgreich gelöscht' });
   } catch (error) {
