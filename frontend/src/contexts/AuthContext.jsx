@@ -102,25 +102,18 @@ export const AuthProvider = ({ children }) => {
   const register = async (username, email, password, role = 'user') => {
     try {
       setLoading(true);
-      console.log('AuthContext: Starting registration for:', username);
-      
       const data = await apiRequest('/auth/register', {
         method: 'POST',
         body: JSON.stringify({ username, email, password, role }),
       });
 
-      console.log('AuthContext: Registration successful, data:', data);
-
       localStorage.setItem('token', data.token);
       setUser(data.user);
       setIsAuthenticated(true);
       
-      console.log('AuthContext: User state updated, isAuthenticated:', true);
-      
       toast.success(`Registrierung erfolgreich! Willkommen, ${data.user.username}!`);
       return { success: true };
     } catch (error) {
-      console.error('AuthContext: Registration error:', error);
       toast.error(error.message);
       return { success: false, error: error.message };
     } finally {
@@ -259,12 +252,9 @@ export const useAuth = () => {
 
 // Protected Route Component
 export const ProtectedRoute = ({ children, requireAdmin = false }) => {
-  const { isAuthenticated, isAdmin, loading, user } = useAuth();
-
-  console.log('ProtectedRoute: loading:', loading, 'isAuthenticated:', isAuthenticated, 'user:', user);
+  const { isAuthenticated, isAdmin, loading } = useAuth();
 
   if (loading) {
-    console.log('ProtectedRoute: Showing loading spinner');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
@@ -273,12 +263,10 @@ export const ProtectedRoute = ({ children, requireAdmin = false }) => {
   }
 
   if (!isAuthenticated) {
-    console.log('ProtectedRoute: Not authenticated, redirecting to home');
     return <Navigate to="/" replace />;
   }
 
   if (requireAdmin && !isAdmin) {
-    console.log('ProtectedRoute: Admin required but user is not admin');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -293,6 +281,5 @@ export const ProtectedRoute = ({ children, requireAdmin = false }) => {
     );
   }
 
-  console.log('ProtectedRoute: Rendering children');
   return children;
 };

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
-import { AuthProvider, ProtectedRoute } from './contexts/AuthContext';
+import { AuthProvider, ProtectedRoute, useAuth } from './contexts/AuthContext';
 import AuthPage from './pages/AuthPage';
 import UserManagement from './components/UserManagement';
 import RegisterFormStartPage from './components/RegisterFormStartPage';
