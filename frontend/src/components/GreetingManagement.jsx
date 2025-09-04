@@ -329,7 +329,8 @@ const GreetingManagement = () => {
                   <textarea
                     value={formData.text}
                     onChange={(e) => setFormData({...formData, text: e.target.value})}
-                    className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                    className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white filter-none"
+                    style={{ filter: 'none' }}
                     rows="3"
                     placeholder="Begrüßungstext eingeben..."
                   />
@@ -395,7 +396,7 @@ const GreetingManagement = () => {
                       </button>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-900 dark:text-white mb-2">{greeting.text}</p>
+                  <p className="text-sm text-slate-900 dark:text-white mb-2 filter-none" style={{ filter: 'none' }}>{greeting.text}</p>
                   <div className="flex items-center justify-between">
                     <span className={`text-xs px-2 py-1 rounded-full ${
                       greeting.is_active 
@@ -430,7 +431,8 @@ const GreetingManagement = () => {
                 <textarea
                   value={formData.text}
                   onChange={(e) => setFormData({...formData, text: e.target.value})}
-                  className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                  className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white filter-none"
+                  style={{ filter: 'none' }}
                   rows="3"
                   placeholder="Geben Sie hier den Begrüßungstext ein..."
                   required
