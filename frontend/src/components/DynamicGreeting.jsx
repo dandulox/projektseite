@@ -171,7 +171,7 @@ const DynamicGreeting = ({
     <div className={`dynamic-greeting ${className}`}>
       <div className="flex items-center space-x-3">
         {/* Emoji */}
-        <span className="text-2xl md:text-3xl animate-pulse">
+        <span className="text-2xl md:text-3xl filter-none" style={{ filter: 'none' }}>
           {getEmoji()}
         </span>
         

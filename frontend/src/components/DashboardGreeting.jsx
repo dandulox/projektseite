@@ -163,7 +163,7 @@ const DashboardGreeting = ({
     <div className={`dashboard-greeting ${className}`}>
       <div className="flex items-center justify-center space-x-4">
         {/* Emoji */}
-        <span className="text-3xl md:text-4xl animate-pulse">
+        <span className="text-3xl md:text-4xl filter-none" style={{ filter: 'none' }}>
           {getEmoji()}
         </span>
         
