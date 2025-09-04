@@ -15,7 +15,18 @@ import {
   Filter,
   RefreshCw,
   Eye,
-  EyeOff
+  EyeOff,
+  PieChart,
+  Activity,
+  Zap,
+  TrendingDown,
+  Award,
+  Timer,
+  UserCheck,
+  CalendarDays,
+  ChevronDown,
+  ChevronUp,
+  Info
 } from 'lucide-react';
 
 const ProjectDashboard = () => {
@@ -29,7 +40,23 @@ const ProjectDashboard = () => {
     activeProjects: 0,
     completedProjects: 0,
     overdueProjects: 0,
-    averageProgress: 0
+    averageProgress: 0,
+    // Erweiterte Statistiken
+    statusDistribution: {},
+    priorityDistribution: {},
+    teamDistribution: {},
+    timeBasedStats: {
+      createdThisWeek: 0,
+      completedThisWeek: 0,
+      dueThisWeek: 0,
+      averageCompletionTime: 0
+    },
+    progressDistribution: {
+      notStarted: 0,
+      inProgress: 0,
+      nearlyComplete: 0,
+      completed: 0
+    }
   });
   const [filters, setFilters] = useState({
     status: '',
@@ -38,6 +65,7 @@ const ProjectDashboard = () => {
     showOverdue: true
   });
   const [viewMode, setViewMode] = useState('grid'); // 'grid' oder 'list'
+  const [showAdvancedStats, setShowAdvancedStats] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
@@ -71,6 +99,9 @@ const ProjectDashboard = () => {
 
   const calculateStats = (projectsData) => {
     const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
     const totalProjects = projectsData.length;
     const activeProjects = projectsData.filter(p => ['planning', 'active', 'in_progress'].includes(p.status)).length;
     const completedProjects = projectsData.filter(p => p.status === 'completed').length;
@@ -82,12 +113,87 @@ const ProjectDashboard = () => {
     const totalProgress = projectsData.reduce((sum, p) => sum + (p.completion_percentage || 0), 0);
     const averageProgress = totalProjects > 0 ? Math.round(totalProgress / totalProjects) : 0;
     
+    // Status-Verteilung
+    const statusDistribution = projectsData.reduce((acc, project) => {
+      acc[project.status] = (acc[project.status] || 0) + 1;
+      return acc;
+    }, {});
+    
+    // Prioritäts-Verteilung
+    const priorityDistribution = projectsData.reduce((acc, project) => {
+      acc[project.priority] = (acc[project.priority] || 0) + 1;
+      return acc;
+    }, {});
+    
+    // Team-Verteilung
+    const teamDistribution = projectsData.reduce((acc, project) => {
+      const teamName = project.team_name || 'Kein Team';
+      acc[teamName] = (acc[teamName] || 0) + 1;
+      return acc;
+    }, {});
+    
+    // Zeitbasierte Statistiken
+    const createdThisWeek = projectsData.filter(p => {
+      const createdDate = new Date(p.created_at);
+      return createdDate >= oneWeekAgo;
+    }).length;
+    
+    const completedThisWeek = projectsData.filter(p => {
+      if (p.status !== 'completed') return false;
+      const updatedDate = new Date(p.updated_at);
+      return updatedDate >= oneWeekAgo;
+    }).length;
+    
+    const dueThisWeek = projectsData.filter(p => {
+      if (!p.target_date || p.status === 'completed') return false;
+      const targetDate = new Date(p.target_date);
+      return targetDate >= now && targetDate <= oneWeekFromNow;
+    }).length;
+    
+    // Durchschnittliche Bearbeitungszeit (nur für abgeschlossene Projekte)
+    const completedProjectsWithDates = projectsData.filter(p => 
+      p.status === 'completed' && p.start_date && p.updated_at
+    );
+    const averageCompletionTime = completedProjectsWithDates.length > 0 
+      ? Math.round(
+          completedProjectsWithDates.reduce((sum, p) => {
+            const startDate = new Date(p.start_date);
+            const endDate = new Date(p.updated_at);
+            return sum + (endDate - startDate) / (1000 * 60 * 60 * 24); // Tage
+          }, 0) / completedProjectsWithDates.length
+        )
+      : 0;
+    
+    // Fortschritts-Verteilung
+    const progressDistribution = {
+      notStarted: projectsData.filter(p => (p.completion_percentage || 0) === 0).length,
+      inProgress: projectsData.filter(p => {
+        const progress = p.completion_percentage || 0;
+        return progress > 0 && progress < 80;
+      }).length,
+      nearlyComplete: projectsData.filter(p => {
+        const progress = p.completion_percentage || 0;
+        return progress >= 80 && progress < 100;
+      }).length,
+      completed: projectsData.filter(p => (p.completion_percentage || 0) === 100).length
+    };
+    
     setStats({
       totalProjects,
       activeProjects,
       completedProjects,
       overdueProjects,
-      averageProgress
+      averageProgress,
+      statusDistribution,
+      priorityDistribution,
+      teamDistribution,
+      timeBasedStats: {
+        createdThisWeek,
+        completedThisWeek,
+        dueThisWeek,
+        averageCompletionTime
+      },
+      progressDistribution
     });
   };
 
@@ -225,7 +331,7 @@ const ProjectDashboard = () => {
           </div>
         </div>
 
-        {/* Statistiken */}
+        {/* Basis-Statistiken */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
@@ -287,6 +393,176 @@ const ProjectDashboard = () => {
             </div>
           </div>
         </div>
+
+        {/* Erweiterte Statistiken Toggle */}
+        <div className="mb-6">
+          <button
+            onClick={() => setShowAdvancedStats(!showAdvancedStats)}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-700 dark:text-slate-300"
+          >
+            <Info className="w-4 h-4" />
+            <span>Erweiterte Statistiken</span>
+            {showAdvancedStats ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+
+        {/* Erweiterte Statistiken */}
+        {showAdvancedStats && (
+          <div className="space-y-6 mb-8">
+            {/* Zeitbasierte Statistiken */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Diese Woche erstellt</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.timeBasedStats.createdThisWeek}</p>
+                  </div>
+                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                    <Zap className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Diese Woche abgeschlossen</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.timeBasedStats.completedThisWeek}</p>
+                  </div>
+                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                    <Award className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Diese Woche fällig</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.timeBasedStats.dueThisWeek}</p>
+                  </div>
+                  <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+                    <CalendarDays className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Ø Bearbeitungszeit</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.timeBasedStats.averageCompletionTime}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Tage</p>
+                  </div>
+                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                    <Timer className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Verteilungs-Statistiken */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Status-Verteilung */}
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                  <PieChart className="w-5 h-5" />
+                  Status-Verteilung
+                </h3>
+                <div className="space-y-3">
+                  {Object.entries(stats.statusDistribution).map(([status, count]) => (
+                    <div key={status} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full ${getStatusColor(status).split(' ')[1]}`}></div>
+                        <span className="text-sm text-slate-700 dark:text-slate-300">{getStatusText(status)}</span>
+                      </div>
+                      <span className="text-sm font-medium text-slate-900 dark:text-white">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Prioritäts-Verteilung */}
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                  <Activity className="w-5 h-5" />
+                  Prioritäts-Verteilung
+                </h3>
+                <div className="space-y-3">
+                  {Object.entries(stats.priorityDistribution).map(([priority, count]) => (
+                    <div key={priority} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full ${getPriorityColor(priority).split(' ')[1]}`}></div>
+                        <span className="text-sm text-slate-700 dark:text-slate-300">{getPriorityText(priority)}</span>
+                      </div>
+                      <span className="text-sm font-medium text-slate-900 dark:text-white">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Fortschritts-Verteilung */}
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  Fortschritts-Verteilung
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+                      <span className="text-sm text-slate-700 dark:text-slate-300">Nicht begonnen</span>
+                    </div>
+                    <span className="text-sm font-medium text-slate-900 dark:text-white">{stats.progressDistribution.notStarted}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-blue-400"></div>
+                      <span className="text-sm text-slate-700 dark:text-slate-300">In Bearbeitung</span>
+                    </div>
+                    <span className="text-sm font-medium text-slate-900 dark:text-white">{stats.progressDistribution.inProgress}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                      <span className="text-sm text-slate-700 dark:text-slate-300">Fast fertig</span>
+                    </div>
+                    <span className="text-sm font-medium text-slate-900 dark:text-white">{stats.progressDistribution.nearlyComplete}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                      <span className="text-sm text-slate-700 dark:text-slate-300">Abgeschlossen</span>
+                    </div>
+                    <span className="text-sm font-medium text-slate-900 dark:text-white">{stats.progressDistribution.completed}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Team-Verteilung */}
+            {Object.keys(stats.teamDistribution).length > 0 && (
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                  <UserCheck className="w-5 h-5" />
+                  Team-Verteilung
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {Object.entries(stats.teamDistribution).map(([teamName, count]) => (
+                    <div key={teamName} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{teamName}</span>
+                      <span className="text-sm font-bold text-slate-900 dark:text-white">{count} Projekte</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Filter */}
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-8">
