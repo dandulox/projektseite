@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import LoginForm from '../components/LoginForm';
-import RegisterForm from '../components/RegisterForm';
+import RegisterFormStartPage from '../components/RegisterFormStartPage';
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
@@ -64,7 +64,7 @@ const AuthPage = () => {
         {isLogin ? (
           <LoginForm onSwitchToRegister={() => setIsLogin(false)} />
         ) : (
-          <RegisterForm onSwitchToLogin={() => setIsLogin(true)} />
+          <RegisterFormStartPage onSwitchToLogin={() => setIsLogin(true)} />
         )}
       </div>
 
