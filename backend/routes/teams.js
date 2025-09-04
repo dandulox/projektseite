@@ -15,25 +15,41 @@ const pool = new Pool({
 
 // Hilfsfunktion: Prüft ob Benutzer Team-Leader oder Admin ist
 const isTeamLeaderOrAdmin = async (userId, teamId) => {
-  const result = await pool.query(`
-    SELECT tm.role, u.role as user_role
-    FROM team_memberships tm
-    JOIN users u ON u.id = tm.user_id
-    WHERE tm.team_id = $1 AND tm.user_id = $2
-  `, [teamId, userId]);
-  
-  if (result.rows.length === 0) return false;
-  const { role, user_role } = result.rows[0];
-  return role === 'leader' || user_role === 'admin';
+  try {
+    const result = await pool.query(`
+      SELECT tm.role, u.role as user_role
+      FROM team_memberships tm
+      JOIN users u ON u.id = tm.user_id
+      WHERE tm.team_id = $1 AND tm.user_id = $2
+    `, [teamId, userId]);
+    
+    if (result.rows.length === 0) return false;
+    const { role, user_role } = result.rows[0];
+    return role === 'leader' || user_role === 'admin';
+  } catch (error) {
+    if (error.message.includes('relation "team_memberships" does not exist')) {
+      console.warn('Team-Mitgliedschaften-Tabelle existiert nicht');
+      return false;
+    }
+    throw error;
+  }
 };
 
 // Hilfsfunktion: Prüft ob Benutzer Team-Mitglied ist
 const isTeamMember = async (userId, teamId) => {
-  const result = await pool.query(
-    'SELECT id FROM team_memberships WHERE team_id = $1 AND user_id = $2',
-    [teamId, userId]
-  );
-  return result.rows.length > 0;
+  try {
+    const result = await pool.query(
+      'SELECT id FROM team_memberships WHERE team_id = $1 AND user_id = $2',
+      [teamId, userId]
+    );
+    return result.rows.length > 0;
+  } catch (error) {
+    if (error.message.includes('relation "team_memberships" does not exist')) {
+      console.warn('Team-Mitgliedschaften-Tabelle existiert nicht');
+      return false;
+    }
+    throw error;
+  }
 };
 
 // Alle Teams abrufen (für Admin) oder Teams des Benutzers
@@ -76,8 +92,15 @@ router.get('/', authenticateToken, async (req, res) => {
     const result = await pool.query(query, params);
     res.json({ teams: result.rows });
   } catch (error) {
-    console.error('Fehler beim Abrufen der Teams:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
+    if (error.message.includes('relation "teams" does not exist') || 
+        error.message.includes('relation "team_memberships" does not exist')) {
+      console.warn('Teams-Tabellen existieren nicht');
+      res.json({ teams: [] });
+    } else {
+      console.error('Fehler beim Abrufen der Teams:', error);
+      console.error('Fehler-Details:', error.message);
+      res.status(500).json({ error: 'Interner Serverfehler', details: process.env.NODE_ENV === 'development' ? error.message : undefined });
+    }
   }
 });
 
@@ -87,8 +110,18 @@ router.get('/:id', authenticateToken, async (req, res) => {
     const teamId = req.params.id;
     
     // Prüfe ob Benutzer Zugriff auf das Team hat
-    if (req.user.role !== 'admin' && !(await isTeamMember(req.user.id, teamId))) {
-      return res.status(403).json({ error: 'Keine Berechtigung für dieses Team' });
+    if (req.user.role !== 'admin') {
+      try {
+        if (!(await isTeamMember(req.user.id, teamId))) {
+          return res.status(403).json({ error: 'Keine Berechtigung für dieses Team' });
+        }
+      } catch (memberError) {
+        console.warn('Team-Mitgliedschaft konnte nicht geprüft werden:', memberError.message);
+        // Wenn Team-Mitgliedschaften nicht geprüft werden können, erlaube Zugriff für Admin
+        if (req.user.role !== 'admin') {
+          return res.status(403).json({ error: 'Keine Berechtigung für dieses Team' });
+        }
+      }
     }
 
     // Team-Details abrufen
@@ -103,14 +136,19 @@ router.get('/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Team nicht gefunden' });
     }
 
-    // Team-Mitglieder abrufen
-    const membersResult = await pool.query(`
-      SELECT u.id, u.username, u.email, u.role as user_role, tm.role as team_role, tm.joined_at
-      FROM team_memberships tm
-      JOIN users u ON u.id = tm.user_id
-      WHERE tm.team_id = $1
-      ORDER BY tm.role DESC, tm.joined_at ASC
-    `, [teamId]);
+    // Team-Mitglieder abrufen (falls Tabelle existiert)
+    let membersResult = { rows: [] };
+    try {
+      membersResult = await pool.query(`
+        SELECT u.id, u.username, u.email, u.role as user_role, tm.role as team_role, tm.joined_at
+        FROM team_memberships tm
+        JOIN users u ON u.id = tm.user_id
+        WHERE tm.team_id = $1
+        ORDER BY tm.role DESC, tm.joined_at ASC
+      `, [teamId]);
+    } catch (membersError) {
+      console.warn('Konnte Team-Mitglieder nicht laden:', membersError.message);
+    }
 
     // Team-Projekte abrufen
     const projectsResult = await pool.query(`
@@ -127,8 +165,14 @@ router.get('/:id', authenticateToken, async (req, res) => {
       projects: projectsResult.rows
     });
   } catch (error) {
-    console.error('Fehler beim Abrufen des Teams:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
+    if (error.message.includes('relation "teams" does not exist')) {
+      console.warn('Teams-Tabelle existiert nicht');
+      res.status(404).json({ error: 'Team nicht gefunden' });
+    } else {
+      console.error('Fehler beim Abrufen des Teams:', error);
+      console.error('Fehler-Details:', error.message);
+      res.status(500).json({ error: 'Interner Serverfehler', details: process.env.NODE_ENV === 'development' ? error.message : undefined });
+    }
   }
 });
 
@@ -150,19 +194,30 @@ router.post('/', authenticateToken, async (req, res) => {
 
     const team = teamResult.rows[0];
 
-    // Ersteller als Team-Leader hinzufügen
-    await pool.query(`
-      INSERT INTO team_memberships (team_id, user_id, role)
-      VALUES ($1, $2, 'leader')
-    `, [team.id, req.user.id]);
+    // Ersteller als Team-Leader hinzufügen (falls Tabelle existiert)
+    try {
+      await pool.query(`
+        INSERT INTO team_memberships (team_id, user_id, role)
+        VALUES ($1, $2, 'leader')
+      `, [team.id, req.user.id]);
+    } catch (membershipError) {
+      console.warn('Konnte Team-Mitgliedschaft nicht erstellen:', membershipError.message);
+      // Team-Mitgliedschafts-Fehler sollten das Team-Erstellen nicht blockieren
+    }
 
     res.status(201).json({
       message: 'Team erfolgreich erstellt',
       team
     });
   } catch (error) {
-    console.error('Fehler beim Erstellen des Teams:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
+    if (error.message.includes('relation "teams" does not exist')) {
+      console.warn('Teams-Tabelle existiert nicht');
+      res.status(503).json({ error: 'Team-Funktionalität nicht verfügbar' });
+    } else {
+      console.error('Fehler beim Erstellen des Teams:', error);
+      console.error('Fehler-Details:', error.message);
+      res.status(500).json({ error: 'Interner Serverfehler', details: process.env.NODE_ENV === 'development' ? error.message : undefined });
+    }
   }
 });
 
@@ -173,8 +228,15 @@ router.put('/:id', authenticateToken, async (req, res) => {
     const { name, description, team_leader_id } = req.body;
 
     // Prüfe Berechtigung
-    if (!(await isTeamLeaderOrAdmin(req.user.id, teamId))) {
-      return res.status(403).json({ error: 'Keine Berechtigung zum Bearbeiten des Teams' });
+    if (req.user.role !== 'admin') {
+      try {
+        if (!(await isTeamLeaderOrAdmin(req.user.id, teamId))) {
+          return res.status(403).json({ error: 'Keine Berechtigung zum Bearbeiten des Teams' });
+        }
+      } catch (leaderError) {
+        console.warn('Team-Leader-Berechtigung konnte nicht geprüft werden:', leaderError.message);
+        return res.status(403).json({ error: 'Keine Berechtigung zum Bearbeiten des Teams' });
+      }
     }
 
     // Team aktualisieren
@@ -192,17 +254,22 @@ router.put('/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Team nicht gefunden' });
     }
 
-    // Falls Team-Leader geändert wurde, Rollen aktualisieren
+    // Falls Team-Leader geändert wurde, Rollen aktualisieren (falls Tabelle existiert)
     if (team_leader_id) {
-      await pool.query(`
-        UPDATE team_memberships 
-        SET role = CASE 
-          WHEN user_id = $1 THEN 'leader'
-          WHEN role = 'leader' THEN 'member'
-          ELSE role
-        END
-        WHERE team_id = $2
-      `, [team_leader_id, teamId]);
+      try {
+        await pool.query(`
+          UPDATE team_memberships 
+          SET role = CASE 
+            WHEN user_id = $1 THEN 'leader'
+            WHEN role = 'leader' THEN 'member'
+            ELSE role
+          END
+          WHERE team_id = $2
+        `, [team_leader_id, teamId]);
+      } catch (membershipError) {
+        console.warn('Konnte Team-Mitgliedschaften nicht aktualisieren:', membershipError.message);
+        // Team-Mitgliedschafts-Fehler sollten das Team-Update nicht blockieren
+      }
     }
 
     res.json({
@@ -210,8 +277,14 @@ router.put('/:id', authenticateToken, async (req, res) => {
       team: result.rows[0]
     });
   } catch (error) {
-    console.error('Fehler beim Aktualisieren des Teams:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
+    if (error.message.includes('relation "teams" does not exist')) {
+      console.warn('Teams-Tabelle existiert nicht');
+      res.status(503).json({ error: 'Team-Funktionalität nicht verfügbar' });
+    } else {
+      console.error('Fehler beim Aktualisieren des Teams:', error);
+      console.error('Fehler-Details:', error.message);
+      res.status(500).json({ error: 'Interner Serverfehler', details: process.env.NODE_ENV === 'development' ? error.message : undefined });
+    }
   }
 });
 
@@ -226,8 +299,15 @@ router.post('/:id/members', authenticateToken, async (req, res) => {
     }
 
     // Prüfe Berechtigung
-    if (!(await isTeamLeaderOrAdmin(req.user.id, teamId))) {
-      return res.status(403).json({ error: 'Keine Berechtigung zum Hinzufügen von Mitgliedern' });
+    if (req.user.role !== 'admin') {
+      try {
+        if (!(await isTeamLeaderOrAdmin(req.user.id, teamId))) {
+          return res.status(403).json({ error: 'Keine Berechtigung zum Hinzufügen von Mitgliedern' });
+        }
+      } catch (leaderError) {
+        console.warn('Team-Leader-Berechtigung konnte nicht geprüft werden:', leaderError.message);
+        return res.status(403).json({ error: 'Keine Berechtigung zum Hinzufügen von Mitgliedern' });
+      }
     }
 
     // Prüfe ob Benutzer existiert
@@ -244,8 +324,13 @@ router.post('/:id/members', authenticateToken, async (req, res) => {
     `, [teamId, user_id, role]);
 
     // Team-Informationen für Benachrichtigung abrufen
-    const teamResult = await pool.query('SELECT name FROM teams WHERE id = $1', [teamId]);
-    const teamName = teamResult.rows[0]?.name || 'Unbekanntes Team';
+    let teamName = 'Unbekanntes Team';
+    try {
+      const teamResult = await pool.query('SELECT name FROM teams WHERE id = $1', [teamId]);
+      teamName = teamResult.rows[0]?.name || 'Unbekanntes Team';
+    } catch (teamError) {
+      console.warn('Team-Information konnte nicht abgerufen werden:', teamError.message);
+    }
 
     // Benachrichtigungen erstellen
     try {
@@ -283,8 +368,14 @@ router.post('/:id/members', authenticateToken, async (req, res) => {
     if (error.code === '23505') { // Unique constraint violation
       return res.status(400).json({ error: 'Benutzer ist bereits Mitglied des Teams' });
     }
-    console.error('Fehler beim Hinzufügen des Mitglieds:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
+    if (error.message.includes('relation "team_memberships" does not exist')) {
+      console.warn('Team-Mitgliedschaften-Tabelle existiert nicht');
+      res.status(503).json({ error: 'Team-Funktionalität nicht verfügbar' });
+    } else {
+      console.error('Fehler beim Hinzufügen des Mitglieds:', error);
+      console.error('Fehler-Details:', error.message);
+      res.status(500).json({ error: 'Interner Serverfehler', details: process.env.NODE_ENV === 'development' ? error.message : undefined });
+    }
   }
 });
 
@@ -295,18 +386,30 @@ router.delete('/:id/members/:userId', authenticateToken, async (req, res) => {
     const userId = req.params.userId;
 
     // Prüfe Berechtigung
-    if (!(await isTeamLeaderOrAdmin(req.user.id, teamId))) {
-      return res.status(403).json({ error: 'Keine Berechtigung zum Entfernen von Mitgliedern' });
+    if (req.user.role !== 'admin') {
+      try {
+        if (!(await isTeamLeaderOrAdmin(req.user.id, teamId))) {
+          return res.status(403).json({ error: 'Keine Berechtigung zum Entfernen von Mitgliedern' });
+        }
+      } catch (leaderError) {
+        console.warn('Team-Leader-Berechtigung konnte nicht geprüft werden:', leaderError.message);
+        return res.status(403).json({ error: 'Keine Berechtigung zum Entfernen von Mitgliedern' });
+      }
     }
 
     // Prüfe ob es sich um den Team-Leader handelt
-    const leaderResult = await pool.query(
-      'SELECT team_leader_id FROM teams WHERE id = $1',
-      [teamId]
-    );
-    
-    if (leaderResult.rows.length > 0 && leaderResult.rows[0].team_leader_id == userId) {
-      return res.status(400).json({ error: 'Team-Leader kann nicht entfernt werden' });
+    try {
+      const leaderResult = await pool.query(
+        'SELECT team_leader_id FROM teams WHERE id = $1',
+        [teamId]
+      );
+      
+      if (leaderResult.rows.length > 0 && leaderResult.rows[0].team_leader_id == userId) {
+        return res.status(400).json({ error: 'Team-Leader kann nicht entfernt werden' });
+      }
+    } catch (leaderError) {
+      console.warn('Team-Leader-Information konnte nicht abgerufen werden:', leaderError.message);
+      // Ignoriere Fehler bei Team-Leader-Prüfung
     }
 
     // Mitglied entfernen
@@ -322,8 +425,14 @@ router.delete('/:id/members/:userId', authenticateToken, async (req, res) => {
 
     res.json({ message: 'Mitglied erfolgreich entfernt' });
   } catch (error) {
-    console.error('Fehler beim Entfernen des Mitglieds:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
+    if (error.message.includes('relation "team_memberships" does not exist')) {
+      console.warn('Team-Mitgliedschaften-Tabelle existiert nicht');
+      res.status(503).json({ error: 'Team-Funktionalität nicht verfügbar' });
+    } else {
+      console.error('Fehler beim Entfernen des Mitglieds:', error);
+      console.error('Fehler-Details:', error.message);
+      res.status(500).json({ error: 'Interner Serverfehler', details: process.env.NODE_ENV === 'development' ? error.message : undefined });
+    }
   }
 });
 
@@ -333,13 +442,18 @@ router.delete('/:id/leave', authenticateToken, async (req, res) => {
     const teamId = req.params.id;
 
     // Prüfe ob es sich um den Team-Leader handelt
-    const leaderResult = await pool.query(
-      'SELECT team_leader_id FROM teams WHERE id = $1',
-      [teamId]
-    );
-    
-    if (leaderResult.rows.length > 0 && leaderResult.rows[0].team_leader_id == req.user.id) {
-      return res.status(400).json({ error: 'Team-Leader kann das Team nicht verlassen' });
+    try {
+      const leaderResult = await pool.query(
+        'SELECT team_leader_id FROM teams WHERE id = $1',
+        [teamId]
+      );
+      
+      if (leaderResult.rows.length > 0 && leaderResult.rows[0].team_leader_id == req.user.id) {
+        return res.status(400).json({ error: 'Team-Leader kann das Team nicht verlassen' });
+      }
+    } catch (leaderError) {
+      console.warn('Team-Leader-Information konnte nicht abgerufen werden:', leaderError.message);
+      // Ignoriere Fehler bei Team-Leader-Prüfung
     }
 
     // Mitgliedschaft entfernen
@@ -354,8 +468,13 @@ router.delete('/:id/leave', authenticateToken, async (req, res) => {
     }
 
     // Team-Informationen für Benachrichtigung abrufen
-    const teamResult = await pool.query('SELECT name FROM teams WHERE id = $1', [teamId]);
-    const teamName = teamResult.rows[0]?.name || 'Unbekanntes Team';
+    let teamName = 'Unbekanntes Team';
+    try {
+      const teamResult = await pool.query('SELECT name FROM teams WHERE id = $1', [teamId]);
+      teamName = teamResult.rows[0]?.name || 'Unbekanntes Team';
+    } catch (teamError) {
+      console.warn('Team-Information konnte nicht abgerufen werden:', teamError.message);
+    }
 
     // Benachrichtigung für andere Team-Mitglieder
     try {
@@ -374,8 +493,14 @@ router.delete('/:id/leave', authenticateToken, async (req, res) => {
 
     res.json({ message: 'Team erfolgreich verlassen' });
   } catch (error) {
-    console.error('Fehler beim Verlassen des Teams:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
+    if (error.message.includes('relation "team_memberships" does not exist')) {
+      console.warn('Team-Mitgliedschaften-Tabelle existiert nicht');
+      res.status(503).json({ error: 'Team-Funktionalität nicht verfügbar' });
+    } else {
+      console.error('Fehler beim Verlassen des Teams:', error);
+      console.error('Fehler-Details:', error.message);
+      res.status(500).json({ error: 'Interner Serverfehler', details: process.env.NODE_ENV === 'development' ? error.message : undefined });
+    }
   }
 });
 
@@ -385,8 +510,15 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     const teamId = req.params.id;
 
     // Prüfe Berechtigung
-    if (req.user.role !== 'admin' && !(await isTeamLeaderOrAdmin(req.user.id, teamId))) {
-      return res.status(403).json({ error: 'Keine Berechtigung zum Löschen des Teams' });
+    if (req.user.role !== 'admin') {
+      try {
+        if (!(await isTeamLeaderOrAdmin(req.user.id, teamId))) {
+          return res.status(403).json({ error: 'Keine Berechtigung zum Löschen des Teams' });
+        }
+      } catch (leaderError) {
+        console.warn('Team-Leader-Berechtigung konnte nicht geprüft werden:', leaderError.message);
+        return res.status(403).json({ error: 'Keine Berechtigung zum Löschen des Teams' });
+      }
     }
 
     // Team deaktivieren (soft delete)
@@ -403,8 +535,14 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
     res.json({ message: 'Team erfolgreich gelöscht' });
   } catch (error) {
-    console.error('Fehler beim Löschen des Teams:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
+    if (error.message.includes('relation "teams" does not exist')) {
+      console.warn('Teams-Tabelle existiert nicht');
+      res.status(503).json({ error: 'Team-Funktionalität nicht verfügbar' });
+    } else {
+      console.error('Fehler beim Löschen des Teams:', error);
+      console.error('Fehler-Details:', error.message);
+      res.status(500).json({ error: 'Interner Serverfehler', details: process.env.NODE_ENV === 'development' ? error.message : undefined });
+    }
   }
 });
 

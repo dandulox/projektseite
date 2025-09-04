@@ -4,6 +4,45 @@ Eine modulare Website zur Dokumentation und Verfolgung von Projektstatus mit Liv
 
 ## 🚀 Features
 
+### 🆕 Neue Features (Version 2.0)
+
+#### 📁 Projektverwaltung
+- **Vollständige CRUD-Operationen** für Projekte
+- **Erweiterte Filterung** nach Team, Status und Sichtbarkeit
+- **Fortschrittsverfolgung** mit visuellen Indikatoren
+- **Team-Zuweisungen** und Berechtigungsmanagement
+- **Projekt-Logs** für Aktivitätsverfolgung
+- **Responsive Design** mit modernem UI
+
+#### 🧩 Modulverwaltung
+- **Projekt-Module** für strukturierte Projektaufteilung
+- **Eigenständige Module** für unabhängige Aufgaben
+- **Tag-System** für Kategorisierung
+- **Abhängigkeitsmanagement** zwischen Modulen
+- **Zeitaufwand-Tracking** (geschätzt vs. tatsächlich)
+- **Zuweisungen** an Benutzer und Teams
+
+#### 👥 Team-Management
+- **Team-Erstellung** und -Verwaltung
+- **Rollenbasierte Mitgliedschaft** (Leader, Member, Viewer)
+- **Team-Projekte** und -Module
+- **Benachrichtigungen** für Team-Aktivitäten
+- **Mitgliederverwaltung** mit Einladungen
+
+#### 🔔 Benachrichtigungssystem
+- **Echtzeit-Benachrichtigungen** für wichtige Ereignisse
+- **Team-Benachrichtigungen** für alle Mitglieder
+- **Projekt-Updates** und Modul-Änderungen
+- **Benachrichtigungs-Glocke** in der Navigation
+- **Gelesen-Status** und Verwaltung
+
+#### 🎨 Design-System
+- **Theme-Management** (Light/Dark Mode)
+- **CSS-Variablen** für konsistentes Design
+- **Responsive Navigation** mit Mobile-Menu
+- **Benutzer-Dropdown** mit Profil-Zugriff
+- **Design-Einstellungen** (Schriftgröße, Kompakt-Modus)
+
 ### ✅ Implementiert
 - **Modulares Backend-Design** mit Express.js
 - **Tailwind CSS** mit CSS-Variablen für konsistentes Styling
@@ -76,15 +115,31 @@ projektseite/
 │       ├── index.css                      # Globale Styles mit CSS-Variablen
 │       ├── components/                    # React-Komponenten
 │       │   ├── LoginForm.jsx              # Login-Formular
-│       │   ├── RegisterForm.jsx           # Registrierungs-Formular
-│       │   └── UserManagement.jsx         # Benutzerverwaltung
+│       │   ├── RegisterFormStartPage.jsx  # Registrierungs-Formular
+│       │   ├── UserManagement.jsx         # Benutzerverwaltung
+│       │   ├── UserSettings.jsx           # Benutzereinstellungen
+│       │   ├── ProjectManagement.jsx      # Projektverwaltung
+│       │   ├── ModuleForm.jsx             # Modul-Formular
+│       │   ├── ModuleManagement.jsx       # Modulverwaltung
+│       │   ├── TeamManagement.jsx         # Team-Management
+│       │   ├── GreetingManagement.jsx     # Begrüßungsverwaltung
+│       │   ├── DynamicGreeting.jsx        # Dynamische Begrüßungen
+│       │   └── NotificationBell.jsx       # Benachrichtigungs-Glocke
 │       ├── pages/                         # Seiten-Komponenten
 │       │   └── AuthPage.jsx               # Authentifizierungs-Seite
 │       └── contexts/                      # React Contexts
 │           └── AuthContext.jsx            # Authentifizierungs-Context
 ├── 🗄️ database/
-│   └── init/
-│       └── 01_schema.sql                  # PostgreSQL-Datenbankschema
+│   ├── init/
+│   │   └── 01_schema.sql                  # PostgreSQL-Datenbankschema
+│   └── patches/                           # Datenbank-Patches
+│       ├── 001_ensure_greetings_table.sql # Begrüßungstabelle sicherstellen
+│       ├── 002_example_patch_template.sql # Patch-Vorlage
+│       ├── 003_new_humor_greetings.sql    # Neue humorvolle Begrüßungen
+│       ├── 004_team_functionality.sql     # Team-Funktionalität
+│       ├── 005_notifications_system.sql   # Benachrichtigungssystem
+│       ├── 008_module_management_system.sql # Modulverwaltungs-System
+│       └── README.md                      # Patch-Dokumentation
 ├── 🎨 shared/
 │   └── styles/                            # Geteilte Styles (aktuell leer)
 ├── 📊 monitoring/
@@ -623,15 +678,193 @@ ls -lh /opt/backups/projektseite/
 - `DELETE /api/admin/users/:id` - Benutzer löschen
 - `GET /api/admin/stats` - System-Statistiken abrufen
 
+#### Projektverwaltung (`/api/projects`)
+- `GET /api/projects` - Alle Projekte abrufen (mit Filterung)
+- `GET /api/projects/:id` - Einzelnes Projekt abrufen
+- `POST /api/projects` - Neues Projekt erstellen
+- `PUT /api/projects/:id` - Projekt aktualisieren
+- `DELETE /api/projects/:id` - Projekt löschen
+- `POST /api/projects/:id/permissions` - Projekt-Berechtigung vergeben
+- `DELETE /api/projects/:id/permissions/:userId` - Projekt-Berechtigung entfernen
+
+#### Modulverwaltung (`/api/modules`)
+- `GET /api/modules` - Alle Module abrufen (mit Filterung)
+- `GET /api/modules/:id` - Einzelnes Modul abrufen
+- `POST /api/modules/project` - Neues Projekt-Modul erstellen
+- `POST /api/modules/standalone` - Neues eigenständiges Modul erstellen
+- `PUT /api/modules/:id` - Modul aktualisieren
+- `DELETE /api/modules/:id` - Modul löschen
+- `POST /api/modules/:id/permissions` - Modul-Berechtigung vergeben
+- `DELETE /api/modules/:id/permissions/:userId` - Modul-Berechtigung entfernen
+- `POST /api/modules/:id/dependencies` - Modul-Abhängigkeit erstellen
+- `DELETE /api/modules/:id/dependencies/:connectionId` - Modul-Abhängigkeit entfernen
+
+#### Team-Management (`/api/teams`)
+- `GET /api/teams` - Alle Teams abrufen
+- `GET /api/teams/:id` - Einzelnes Team abrufen
+- `POST /api/teams` - Neues Team erstellen
+- `PUT /api/teams/:id` - Team aktualisieren
+- `DELETE /api/teams/:id` - Team löschen
+- `POST /api/teams/:id/members` - Team-Mitglied hinzufügen
+- `DELETE /api/teams/:id/members/:userId` - Team-Mitglied entfernen
+- `DELETE /api/teams/:id/leave` - Team verlassen
+
+#### Benachrichtigungen (`/api/notifications`)
+- `GET /api/notifications` - Benachrichtigungen abrufen
+- `PUT /api/notifications/:id/read` - Benachrichtigung als gelesen markieren
+- `DELETE /api/notifications/:id` - Benachrichtigung löschen
+- `PUT /api/notifications/mark-all-read` - Alle Benachrichtigungen als gelesen markieren
+
+#### Begrüßungen (`/api/greetings`)
+- `GET /api/greetings` - Alle Begrüßungen abrufen
+- `GET /api/greetings/random` - Zufällige Begrüßung abrufen
+- `POST /api/greetings` - Neue Begrüßung erstellen (Admin)
+- `PUT /api/greetings/:id` - Begrüßung aktualisieren (Admin)
+- `DELETE /api/greetings/:id` - Begrüßung löschen (Admin)
+
+## 🗄️ Datenbank-Schema
+
+### Haupttabellen
+
+#### Benutzer (`users`)
+- `id` - Primärschlüssel
+- `username` - Eindeutiger Benutzername
+- `email` - E-Mail-Adresse
+- `password_hash` - Gehashtes Passwort
+- `role` - Rolle (admin, user, viewer)
+- `is_active` - Aktiv-Status
+- `created_at`, `updated_at` - Zeitstempel
+
+#### Teams (`teams`)
+- `id` - Primärschlüssel
+- `name` - Team-Name
+- `description` - Team-Beschreibung
+- `team_leader_id` - Team-Leader (Referenz auf users)
+- `is_active` - Aktiv-Status
+- `created_at`, `updated_at` - Zeitstempel
+
+#### Team-Mitgliedschaften (`team_memberships`)
+- `id` - Primärschlüssel
+- `team_id` - Team-Referenz
+- `user_id` - Benutzer-Referenz
+- `role` - Rolle im Team (leader, member, viewer)
+- `joined_at` - Beitrittsdatum
+
+#### Projekte (`projects`)
+- `id` - Primärschlüssel
+- `name` - Projekt-Name
+- `description` - Projekt-Beschreibung
+- `status` - Status (planning, active, on_hold, completed, cancelled)
+- `priority` - Priorität (low, medium, high, critical)
+- `owner_id` - Eigentümer (Referenz auf users)
+- `team_id` - Team-Referenz (optional)
+- `visibility` - Sichtbarkeit (private, team, public)
+- `completion_percentage` - Fortschritt in Prozent
+- `start_date`, `target_date` - Zeiträume
+- `created_at`, `updated_at` - Zeitstempel
+
+#### Projekt-Module (`project_modules`)
+- `id` - Primärschlüssel
+- `project_id` - Projekt-Referenz
+- `name` - Modul-Name
+- `description` - Modul-Beschreibung
+- `status` - Status (not_started, in_progress, testing, completed)
+- `priority` - Priorität (low, medium, high, critical)
+- `assigned_to` - Zugewiesener Benutzer
+- `estimated_hours`, `actual_hours` - Zeitaufwand
+- `due_date` - Fälligkeitsdatum
+- `completion_percentage` - Fortschritt in Prozent
+- `visibility` - Sichtbarkeit (private, team, public)
+- `team_id` - Team-Referenz (optional)
+- `tags` - Tags als Array
+- `dependencies` - Abhängigkeiten als Array
+- `created_at`, `updated_at` - Zeitstempel
+
+#### Eigenständige Module (`standalone_modules`)
+- `id` - Primärschlüssel
+- `name` - Modul-Name
+- `description` - Modul-Beschreibung
+- `status` - Status (planning, active, on_hold, completed, cancelled)
+- `priority` - Priorität (low, medium, high, critical)
+- `owner_id` - Eigentümer (Referenz auf users)
+- `team_id` - Team-Referenz (optional)
+- `assigned_to` - Zugewiesener Benutzer
+- `start_date`, `target_date` - Zeiträume
+- `estimated_hours`, `actual_hours` - Zeitaufwand
+- `completion_percentage` - Fortschritt in Prozent
+- `visibility` - Sichtbarkeit (private, team, public)
+- `tags` - Tags als Array
+- `dependencies` - Abhängigkeiten als Array
+- `created_at`, `updated_at` - Zeitstempel
+
+#### Benachrichtigungen (`notifications`)
+- `id` - Primärschlüssel
+- `user_id` - Empfänger (Referenz auf users)
+- `type` - Benachrichtigungstyp
+- `title` - Titel
+- `message` - Nachricht
+- `is_read` - Gelesen-Status
+- `from_user_id` - Absender (optional)
+- `project_id` - Projekt-Referenz (optional)
+- `team_id` - Team-Referenz (optional)
+- `action_url` - Aktions-URL (optional)
+- `created_at` - Erstellungsdatum
+
+#### Begrüßungen (`greetings`)
+- `id` - Primärschlüssel
+- `text` - Begrüßungstext
+- `category` - Kategorie (morning, afternoon, evening, general)
+- `is_active` - Aktiv-Status
+- `created_at`, `updated_at` - Zeitstempel
+
+### Berechtigungstabellen
+
+#### Projekt-Berechtigungen (`project_permissions`)
+- `id` - Primärschlüssel
+- `project_id` - Projekt-Referenz
+- `user_id` - Benutzer-Referenz
+- `permission_type` - Berechtigungstyp (view, edit, admin)
+- `granted_by` - Gewährt von (Referenz auf users)
+- `granted_at` - Gewährungsdatum
+
+#### Modul-Berechtigungen (`module_permissions`)
+- `id` - Primärschlüssel
+- `module_id` - Modul-Referenz
+- `module_type` - Modul-Typ (project, standalone)
+- `user_id` - Benutzer-Referenz
+- `permission_type` - Berechtigungstyp (view, edit, admin)
+- `granted_by` - Gewährt von (Referenz auf users)
+- `granted_at` - Gewährungsdatum
+
+### Log-Tabellen
+
+#### Projekt-Logs (`project_logs`)
+- `id` - Primärschlüssel
+- `project_id` - Projekt-Referenz
+- `user_id` - Benutzer-Referenz
+- `action` - Aktion
+- `details` - Details
+- `timestamp` - Zeitstempel
+
+#### Modul-Logs (`module_logs`)
+- `id` - Primärschlüssel
+- `module_id` - Modul-Referenz
+- `module_type` - Modul-Typ (project, standalone)
+- `user_id` - Benutzer-Referenz
+- `action` - Aktion
+- `details` - Details
+- `timestamp` - Zeitstempel
+
 ## 📚 Nächste Schritte
 
-1. **Backend-Routen implementieren** (projects, modules, design)
-2. **Frontend-Komponenten erstellen** (Projektverwaltung, Module, Design-Einstellungen)
-3. **Live-Edit-Funktionalität entwickeln** für Design-Einstellungen
-4. **Projektverwaltung entwickeln** mit CRUD-Operationen
-5. **Tests schreiben** für alle Komponenten
-6. **CI/CD-Pipeline aufsetzen** für automatische Deployments
-7. **Produktions-Deployment vorbereiten** mit SSL/TLS
+1. **Live-Edit-Funktionalität entwickeln** für Design-Einstellungen
+2. **Erweiterte Dashboard-Widgets** implementieren
+3. **Kalender-Integration** für Deadlines
+4. **Datei-Upload** für Projekte und Module
+5. **Erweiterte Reporting-Funktionen** entwickeln
+6. **Tests schreiben** für alle Komponenten
+7. **CI/CD-Pipeline aufsetzen** für automatische Deployments
+8. **Produktions-Deployment vorbereiten** mit SSL/TLS
 
 ## 📄 Lizenz
 

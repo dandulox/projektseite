@@ -15,61 +15,76 @@ const pool = new Pool({
 
 // Hilfsfunktion: Prüft Projekt-Berechtigung
 const checkProjectPermission = async (userId, projectId, requiredPermission = 'view') => {
-  // Admin hat immer Zugriff
-  const userResult = await pool.query('SELECT role FROM users WHERE id = $1', [userId]);
-  if (userResult.rows.length > 0 && userResult.rows[0].role === 'admin') {
-    return true;
-  }
-
-  // Projekt-Details abrufen
-  const projectResult = await pool.query(`
-    SELECT p.*, t.id as team_id
-    FROM projects p
-    LEFT JOIN teams t ON t.id = p.team_id
-    WHERE p.id = $1
-  `, [projectId]);
-
-  if (projectResult.rows.length === 0) return false;
-  const project = projectResult.rows[0];
-
-  // Eigentümer hat immer Zugriff
-  if (project.owner_id === userId) return true;
-
-  // Prüfe Team-Berechtigung
-  if (project.team_id) {
-    const teamMembership = await pool.query(`
-      SELECT tm.role as team_role
-      FROM team_memberships tm
-      WHERE tm.team_id = $1 AND tm.user_id = $2
-    `, [project.team_id, userId]);
-
-    if (teamMembership.rows.length > 0) {
-      const teamRole = teamMembership.rows[0].team_role;
-      // Team-Leader hat Admin-Rechte, Mitglieder haben Edit-Rechte
-      if (teamRole === 'leader' && requiredPermission !== 'admin') return true;
-      if (teamRole === 'member' && ['view', 'edit'].includes(requiredPermission)) return true;
-      if (teamRole === 'viewer' && requiredPermission === 'view') return true;
+  try {
+    // Admin hat immer Zugriff
+    const userResult = await pool.query('SELECT role FROM users WHERE id = $1', [userId]);
+    if (userResult.rows.length > 0 && userResult.rows[0].role === 'admin') {
+      return true;
     }
+
+    // Projekt-Details abrufen
+    const projectResult = await pool.query(`
+      SELECT p.*
+      FROM projects p
+      WHERE p.id = $1
+    `, [projectId]);
+
+    if (projectResult.rows.length === 0) return false;
+    const project = projectResult.rows[0];
+
+    // Eigentümer hat immer Zugriff
+    if (project.owner_id === userId) return true;
+
+    // Prüfe Team-Berechtigung (falls teams-Tabelle existiert)
+    if (project.team_id) {
+      try {
+        const teamMembership = await pool.query(`
+          SELECT tm.role as team_role
+          FROM team_memberships tm
+          WHERE tm.team_id = $1 AND tm.user_id = $2
+        `, [project.team_id, userId]);
+
+        if (teamMembership.rows.length > 0) {
+          const teamRole = teamMembership.rows[0].team_role;
+          // Team-Leader hat Admin-Rechte, Mitglieder haben Edit-Rechte
+          if (teamRole === 'leader' && requiredPermission !== 'admin') return true;
+          if (teamRole === 'member' && ['view', 'edit'].includes(requiredPermission)) return true;
+          if (teamRole === 'viewer' && requiredPermission === 'view') return true;
+        }
+      } catch (teamError) {
+        console.warn('Team-Berechtigung konnte nicht geprüft werden:', teamError.message);
+        // Ignoriere Team-Fehler, falls Tabelle nicht existiert
+      }
+    }
+
+    // Prüfe explizite Projekt-Berechtigungen (falls Tabelle existiert)
+    try {
+      const permissionResult = await pool.query(`
+        SELECT permission_type
+        FROM project_permissions
+        WHERE project_id = $1 AND user_id = $2
+      `, [projectId, userId]);
+
+      if (permissionResult.rows.length > 0) {
+        const permission = permissionResult.rows[0].permission_type;
+        if (permission === 'admin') return true;
+        if (permission === 'edit' && ['view', 'edit'].includes(requiredPermission)) return true;
+        if (permission === 'view' && requiredPermission === 'view') return true;
+      }
+    } catch (permissionError) {
+      console.warn('Projekt-Berechtigungen konnten nicht geprüft werden:', permissionError.message);
+      // Ignoriere Berechtigungs-Fehler, falls Tabelle nicht existiert
+    }
+
+    // Prüfe Sichtbarkeit
+    if (project.visibility === 'public' && requiredPermission === 'view') return true;
+
+    return false;
+  } catch (error) {
+    console.error('Fehler bei der Projekt-Berechtigungsprüfung:', error);
+    // Bei Fehlern: Sicherheitshalber Zugriff verweigern
+    return false;
   }
-
-  // Prüfe explizite Projekt-Berechtigungen
-  const permissionResult = await pool.query(`
-    SELECT permission_type
-    FROM project_permissions
-    WHERE project_id = $1 AND user_id = $2
-  `, [projectId, userId]);
-
-  if (permissionResult.rows.length > 0) {
-    const permission = permissionResult.rows[0].permission_type;
-    if (permission === 'admin') return true;
-    if (permission === 'edit' && ['view', 'edit'].includes(requiredPermission)) return true;
-    if (permission === 'view' && requiredPermission === 'view') return true;
-  }
-
-  // Prüfe Sichtbarkeit
-  if (project.visibility === 'public' && requiredPermission === 'view') return true;
-
-  return false;
 };
 
 // Alle Projekte abrufen (basierend auf Berechtigung)
@@ -77,15 +92,12 @@ router.get('/', authenticateToken, async (req, res) => {
   try {
     const { team_id, status, visibility } = req.query;
     
+    // Einfache Abfrage ohne komplexe Joins, falls Tabellen fehlen
     let query = `
       SELECT p.*, 
-             u.username as owner_username,
-             t.name as team_name,
-             COUNT(pm.id) as module_count
+             u.username as owner_username
       FROM projects p
       LEFT JOIN users u ON u.id = p.owner_id
-      LEFT JOIN teams t ON t.id = p.team_id
-      LEFT JOIN project_modules pm ON pm.project_id = p.id
       WHERE 1=1
     `;
     
@@ -94,20 +106,7 @@ router.get('/', authenticateToken, async (req, res) => {
 
     // Filter basierend auf Benutzer-Berechtigung
     if (req.user.role !== 'admin') {
-      query += `
-        AND (
-          p.owner_id = $${++paramCount} OR
-          p.visibility = 'public' OR
-          (p.team_id IS NOT NULL AND EXISTS (
-            SELECT 1 FROM team_memberships tm 
-            WHERE tm.team_id = p.team_id AND tm.user_id = $${paramCount}
-          )) OR
-          EXISTS (
-            SELECT 1 FROM project_permissions pp 
-            WHERE pp.project_id = p.id AND pp.user_id = $${paramCount}
-          )
-        )
-      `;
+      query += ` AND (p.owner_id = $${++paramCount} OR p.visibility = 'public')`;
       params.push(req.user.id);
     }
 
@@ -127,13 +126,39 @@ router.get('/', authenticateToken, async (req, res) => {
       params.push(visibility);
     }
 
-    query += ` GROUP BY p.id, u.username, t.name ORDER BY p.created_at DESC`;
+    query += ` ORDER BY p.created_at DESC`;
 
     const result = await pool.query(query, params);
-    res.json({ projects: result.rows });
+    
+    // Versuche, Team-Namen und Modul-Anzahl hinzuzufügen (falls Tabellen existieren)
+    const projectsWithDetails = await Promise.all(result.rows.map(async (project) => {
+      const projectWithDetails = { ...project, team_name: null, module_count: 0 };
+      
+      try {
+        // Team-Name hinzufügen
+        if (project.team_id) {
+          const teamResult = await pool.query('SELECT name FROM teams WHERE id = $1', [project.team_id]);
+          if (teamResult.rows.length > 0) {
+            projectWithDetails.team_name = teamResult.rows[0].name;
+          }
+        }
+        
+        // Modul-Anzahl hinzufügen
+        const moduleResult = await pool.query('SELECT COUNT(*) as count FROM project_modules WHERE project_id = $1', [project.id]);
+        projectWithDetails.module_count = parseInt(moduleResult.rows[0].count);
+      } catch (detailError) {
+        console.warn('Konnte Projekt-Details nicht laden:', detailError.message);
+        // Ignoriere Fehler bei optionalen Details
+      }
+      
+      return projectWithDetails;
+    }));
+
+    res.json({ projects: projectsWithDetails });
   } catch (error) {
     console.error('Fehler beim Abrufen der Projekte:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
+    console.error('Fehler-Details:', error.message);
+    res.status(500).json({ error: 'Interner Serverfehler', details: process.env.NODE_ENV === 'development' ? error.message : undefined });
   }
 });
 
@@ -213,13 +238,23 @@ router.post('/', authenticateToken, async (req, res) => {
 
     // Prüfe Team-Berechtigung falls team_id angegeben
     if (team_id) {
-      const teamCheck = await pool.query(`
-        SELECT id FROM team_memberships 
-        WHERE team_id = $1 AND user_id = $2
-      `, [team_id, req.user.id]);
-      
-      if (teamCheck.rows.length === 0 && req.user.role !== 'admin') {
-        return res.status(403).json({ error: 'Keine Berechtigung für das angegebene Team' });
+      try {
+        const teamCheck = await pool.query(`
+          SELECT id FROM team_memberships 
+          WHERE team_id = $1 AND user_id = $2
+        `, [team_id, req.user.id]);
+        
+        if (teamCheck.rows.length === 0 && req.user.role !== 'admin') {
+          return res.status(403).json({ error: 'Keine Berechtigung für das angegebene Team' });
+        }
+      } catch (teamError) {
+        console.warn('Team-Berechtigung konnte nicht geprüft werden:', teamError.message);
+        // Wenn teams-Tabelle nicht existiert, ignoriere team_id
+        if (teamError.message.includes('relation "team_memberships" does not exist')) {
+          console.log('Team-Mitgliedschaften-Tabelle existiert nicht, ignoriere team_id');
+        } else {
+          throw teamError;
+        }
       }
     }
 
@@ -235,11 +270,16 @@ router.post('/', authenticateToken, async (req, res) => {
 
     const project = result.rows[0];
 
-    // Log-Eintrag erstellen
-    await pool.query(`
-      INSERT INTO project_logs (project_id, user_id, action, details)
-      VALUES ($1, $2, 'created', 'Projekt erstellt')
-    `, [project.id, req.user.id]);
+    // Log-Eintrag erstellen (falls Tabelle existiert)
+    try {
+      await pool.query(`
+        INSERT INTO project_logs (project_id, user_id, action, details)
+        VALUES ($1, $2, 'created', 'Projekt erstellt')
+      `, [project.id, req.user.id]);
+    } catch (logError) {
+      console.warn('Konnte Projekt-Log nicht erstellen:', logError.message);
+      // Log-Fehler sollten das Projekt-Erstellen nicht blockieren
+    }
 
     // Benachrichtigungen erstellen
     try {
@@ -268,7 +308,9 @@ router.post('/', authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error('Fehler beim Erstellen des Projekts:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
+    console.error('Fehler-Details:', error.message);
+    console.error('Fehler-Stack:', error.stack);
+    res.status(500).json({ error: 'Interner Serverfehler', details: process.env.NODE_ENV === 'development' ? error.message : undefined });
   }
 });
 

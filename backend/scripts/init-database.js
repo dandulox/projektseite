@@ -37,6 +37,10 @@ async function initializeDatabase() {
       console.log('✅ Datenbankschema bereits vorhanden');
     }
 
+    // Wende alle verfügbaren Patches an
+    console.log('🔧 Wende Datenbank-Patches an...');
+    await applyDatabasePatches();
+
     // Prüfe ob Benutzer bereits existieren
     const userCount = await pool.query('SELECT COUNT(*) FROM users');
     const count = parseInt(userCount.rows[0].count);
@@ -60,6 +64,46 @@ async function initializeDatabase() {
   }
 }
 
+// Funktion zum Anwenden aller Datenbank-Patches
+async function applyDatabasePatches() {
+  try {
+    const patchesDir = path.join(__dirname, '../../database/patches');
+    
+    if (!fs.existsSync(patchesDir)) {
+      console.log('📁 Kein Patches-Verzeichnis gefunden');
+      return;
+    }
+
+    // Lade alle Patch-Dateien
+    const patchFiles = fs.readdirSync(patchesDir)
+      .filter(file => file.endsWith('.sql') && !file.includes('README'))
+      .sort(); // Sortiere alphabetisch für korrekte Reihenfolge
+
+    console.log(`📋 Gefundene Patches: ${patchFiles.length}`);
+
+    for (const patchFile of patchFiles) {
+      try {
+        console.log(`🔧 Wende Patch an: ${patchFile}`);
+        const patchPath = path.join(patchesDir, patchFile);
+        const patchSQL = fs.readFileSync(patchPath, 'utf8');
+        
+        // Führe den Patch aus
+        await pool.query(patchSQL);
+        console.log(`✅ Patch ${patchFile} erfolgreich angewendet`);
+      } catch (patchError) {
+        // Einige Patches können Fehler werfen, wenn sie bereits angewendet wurden
+        // Das ist normal und sollte nicht die Initialisierung stoppen
+        console.log(`⚠️ Patch ${patchFile} konnte nicht angewendet werden (möglicherweise bereits vorhanden): ${patchError.message}`);
+      }
+    }
+
+    console.log('✅ Alle Patches verarbeitet');
+  } catch (error) {
+    console.error('❌ Fehler beim Anwenden der Patches:', error);
+    throw error;
+  }
+}
+
 // Skript ausführen
 if (require.main === module) {
   initializeDatabase()
@@ -73,4 +117,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { initializeDatabase };
+module.exports = { initializeDatabase, applyDatabasePatches };

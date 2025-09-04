@@ -52,33 +52,6 @@ CREATE INDEX IF NOT EXISTS idx_project_permissions_user ON project_permissions(u
 CREATE TRIGGER update_teams_updated_at BEFORE UPDATE ON teams
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Standard-Team erstellen (für bestehende Benutzer)
-INSERT INTO teams (name, description, team_leader_id) 
-SELECT 'Standard Team', 'Standard-Team für alle Benutzer', id 
-FROM users 
-WHERE role = 'admin' 
-LIMIT 1
-ON CONFLICT DO NOTHING;
-
--- Alle bestehenden Benutzer zum Standard-Team hinzufügen
-INSERT INTO team_memberships (team_id, user_id, role)
-SELECT 
-    t.id as team_id,
-    u.id as user_id,
-    CASE 
-        WHEN u.role = 'admin' THEN 'leader'
-        ELSE 'member'
-    END as role
-FROM teams t
-CROSS JOIN users u
-WHERE t.name = 'Standard Team'
-ON CONFLICT (team_id, user_id) DO NOTHING;
-
--- Bestehende Projekte dem Standard-Team zuweisen
-UPDATE projects 
-SET team_id = (SELECT id FROM teams WHERE name = 'Standard Team' LIMIT 1),
-    visibility = 'team'
-WHERE team_id IS NULL;
 
 -- Kommentar hinzufügen
 COMMENT ON TABLE teams IS 'Teams für Projektorganisation';
