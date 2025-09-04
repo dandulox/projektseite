@@ -318,27 +318,29 @@ const ProjectDashboard = () => {
 
         {/* Header */}
         <div className="mb-8">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Projekt-Dashboard</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Projekt-Dashboard</h1>
               <p className="text-slate-600 dark:text-slate-400 mt-2">
                 Übersicht über alle Projekte und deren aktuellen Status
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={loadDashboardData}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <RefreshCw className="w-4 h-4" />
-                Aktualisieren
+                <span className="hidden sm:inline">Aktualisieren</span>
+                <span className="sm:hidden">Aktualisieren</span>
               </button>
               <button
                 onClick={() => navigate('/projects')}
-                className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <ArrowRight className="w-4 h-4" />
-                Zu Projekten
+                <span className="hidden sm:inline">Zu Projekten</span>
+                <span className="sm:hidden">Projekte</span>
               </button>
             </div>
           </div>
