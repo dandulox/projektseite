@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import DashboardGreeting from './DashboardGreeting';
 import { 
   BarChart3, 
   Users, 
@@ -303,6 +304,18 @@ const ProjectDashboard = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
+        {/* Begrüßung */}
+        <div className="mb-6">
+          <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-200/50 dark:border-slate-700/50">
+            <DashboardGreeting 
+              className="text-center"
+              showTimePeriod={true}
+              refreshInterval={1800000} // 30 Minuten
+              autoRefresh={true}
+            />
+          </div>
+        </div>
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex justify-between items-center">
