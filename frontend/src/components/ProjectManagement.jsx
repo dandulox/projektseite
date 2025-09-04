@@ -118,17 +118,17 @@ const ProjectManagement = () => {
       case 'on_hold': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
       case 'completed': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
       case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-gray-200';
     }
   };
 
   const getPriorityBadgeColor = (priority) => {
     switch (priority) {
-      case 'low': return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+      case 'low': return 'bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-gray-200';
       case 'medium': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
       case 'high': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
       case 'critical': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-gray-200';
     }
   };
 
@@ -137,7 +137,7 @@ const ProjectManagement = () => {
       case 'private': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
       case 'team': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
       case 'public': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-gray-200';
     }
   };
 
@@ -180,14 +180,14 @@ const ProjectManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Projekt-Management</h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Projekt-Management</h1>
+              <p className="text-slate-600 dark:text-slate-400 mt-2">
                 Verwalte deine Projekte und die deines Teams
               </p>
             </div>
@@ -201,16 +201,16 @@ const ProjectManagement = () => {
         </div>
 
         {/* Filter */}
-        <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+        <div className="mb-6 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Team
               </label>
               <select
                 value={filters.team_id}
                 onChange={(e) => setFilters({ ...filters, team_id: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
               >
                 <option value="">Alle Teams</option>
                 {teams.map((team) => (
@@ -221,13 +221,13 @@ const ProjectManagement = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Status
               </label>
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
               >
                 <option value="">Alle Status</option>
                 <option value="planning">Planung</option>
@@ -238,13 +238,13 @@ const ProjectManagement = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Sichtbarkeit
               </label>
               <select
                 value={filters.visibility}
                 onChange={(e) => setFilters({ ...filters, visibility: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
               >
                 <option value="">Alle Sichtbarkeiten</option>
                 <option value="private">Privat</option>
@@ -258,25 +258,25 @@ const ProjectManagement = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Projekte Liste */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Projekte</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+              <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Projekte</h2>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                   {projects.length} Projekt{projects.length !== 1 ? 'e' : ''}
                 </p>
               </div>
-              <div className="divide-y divide-gray-200 dark:divide-gray-700 max-h-96 overflow-y-auto">
+              <div className="divide-y divide-slate-200 dark:divide-slate-700 max-h-96 overflow-y-auto">
                 {projects.map((project) => (
                   <div
                     key={project.id}
                     onClick={() => loadProjectDetails(project.id)}
-                    className={`p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                    className={`p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${
                       selectedProject?.project?.id === project.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                     }`}
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <h3 className="font-medium text-gray-900 dark:text-white">{project.name}</h3>
+                        <h3 className="font-medium text-slate-900 dark:text-white">{project.name}</h3>
                         <div className="flex items-center gap-2 mt-2">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(project.status)}`}>
                             {getStatusText(project.status)}
@@ -286,11 +286,11 @@ const ProjectManagement = () => {
                           </span>
                         </div>
                         <div className="mt-2">
-                          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                          <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
                             <span>{project.owner_username}</span>
                             <span>{project.completion_percentage}%</span>
                           </div>
-                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-1">
+                          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mt-1">
                             <div 
                               className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
                               style={{ width: `${project.completion_percentage}%` }}
@@ -302,7 +302,7 @@ const ProjectManagement = () => {
                   </div>
                 ))}
                 {projects.length === 0 && (
-                  <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+                  <div className="p-6 text-center text-slate-500 dark:text-slate-400">
                     Keine Projekte gefunden
                   </div>
                 )}
@@ -315,24 +315,24 @@ const ProjectManagement = () => {
             {selectedProject ? (
               <div className="space-y-6">
                 {/* Projekt Info */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+                  <div className="p-6 border-b border-slate-200 dark:border-slate-700">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                        <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
                           {selectedProject.project.name}
                         </h2>
                         {selectedProject.project.description && (
-                          <p className="text-gray-600 dark:text-gray-400 mt-2">
+                          <p className="text-slate-600 dark:text-slate-400 mt-2">
                             {selectedProject.project.description}
                           </p>
                         )}
                         <div className="flex items-center gap-4 mt-4">
-                          <span className="text-sm text-gray-500 dark:text-gray-400">
+                          <span className="text-sm text-slate-500 dark:text-slate-400">
                             Eigentümer: {selectedProject.project.owner_username}
                           </span>
                           {selectedProject.project.team_name && (
-                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                            <span className="text-sm text-slate-500 dark:text-slate-400">
                               Team: {selectedProject.project.team_name}
                             </span>
                           )}
@@ -373,16 +373,16 @@ const ProjectManagement = () => {
 
                 {/* Projekt Details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Projekt-Details</h3>
+                  <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Projekt-Details</h3>
                     <div className="space-y-3">
                       <div>
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Fortschritt:</span>
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Fortschritt:</span>
                         <div className="mt-1">
-                          <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                          <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
                             <span>{selectedProject.project.completion_percentage}% abgeschlossen</span>
                           </div>
-                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-1">
+                          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mt-1">
                             <div 
                               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                               style={{ width: `${selectedProject.project.completion_percentage}%` }}
@@ -392,39 +392,39 @@ const ProjectManagement = () => {
                       </div>
                       {selectedProject.project.start_date && (
                         <div>
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Startdatum:</span>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Startdatum:</span>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
                             {new Date(selectedProject.project.start_date).toLocaleDateString('de-DE')}
                           </p>
                         </div>
                       )}
                       {selectedProject.project.target_date && (
                         <div>
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Zieldatum:</span>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Zieldatum:</span>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
                             {new Date(selectedProject.project.target_date).toLocaleDateString('de-DE')}
                           </p>
                         </div>
                       )}
                       <div>
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Erstellt:</span>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Erstellt:</span>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">
                           {new Date(selectedProject.project.created_at).toLocaleDateString('de-DE')}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Module</h3>
+                  <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Module</h3>
                     <div className="space-y-3">
                       {selectedProject.modules.map((module) => (
-                        <div key={module.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-3">
+                        <div key={module.id} className="border border-slate-200 dark:border-slate-600 rounded-lg p-3">
                           <div className="flex justify-between items-start">
                             <div>
-                              <h4 className="font-medium text-gray-900 dark:text-white">{module.name}</h4>
+                              <h4 className="font-medium text-slate-900 dark:text-white">{module.name}</h4>
                               {module.description && (
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                                   {module.description}
                                 </p>
                               )}
@@ -433,7 +433,7 @@ const ProjectManagement = () => {
                                   {getStatusText(module.status)}
                                 </span>
                                 {module.assigned_username && (
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  <span className="text-xs text-slate-500 dark:text-slate-400">
                                     {module.assigned_username}
                                   </span>
                                 )}
@@ -443,39 +443,39 @@ const ProjectManagement = () => {
                         </div>
                       ))}
                       {selectedProject.modules.length === 0 && (
-                        <p className="text-gray-500 dark:text-gray-400 text-sm">Keine Module vorhanden</p>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm">Keine Module vorhanden</p>
                       )}
                     </div>
                   </div>
                 </div>
 
                 {/* Aktivitäts-Log */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Aktivitäts-Log</h3>
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+                  <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Aktivitäts-Log</h3>
                   </div>
-                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                  <div className="divide-y divide-slate-200 dark:divide-slate-700">
                     {selectedProject.logs.map((log) => (
                       <div key={log.id} className="p-4">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="text-sm text-gray-900 dark:text-white">
+                            <p className="text-sm text-slate-900 dark:text-white">
                               <span className="font-medium">{log.username}</span> {log.action}
                             </p>
                             {log.details && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                                 {log.details}
                               </p>
                             )}
                           </div>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                          <span className="text-xs text-slate-500 dark:text-slate-400">
                             {new Date(log.timestamp).toLocaleString('de-DE')}
                           </span>
                         </div>
                       </div>
                     ))}
                     {selectedProject.logs.length === 0 && (
-                      <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+                      <div className="p-6 text-center text-slate-500 dark:text-slate-400">
                         Keine Aktivitäten vorhanden
                       </div>
                     )}
@@ -483,16 +483,16 @@ const ProjectManagement = () => {
                 </div>
               </div>
             ) : (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
-                <div className="text-gray-400 dark:text-gray-500 mb-4">
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-12 text-center">
+                <div className="text-slate-400 dark:text-slate-500 mb-4">
                   <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
                   Wähle ein Projekt aus
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-slate-600 dark:text-slate-400">
                   Klicke auf ein Projekt in der Liste, um Details anzuzeigen
                 </p>
               </div>
@@ -503,32 +503,32 @@ const ProjectManagement = () => {
         {/* Create Project Modal */}
         {showCreateForm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                 Neues Projekt erstellen
               </h3>
               <form onSubmit={handleCreateProject}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Projekt-Name *
                     </label>
                     <input
                       type="text"
                       value={newProject.name}
                       onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Status
                     </label>
                     <select
                       value={newProject.status}
                       onChange={(e) => setNewProject({ ...newProject, status: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     >
                       <option value="planning">Planung</option>
                       <option value="active">Aktiv</option>
@@ -538,13 +538,13 @@ const ProjectManagement = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Priorität
                     </label>
                     <select
                       value={newProject.priority}
                       onChange={(e) => setNewProject({ ...newProject, priority: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     >
                       <option value="low">Niedrig</option>
                       <option value="medium">Mittel</option>
@@ -553,13 +553,13 @@ const ProjectManagement = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Team
                     </label>
                     <select
                       value={newProject.team_id}
                       onChange={(e) => setNewProject({ ...newProject, team_id: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     >
                       <option value="">Kein Team</option>
                       {teams.map((team) => (
@@ -570,13 +570,13 @@ const ProjectManagement = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Sichtbarkeit
                     </label>
                     <select
                       value={newProject.visibility}
                       onChange={(e) => setNewProject({ ...newProject, visibility: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     >
                       <option value="private">Privat</option>
                       <option value="team">Team</option>
@@ -584,36 +584,36 @@ const ProjectManagement = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Startdatum
                     </label>
                     <input
                       type="date"
                       value={newProject.start_date}
                       onChange={(e) => setNewProject({ ...newProject, start_date: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Zieldatum
                     </label>
                     <input
                       type="date"
                       value={newProject.target_date}
                       onChange={(e) => setNewProject({ ...newProject, target_date: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     />
                   </div>
                 </div>
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Beschreibung
                   </label>
                   <textarea
                     value={newProject.description}
                     onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     rows={3}
                   />
                 </div>
@@ -621,7 +621,7 @@ const ProjectManagement = () => {
                   <button
                     type="button"
                     onClick={() => setShowCreateForm(false)}
-                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     Abbrechen
                   </button>
@@ -640,14 +640,14 @@ const ProjectManagement = () => {
         {/* Edit Project Modal */}
         {showEditForm && selectedProject && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                 Projekt bearbeiten
               </h3>
               <form onSubmit={handleUpdateProject}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Projekt-Name *
                     </label>
                     <input
@@ -657,12 +657,12 @@ const ProjectManagement = () => {
                         ...selectedProject,
                         project: { ...selectedProject.project, name: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Status
                     </label>
                     <select
@@ -671,7 +671,7 @@ const ProjectManagement = () => {
                         ...selectedProject,
                         project: { ...selectedProject.project, status: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     >
                       <option value="planning">Planung</option>
                       <option value="active">Aktiv</option>
@@ -681,7 +681,7 @@ const ProjectManagement = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Priorität
                     </label>
                     <select
@@ -690,7 +690,7 @@ const ProjectManagement = () => {
                         ...selectedProject,
                         project: { ...selectedProject.project, priority: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     >
                       <option value="low">Niedrig</option>
                       <option value="medium">Mittel</option>
@@ -699,7 +699,7 @@ const ProjectManagement = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Fortschritt (%)
                     </label>
                     <input
@@ -711,11 +711,11 @@ const ProjectManagement = () => {
                         ...selectedProject,
                         project: { ...selectedProject.project, completion_percentage: parseInt(e.target.value) }
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Sichtbarkeit
                     </label>
                     <select
@@ -724,7 +724,7 @@ const ProjectManagement = () => {
                         ...selectedProject,
                         project: { ...selectedProject.project, visibility: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     >
                       <option value="private">Privat</option>
                       <option value="team">Team</option>
@@ -732,7 +732,7 @@ const ProjectManagement = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Startdatum
                     </label>
                     <input
@@ -742,11 +742,11 @@ const ProjectManagement = () => {
                         ...selectedProject,
                         project: { ...selectedProject.project, start_date: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Zieldatum
                     </label>
                     <input
@@ -756,12 +756,12 @@ const ProjectManagement = () => {
                         ...selectedProject,
                         project: { ...selectedProject.project, target_date: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     />
                   </div>
                 </div>
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Beschreibung
                   </label>
                   <textarea
@@ -770,7 +770,7 @@ const ProjectManagement = () => {
                       ...selectedProject,
                       project: { ...selectedProject.project, description: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     rows={3}
                   />
                 </div>
@@ -778,7 +778,7 @@ const ProjectManagement = () => {
                   <button
                     type="button"
                     onClick={() => setShowEditForm(false)}
-                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     Abbrechen
                   </button>

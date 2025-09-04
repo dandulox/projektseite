@@ -145,14 +145,14 @@ const TeamManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Team-Management</h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Team-Management</h1>
+              <p className="text-slate-600 dark:text-slate-400 mt-2">
                 Verwalte Teams und deren Mitglieder
               </p>
             </div>
@@ -168,33 +168,33 @@ const TeamManagement = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Teams Liste */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Teams</h2>
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+              <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Teams</h2>
               </div>
-              <div className="divide-y divide-gray-200 dark:divide-gray-700">
+              <div className="divide-y divide-slate-200 dark:divide-slate-700">
                 {teams.map((team) => (
                   <div
                     key={team.id}
                     onClick={() => loadTeamDetails(team.id)}
-                    className={`p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                    className={`p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${
                       selectedTeam?.team?.id === team.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                     }`}
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="font-medium text-gray-900 dark:text-white">{team.name}</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        <h3 className="font-medium text-slate-900 dark:text-white">{team.name}</h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                           {team.member_count} Mitglieder
                         </p>
                         {team.description && (
-                          <p className="text-sm text-gray-500 dark:text-gray-500 mt-1 line-clamp-2">
+                          <p className="text-sm text-slate-500 dark:text-slate-500 mt-1 line-clamp-2">
                             {team.description}
                           </p>
                         )}
                       </div>
                       {team.leader_username && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
                           {team.leader_username}
                         </span>
                       )}
@@ -202,7 +202,7 @@ const TeamManagement = () => {
                   </div>
                 ))}
                 {teams.length === 0 && (
-                  <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+                  <div className="p-6 text-center text-slate-500 dark:text-slate-400">
                     Keine Teams gefunden
                   </div>
                 )}
@@ -215,23 +215,23 @@ const TeamManagement = () => {
             {selectedTeam ? (
               <div className="space-y-6">
                 {/* Team Info */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+                  <div className="p-6 border-b border-slate-200 dark:border-slate-700">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                        <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
                           {selectedTeam.team.name}
                         </h2>
                         {selectedTeam.team.description && (
-                          <p className="text-gray-600 dark:text-gray-400 mt-2">
+                          <p className="text-slate-600 dark:text-slate-400 mt-2">
                             {selectedTeam.team.description}
                           </p>
                         )}
                         <div className="flex items-center gap-4 mt-4">
-                          <span className="text-sm text-gray-500 dark:text-gray-400">
+                          <span className="text-sm text-slate-500 dark:text-slate-400">
                             Leader: {selectedTeam.team.leader_username || 'Nicht zugewiesen'}
                           </span>
-                          <span className="text-sm text-gray-500 dark:text-gray-400">
+                          <span className="text-sm text-slate-500 dark:text-slate-400">
                             {selectedTeam.members.length} Mitglieder
                           </span>
                         </div>
@@ -258,10 +258,10 @@ const TeamManagement = () => {
                 </div>
 
                 {/* Mitglieder */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+                  <div className="p-6 border-b border-slate-200 dark:border-slate-700">
                     <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Mitglieder</h3>
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Mitglieder</h3>
                       {(selectedTeam.team.team_leader_id === user.id || isAdmin) && (
                         <button
                           onClick={() => setShowAddMemberForm(true)}
@@ -272,23 +272,23 @@ const TeamManagement = () => {
                       )}
                     </div>
                   </div>
-                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                  <div className="divide-y divide-slate-200 dark:divide-slate-700">
                     {selectedTeam.members.map((member) => (
                       <div key={member.id} className="p-4">
                         <div className="flex justify-between items-center">
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-medium text-gray-900 dark:text-white">
+                              <span className="font-medium text-slate-900 dark:text-white">
                                 {member.username}
                               </span>
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(member.team_role)}`}>
                                 {member.team_role}
                               </span>
                             </div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                            <p className="text-sm text-slate-600 dark:text-slate-400">
                               {member.email}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-500">
+                            <p className="text-xs text-slate-500 dark:text-slate-500">
                               Beigetreten: {new Date(member.joined_at).toLocaleDateString('de-DE')}
                             </p>
                           </div>
@@ -309,18 +309,18 @@ const TeamManagement = () => {
                 </div>
 
                 {/* Projekte */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Team-Projekte</h3>
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+                  <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Team-Projekte</h3>
                   </div>
-                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                  <div className="divide-y divide-slate-200 dark:divide-slate-700">
                     {selectedTeam.projects.map((project) => (
                       <div key={project.id} className="p-4">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h4 className="font-medium text-gray-900 dark:text-white">{project.name}</h4>
+                            <h4 className="font-medium text-slate-900 dark:text-white">{project.name}</h4>
                             {project.description && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                                 {project.description}
                               </p>
                             )}
@@ -328,16 +328,16 @@ const TeamManagement = () => {
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(project.status)}`}>
                                 {project.status}
                               </span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                              <span className="text-xs text-slate-500 dark:text-slate-400">
                                 {project.completion_percentage}% abgeschlossen
                               </span>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                            <p className="text-sm text-slate-600 dark:text-slate-400">
                               {project.owner_username}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-500">
+                            <p className="text-xs text-slate-500 dark:text-slate-500">
                               {new Date(project.created_at).toLocaleDateString('de-DE')}
                             </p>
                           </div>
@@ -345,7 +345,7 @@ const TeamManagement = () => {
                       </div>
                     ))}
                     {selectedTeam.projects.length === 0 && (
-                      <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+                      <div className="p-6 text-center text-slate-500 dark:text-slate-400">
                         Keine Projekte in diesem Team
                       </div>
                     )}
@@ -353,16 +353,16 @@ const TeamManagement = () => {
                 </div>
               </div>
             ) : (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
-                <div className="text-gray-400 dark:text-gray-500 mb-4">
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-12 text-center">
+                <div className="text-slate-400 dark:text-slate-500 mb-4">
                   <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
                   Wähle ein Team aus
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-slate-600 dark:text-slate-400">
                   Klicke auf ein Team in der Liste, um Details anzuzeigen
                 </p>
               </div>
@@ -373,31 +373,31 @@ const TeamManagement = () => {
         {/* Create Team Modal */}
         {showCreateForm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-md">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                 Neues Team erstellen
               </h3>
               <form onSubmit={handleCreateTeam}>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Team-Name
                   </label>
                   <input
                     type="text"
                     value={newTeam.name}
                     onChange={(e) => setNewTeam({ ...newTeam, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     required
                   />
                 </div>
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Beschreibung
                   </label>
                   <textarea
                     value={newTeam.description}
                     onChange={(e) => setNewTeam({ ...newTeam, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     rows={3}
                   />
                 </div>
@@ -405,7 +405,7 @@ const TeamManagement = () => {
                   <button
                     type="button"
                     onClick={() => setShowCreateForm(false)}
-                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                   >
                     Abbrechen
                   </button>
@@ -424,19 +424,19 @@ const TeamManagement = () => {
         {/* Add Member Modal */}
         {showAddMemberForm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-md">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                 Mitglied hinzufügen
               </h3>
               <form onSubmit={handleAddMember}>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Benutzer
                   </label>
                   <select
                     value={newMember.user_id}
                     onChange={(e) => setNewMember({ ...newMember, user_id: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     required
                   >
                     <option value="">Benutzer auswählen</option>
@@ -450,13 +450,13 @@ const TeamManagement = () => {
                   </select>
                 </div>
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Rolle
                   </label>
                   <select
                     value={newMember.role}
                     onChange={(e) => setNewMember({ ...newMember, role: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                   >
                     <option value="member">Mitglied</option>
                     <option value="viewer">Betrachter</option>
@@ -466,7 +466,7 @@ const TeamManagement = () => {
                   <button
                     type="button"
                     onClick={() => setShowAddMemberForm(false)}
-                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                   >
                     Abbrechen
                   </button>
