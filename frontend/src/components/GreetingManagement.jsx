@@ -55,7 +55,7 @@ const createGreeting = async (greetingData) => {
 };
 
 const updateGreeting = async ({ id, ...greetingData }) => {
-  const response = await fetch(`/api/greetings/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/greetings/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ const updateGreeting = async ({ id, ...greetingData }) => {
 };
 
 const deleteGreeting = async (id) => {
-  const response = await fetch(`/api/greetings/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/greetings/${id}`, {
     method: 'DELETE',
   });
   if (!response.ok) {

@@ -1,9 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
+// API Base URL - dynamisch basierend auf der aktuellen Domain
+const getApiBaseUrl = () => {
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // Verwende die aktuelle Domain mit Port 3001 für das Backend
+  const currentHost = window.location.hostname;
+  return `http://${currentHost}:3001/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
 // API-Funktion zum Abrufen einer zufälligen Begrüßung
 const fetchRandomGreeting = async () => {
-  const response = await fetch('/api/greetings/random');
+  const response = await fetch(`${API_BASE_URL}/greetings/random`);
   if (!response.ok) {
     throw new Error('Fehler beim Abrufen der Begrüßung');
   }
