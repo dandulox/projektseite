@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, ProtectedRoute } from './contexts/AuthContext';
@@ -1060,7 +1060,8 @@ const Admin = () => {
 };
 
 // Willkommensseite Component
-const WelcomePage = ({ onEnterApp }) => {
+const WelcomePage = () => {
+  const navigate = useNavigate();
   const [stars, setStars] = useState([]);
   const [networks, setNetworks] = useState([]);
 
@@ -1186,32 +1187,22 @@ const WelcomePage = ({ onEnterApp }) => {
         </div>
 
         {/* Call-to-Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <button
-            onClick={onEnterApp}
-            className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-2xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2"
+        <div className="flex flex-col sm:flex-row gap-4 mb-8 justify-center">
+          <button 
+            onClick={() => navigate('/login')}
+            className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-2xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 group"
           >
-            <Rocket className="w-5 h-5" />
-            <span>App starten</span>
+            <LogIn className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+            <span>Anmelden</span>
           </button>
           
-          <div className="flex gap-3">
-            <button 
-              onClick={() => window.location.href = '/login'}
-              className="px-6 py-4 bg-white/10 backdrop-blur-lg border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 group"
-            >
-              <LogIn className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
-              <span>Anmelden</span>
-            </button>
-            
-            <button 
-              onClick={() => window.location.href = '/login?mode=register'}
-              className="px-6 py-4 bg-white/10 backdrop-blur-lg border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 group"
-            >
-              <UserPlus className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
-              <span>Registrieren</span>
-            </button>
-          </div>
+          <button 
+            onClick={() => navigate('/login?mode=register')}
+            className="px-8 py-4 bg-white/10 backdrop-blur-lg border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 group"
+          >
+            <UserPlus className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+            <span>Registrieren</span>
+          </button>
         </div>
 
         {/* Zusätzliche Informationen */}
@@ -1264,80 +1255,102 @@ function App() {
     document.documentElement.setAttribute('data-theme', newTheme);
   };
 
-  const handleEnterApp = () => {
-    setShowWelcome(false);
-  };
-
-  // Wenn Willkommensseite angezeigt wird, zeige nur diese
-  if (showWelcome) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <WelcomePage onEnterApp={handleEnterApp} />
-        </AuthProvider>
-      </QueryClientProvider>
-    );
-  }
-
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
           <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300 flex flex-col">
-            <Header 
-              theme={theme} 
-              toggleTheme={toggleTheme}
-              isMobileMenuOpen={isMobileMenuOpen}
-              setIsMobileMenuOpen={setIsMobileMenuOpen}
-            />
-            
-            {/* Hauptinhalt - konsistente Breite für alle Seiten */}
-            <main className="flex-1 py-8 page-container">
-              <Routes>
-                <Route path="/login" element={<AuthPage />} />
-                <Route path="/" element={
-                  <ProtectedRoute>
+            <Routes>
+              <Route path="/welcome" element={<WelcomePage />} />
+              <Route path="/login" element={<AuthPage />} />
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <Header 
+                    theme={theme} 
+                    toggleTheme={toggleTheme}
+                    isMobileMenuOpen={isMobileMenuOpen}
+                    setIsMobileMenuOpen={setIsMobileMenuOpen}
+                  />
+                  <main className="flex-1 py-8 page-container">
                     <Dashboard />
-                  </ProtectedRoute>
-                } />
-                <Route path="/projects" element={
-                  <ProtectedRoute>
+                  </main>
+                  <Footer />
+                  <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+                </ProtectedRoute>
+              } />
+              <Route path="/projects" element={
+                <ProtectedRoute>
+                  <Header 
+                    theme={theme} 
+                    toggleTheme={toggleTheme}
+                    isMobileMenuOpen={isMobileMenuOpen}
+                    setIsMobileMenuOpen={setIsMobileMenuOpen}
+                  />
+                  <main className="flex-1 py-8 page-container">
                     <Projects />
-                  </ProtectedRoute>
-                } />
-                <Route path="/modules" element={
-                  <ProtectedRoute>
+                  </main>
+                  <Footer />
+                  <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+                </ProtectedRoute>
+              } />
+              <Route path="/modules" element={
+                <ProtectedRoute>
+                  <Header 
+                    theme={theme} 
+                    toggleTheme={toggleTheme}
+                    isMobileMenuOpen={isMobileMenuOpen}
+                    setIsMobileMenuOpen={setIsMobileMenuOpen}
+                  />
+                  <main className="flex-1 py-8 page-container">
                     <Modules />
-                  </ProtectedRoute>
-                } />
-                <Route path="/design" element={
-                  <ProtectedRoute>
+                  </main>
+                  <Footer />
+                  <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+                </ProtectedRoute>
+              } />
+              <Route path="/design" element={
+                <ProtectedRoute>
+                  <Header 
+                    theme={theme} 
+                    toggleTheme={toggleTheme}
+                    isMobileMenuOpen={isMobileMenuOpen}
+                    setIsMobileMenuOpen={setIsMobileMenuOpen}
+                  />
+                  <main className="flex-1 py-8 page-container">
                     <Design />
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin" element={
-                  <ProtectedRoute requireAdmin={true}>
+                  </main>
+                  <Footer />
+                  <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <Header 
+                    theme={theme} 
+                    toggleTheme={toggleTheme}
+                    isMobileMenuOpen={isMobileMenuOpen}
+                    setIsMobileMenuOpen={setIsMobileMenuOpen}
+                  />
+                  <main className="flex-1 py-8 page-container">
                     <Admin />
-                  </ProtectedRoute>
-                } />
-              </Routes>
-            </main>
+                  </main>
+                  <Footer />
+                  <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+                </ProtectedRoute>
+              } />
+            </Routes>
             
-            <Footer />
+            <Toaster 
+              position="top-right"
+              toastOptions={{
+                style: {
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border-secondary)',
+                },
+              }}
+            />
           </div>
-          
-          <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
-          
-          <Toaster 
-            position="top-right"
-            toastOptions={{
-              style: {
-                background: 'var(--bg-secondary)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border-secondary)',
-              },
-            }}
-          />
         </Router>
       </AuthProvider>
     </QueryClientProvider>
