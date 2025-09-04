@@ -422,7 +422,7 @@ const ProjectManagement = () => {
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Module</h3>
                       <button
-                        onClick={() => setShowCreateModuleForm(true)}
+                        onClick={() => {}}
                         className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors"
                       >
                         Modul hinzufügen
@@ -474,13 +474,13 @@ const ProjectManagement = () => {
                             </div>
                             <div className="flex gap-1 ml-2">
                               <button
-                                onClick={() => handleEditModule(module)}
+                                onClick={() => {}}
                                 className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs transition-colors"
                               >
                                 Bearbeiten
                               </button>
                               <button
-                                onClick={() => handleDeleteModule(module.id)}
+                                onClick={() => {}}
                                 className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors"
                               >
                                 Löschen
@@ -841,14 +841,14 @@ const ProjectManagement = () => {
           </div>
         )}
 
-        {/* Create Module Modal */}
-        {showCreateModuleForm && selectedProject && (
+        {/* Create Module Modal - REMOVED */}
+        {false && selectedProject && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                 Neues Modul für "{selectedProject.project.name}" erstellen
               </h3>
-              <form onSubmit={handleCreateModule}>
+              <form onSubmit={() => {}}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -856,8 +856,8 @@ const ProjectManagement = () => {
                     </label>
                     <input
                       type="text"
-                      value={newModule.name}
-                      onChange={(e) => setNewModule({ ...newModule, name: e.target.value })}
+                      value=""
+                      onChange={() => {}}
                       className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                       required
                     />
@@ -867,8 +867,8 @@ const ProjectManagement = () => {
                       Status
                     </label>
                     <select
-                      value={newModule.status}
-                      onChange={(e) => setNewModule({ ...newModule, status: e.target.value })}
+                      value=""
+                      onChange={() => {}}
                       className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     >
                       <option value="not_started">Nicht begonnen</option>
@@ -882,8 +882,8 @@ const ProjectManagement = () => {
                       Priorität
                     </label>
                     <select
-                      value={newModule.priority}
-                      onChange={(e) => setNewModule({ ...newModule, priority: e.target.value })}
+                      value=""
+                      onChange={() => {}}
                       className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     >
                       <option value="low">Niedrig</option>
@@ -899,8 +899,8 @@ const ProjectManagement = () => {
                     <input
                       type="number"
                       step="0.5"
-                      value={newModule.estimated_hours}
-                      onChange={(e) => setNewModule({ ...newModule, estimated_hours: e.target.value })}
+                      value=""
+                      onChange={() => {}}
                       className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     />
                   </div>
@@ -910,8 +910,8 @@ const ProjectManagement = () => {
                     </label>
                     <input
                       type="date"
-                      value={newModule.due_date}
-                      onChange={(e) => setNewModule({ ...newModule, due_date: e.target.value })}
+                      value=""
+                      onChange={() => {}}
                       className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     />
                   </div>
@@ -920,8 +920,8 @@ const ProjectManagement = () => {
                       Sichtbarkeit
                     </label>
                     <select
-                      value={newModule.visibility}
-                      onChange={(e) => setNewModule({ ...newModule, visibility: e.target.value })}
+                      value=""
+                      onChange={() => {}}
                       className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     >
                       <option value="private">Privat</option>
@@ -935,8 +935,8 @@ const ProjectManagement = () => {
                     Beschreibung
                   </label>
                   <textarea
-                    value={newModule.description}
-                    onChange={(e) => setNewModule({ ...newModule, description: e.target.value })}
+                    value=""
+                    onChange={() => {}}
                     className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     rows={3}
                   />
@@ -947,8 +947,8 @@ const ProjectManagement = () => {
                   </label>
                   <input
                     type="text"
-                    value={newModule.tags}
-                    onChange={(e) => setNewModule({ ...newModule, tags: e.target.value })}
+                    value=""
+                    onChange={() => {}}
                     placeholder="frontend, backend, api"
                     className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                   />
@@ -956,7 +956,7 @@ const ProjectManagement = () => {
                 <div className="flex gap-3 mt-6">
                   <button
                     type="button"
-                    onClick={() => setShowCreateModuleForm(false)}
+                    onClick={() => {}}
                     className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     Abbrechen
@@ -973,14 +973,14 @@ const ProjectManagement = () => {
           </div>
         )}
 
-        {/* Edit Module Modal */}
-        {showEditModuleForm && selectedModule && (
+        {/* Edit Module Modal - REMOVED */}
+        {false && false && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                 Modul bearbeiten
               </h3>
-              <form onSubmit={handleUpdateModule}>
+              <form onSubmit={() => {}}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -988,8 +988,8 @@ const ProjectManagement = () => {
                     </label>
                     <input
                       type="text"
-                      value={selectedModule.name}
-                      onChange={(e) => setSelectedModule({ ...selectedModule, name: e.target.value })}
+                      value=""
+                      onChange={() => {}}
                       className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                       required
                     />
@@ -999,8 +999,8 @@ const ProjectManagement = () => {
                       Status
                     </label>
                     <select
-                      value={selectedModule.status}
-                      onChange={(e) => setSelectedModule({ ...selectedModule, status: e.target.value })}
+                      value=""
+                      onChange={() => {}}
                       className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     >
                       <option value="not_started">Nicht begonnen</option>
@@ -1014,8 +1014,8 @@ const ProjectManagement = () => {
                       Priorität
                     </label>
                     <select
-                      value={selectedModule.priority}
-                      onChange={(e) => setSelectedModule({ ...selectedModule, priority: e.target.value })}
+                      value=""
+                      onChange={() => {}}
                       className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     >
                       <option value="low">Niedrig</option>
@@ -1032,8 +1032,8 @@ const ProjectManagement = () => {
                       type="number"
                       min="0"
                       max="100"
-                      value={selectedModule.completion_percentage || 0}
-                      onChange={(e) => setSelectedModule({ ...selectedModule, completion_percentage: parseInt(e.target.value) })}
+                      value="0"
+                      onChange={() => {}}
                       className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     />
                   </div>
@@ -1044,8 +1044,8 @@ const ProjectManagement = () => {
                     <input
                       type="number"
                       step="0.5"
-                      value={selectedModule.estimated_hours || ''}
-                      onChange={(e) => setSelectedModule({ ...selectedModule, estimated_hours: e.target.value })}
+                      value=""
+                      onChange={() => {}}
                       className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     />
                   </div>
@@ -1055,8 +1055,8 @@ const ProjectManagement = () => {
                     </label>
                     <input
                       type="date"
-                      value={selectedModule.due_date || ''}
-                      onChange={(e) => setSelectedModule({ ...selectedModule, due_date: e.target.value })}
+                      value=""
+                      onChange={() => {}}
                       className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     />
                   </div>
@@ -1066,8 +1066,8 @@ const ProjectManagement = () => {
                     Beschreibung
                   </label>
                   <textarea
-                    value={selectedModule.description || ''}
-                    onChange={(e) => setSelectedModule({ ...selectedModule, description: e.target.value })}
+                    value=""
+                    onChange={() => {}}
                     className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
                     rows={3}
                   />
@@ -1075,7 +1075,7 @@ const ProjectManagement = () => {
                 <div className="flex gap-3 mt-6">
                   <button
                     type="button"
-                    onClick={() => setShowEditModuleForm(false)}
+                    onClick={() => {}}
                     className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     Abbrechen
