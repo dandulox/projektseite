@@ -1065,61 +1065,161 @@ const WelcomePage = () => {
   const navigate = useNavigate();
   const [stars, setStars] = useState([]);
   const [networks, setNetworks] = useState([]);
+  const [particles, setParticles] = useState([]);
+  const [geometricShapes, setGeometricShapes] = useState([]);
   const [showAuthForms, setShowAuthForms] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' oder 'register'
 
   useEffect(() => {
     // Sterne erstellen
-    const newStars = Array.from({ length: 50 }, (_, i) => ({
+    const newStars = Array.from({ length: 80 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
-      size: Math.random() * 3 + 1,
-      opacity: Math.random() * 0.8 + 0.2,
-      animationDelay: Math.random() * 3
+      size: Math.random() * 4 + 1,
+      opacity: Math.random() * 0.9 + 0.1,
+      animationDelay: Math.random() * 4,
+      twinkleSpeed: Math.random() * 2 + 1
     }));
     setStars(newStars);
 
     // Netzwerk-Knoten erstellen
-    const newNetworks = Array.from({ length: 20 }, (_, i) => ({
+    const newNetworks = Array.from({ length: 25 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
-      connections: Math.floor(Math.random() * 3) + 1
+      connections: Math.floor(Math.random() * 4) + 1,
+      pulseSpeed: Math.random() * 3 + 1
     }));
     setNetworks(newNetworks);
+
+    // Floating Particles erstellen
+    const newParticles = Array.from({ length: 60 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 6 + 2,
+      color: ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b'][Math.floor(Math.random() * 5)],
+      opacity: Math.random() * 0.6 + 0.2,
+      speed: Math.random() * 2 + 0.5,
+      direction: Math.random() * 360,
+      animationDelay: Math.random() * 5
+    }));
+    setParticles(newParticles);
+
+    // Geometrische Formen erstellen
+    const newShapes = Array.from({ length: 15 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      type: ['circle', 'triangle', 'square', 'hexagon'][Math.floor(Math.random() * 4)],
+      size: Math.random() * 40 + 20,
+      rotation: Math.random() * 360,
+      rotationSpeed: (Math.random() - 0.5) * 2,
+      opacity: Math.random() * 0.3 + 0.1,
+      animationDelay: Math.random() * 6
+    }));
+    setGeometricShapes(newShapes);
   }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
-      {/* Hintergrund-Animation */}
+      {/* Animierter Hintergrund */}
       <div className="absolute inset-0">
-        {/* Sterne */}
+        {/* Animierter Gradient-Hintergrund */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 animate-gradient-shift"></div>
+        
+        {/* Floating Gradient Blobs */}
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-full blur-3xl animate-float-slow"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-emerald-500/20 to-blue-600/20 rounded-full blur-3xl animate-float-reverse"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-br from-violet-500/15 to-indigo-600/15 rounded-full blur-3xl animate-float-center"></div>
+        
+        {/* Sterne mit verbesserter Animation */}
         {stars.map((star) => (
           <div
             key={star.id}
-            className="absolute w-1 h-1 bg-white rounded-full animate-pulse"
+            className="absolute bg-white rounded-full animate-twinkle"
             style={{
               left: `${star.x}%`,
               top: `${star.y}%`,
               width: `${star.size}px`,
               height: `${star.size}px`,
               opacity: star.opacity,
-              animationDelay: `${star.animationDelay}s`
+              animationDelay: `${star.animationDelay}s`,
+              animationDuration: `${star.twinkleSpeed}s`
             }}
           />
         ))}
         
-        {/* Netzwerk-Verbindungen */}
+        {/* Floating Particles */}
+        {particles.map((particle) => (
+          <div
+            key={particle.id}
+            className="absolute rounded-full animate-float-particle"
+            style={{
+              left: `${particle.x}%`,
+              top: `${particle.y}%`,
+              width: `${particle.size}px`,
+              height: `${particle.size}px`,
+              backgroundColor: particle.color,
+              opacity: particle.opacity,
+              animationDelay: `${particle.animationDelay}s`,
+              animationDuration: `${particle.speed}s`
+            }}
+          />
+        ))}
+        
+        {/* Geometrische Formen */}
+        {geometricShapes.map((shape) => (
+          <div
+            key={shape.id}
+            className="absolute animate-rotate-slow"
+            style={{
+              left: `${shape.x}%`,
+              top: `${shape.y}%`,
+              width: `${shape.size}px`,
+              height: `${shape.size}px`,
+              opacity: shape.opacity,
+              animationDelay: `${shape.animationDelay}s`,
+              transform: `rotate(${shape.rotation}deg)`,
+              animationDuration: `${Math.abs(shape.rotationSpeed) * 10}s`
+            }}
+          >
+            {shape.type === 'circle' && (
+              <div className="w-full h-full bg-gradient-to-br from-blue-400/30 to-purple-500/30 rounded-full border border-blue-300/20"></div>
+            )}
+            {shape.type === 'triangle' && (
+              <div className="w-full h-full bg-gradient-to-br from-emerald-400/30 to-blue-500/30" style={{
+                clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
+                border: '1px solid rgba(16, 185, 129, 0.2)'
+              }}></div>
+            )}
+            {shape.type === 'square' && (
+              <div className="w-full h-full bg-gradient-to-br from-violet-400/30 to-indigo-500/30 rounded-lg border border-violet-300/20"></div>
+            )}
+            {shape.type === 'hexagon' && (
+              <div className="w-full h-full bg-gradient-to-br from-amber-400/30 to-orange-500/30" style={{
+                clipPath: 'polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%)',
+                border: '1px solid rgba(245, 158, 11, 0.2)'
+              }}></div>
+            )}
+          </div>
+        ))}
+        
+        {/* Netzwerk-Verbindungen mit verbesserter Animation */}
         <svg className="absolute inset-0 w-full h-full">
           {networks.map((node) => (
             <g key={node.id}>
               <circle
                 cx={`${node.x}%`}
                 cy={`${node.y}%`}
-                r="2"
-                fill="rgba(59, 130, 246, 0.6)"
-                className="animate-pulse"
+                r="3"
+                fill="rgba(59, 130, 246, 0.7)"
+                className="animate-pulse-glow"
+                style={{
+                  animationDelay: `${node.pulseSpeed}s`,
+                  filter: 'drop-shadow(0 0 6px rgba(59, 130, 246, 0.5))'
+                }}
               />
               {/* Verbindungslinien zu anderen Knoten */}
               {networks.slice(node.id + 1).slice(0, node.connections).map((targetNode) => (
@@ -1129,14 +1229,23 @@ const WelcomePage = () => {
                   y1={`${node.y}%`}
                   x2={`${targetNode.x}%`}
                   y2={`${targetNode.y}%`}
-                  stroke="rgba(59, 130, 246, 0.3)"
-                  strokeWidth="0.5"
-                  className="animate-pulse"
+                  stroke="rgba(59, 130, 246, 0.4)"
+                  strokeWidth="1"
+                  className="animate-pulse-line"
+                  style={{
+                    animationDelay: `${Math.random() * 2}s`,
+                    filter: 'drop-shadow(0 0 3px rgba(59, 130, 246, 0.3))'
+                  }}
                 />
               ))}
             </g>
           ))}
         </svg>
+        
+        {/* Zusätzliche Lichteffekte */}
+        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-blue-400 rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-3/4 right-1/4 w-1.5 h-1.5 bg-purple-400 rounded-full animate-ping" style={{ animationDelay: '2.5s' }}></div>
+        <div className="absolute bottom-1/4 left-1/3 w-1 h-1 bg-emerald-400 rounded-full animate-ping" style={{ animationDelay: '4s' }}></div>
       </div>
 
       {/* Hauptinhalt */}
