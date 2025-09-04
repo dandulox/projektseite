@@ -9,7 +9,8 @@ Eine modulare Website zur Dokumentation und Verfolgung von Projektstatus mit Liv
 #### 📁 Projektverwaltung
 - **Vollständige CRUD-Operationen** für Projekte
 - **Erweiterte Filterung** nach Team, Status und Sichtbarkeit
-- **Fortschrittsverfolgung** mit visuellen Indikatoren
+- **Automatische Fortschrittsverfolgung** basierend auf Modulen
+- **Manuelle Fortschrittsaktualisierung** mit einem Klick
 - **Team-Zuweisungen** und Berechtigungsmanagement
 - **Projekt-Logs** für Aktivitätsverfolgung
 - **Responsive Design** mit modernem UI
@@ -21,6 +22,15 @@ Eine modulare Website zur Dokumentation und Verfolgung von Projektstatus mit Liv
 - **Abhängigkeitsmanagement** zwischen Modulen
 - **Zeitaufwand-Tracking** (geschätzt vs. tatsächlich)
 - **Zuweisungen** an Benutzer und Teams
+- **Automatische Fortschrittsberechnung** bei Statusänderungen
+
+#### 📊 Fortschritts-Tracking
+- **Automatische Berechnung** basierend auf abgeschlossenen Modulen
+- **Formel**: Fortschritt = (abgeschlossene Module / Gesamtmodule) × 100%
+- **Echtzeit-Updates** bei Modul-Status-Änderungen
+- **Manuelle Aktualisierung** über API-Endpunkt
+- **Visuelle Fortschrittsbalken** in Projektliste und Details
+- **Datenbank-Trigger** für automatische Synchronisation
 
 #### 👥 Team-Management
 - **Team-Erstellung** und -Verwaltung
