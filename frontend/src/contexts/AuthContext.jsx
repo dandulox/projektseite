@@ -67,6 +67,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     try {
       setLoading(true);
+      
       const data = await apiRequest('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ username, password }),
@@ -79,6 +80,7 @@ export const AuthProvider = ({ children }) => {
       toast.success(`Willkommen zurück, ${data.user.username}!`);
       return { success: true };
     } catch (error) {
+      console.error('AuthContext: Login error:', error);
       toast.error(error.message);
       return { success: false, error: error.message };
     } finally {

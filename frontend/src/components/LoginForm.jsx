@@ -43,6 +43,7 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
 
     try {
       const result = await login(formData.username, formData.password);
+      
       if (result.success) {
         setSuccess(true);
         // Login erfolgreich - der AuthContext wird automatisch aktualisiert
@@ -209,22 +210,6 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
           </p>
         </div>
 
-        {/* Standard-Zugangsdaten */}
-        <div className="mt-8 p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg">
-          <h3 className="text-sm font-medium text-white mb-3">
-            Standard-Zugangsdaten:
-          </h3>
-          <div className="space-y-2 text-xs text-white/80">
-            <div className="flex items-center space-x-2">
-              <span className="w-2 h-2 bg-red-400 rounded-full"></span>
-              <span><strong>Admin:</strong> admin / admin</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-              <span><strong>Benutzer:</strong> user / user123</span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

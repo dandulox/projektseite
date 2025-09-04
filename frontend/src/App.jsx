@@ -1063,133 +1063,15 @@ const Admin = () => {
 // Willkommensseite Component
 const WelcomePage = () => {
   const navigate = useNavigate();
-  const [stars, setStars] = useState([]);
-  const [networks, setNetworks] = useState([]);
-  const [particles, setParticles] = useState([]);
-  const [geometricShapes, setGeometricShapes] = useState([]);
   const [showAuthForms, setShowAuthForms] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' oder 'register'
 
-  useEffect(() => {
-    // Wenige, dezente Sterne
-    const newStars = Array.from({ length: 20 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 2 + 1,
-      opacity: Math.random() * 0.4 + 0.1,
-      animationDelay: Math.random() * 6,
-      twinkleSpeed: Math.random() * 3 + 2
-    }));
-    setStars(newStars);
-
-    // Netzwerk-Knoten - das Hauptelement
-    const newNetworks = Array.from({ length: 15 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      connections: Math.floor(Math.random() * 3) + 1,
-      pulseSpeed: Math.random() * 4 + 2
-    }));
-    setNetworks(newNetworks);
-
-    // Wenige, subtile Particles
-    const newParticles = Array.from({ length: 8 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 3 + 1,
-      color: ['#3b82f6', '#8b5cf6'][Math.floor(Math.random() * 2)],
-      opacity: Math.random() * 0.3 + 0.1,
-      speed: Math.random() * 8 + 6,
-      direction: Math.random() * 360,
-      animationDelay: Math.random() * 8
-    }));
-    setParticles(newParticles);
-
-    // Keine geometrischen Formen - zu ablenkend
-    setGeometricShapes([]);
-  }, []);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
-      {/* Dezenter Hintergrund */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative">
+      {/* Statischer Hintergrund */}
       <div className="absolute inset-0">
-        {/* Statischer Gradient-Hintergrund */}
+        {/* Einfacher statischer Gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"></div>
-        
-        {/* Sehr subtile Gradient Blobs */}
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-blue-500/10 to-purple-600/10 rounded-full blur-3xl animate-float-very-slow"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-emerald-500/10 to-blue-600/10 rounded-full blur-3xl animate-float-very-slow" style={{ animationDelay: '10s' }}></div>
-        
-        {/* Dezente Sterne */}
-        {stars.map((star) => (
-          <div
-            key={star.id}
-            className="absolute bg-white rounded-full animate-twinkle-subtle"
-            style={{
-              left: `${star.x}%`,
-              top: `${star.y}%`,
-              width: `${star.size}px`,
-              height: `${star.size}px`,
-              opacity: star.opacity,
-              animationDelay: `${star.animationDelay}s`,
-              animationDuration: `${star.twinkleSpeed}s`
-            }}
-          />
-        ))}
-        
-        {/* Sehr subtile Particles */}
-        {particles.map((particle) => (
-          <div
-            key={particle.id}
-            className="absolute rounded-full animate-float-very-subtle"
-            style={{
-              left: `${particle.x}%`,
-              top: `${particle.y}%`,
-              width: `${particle.size}px`,
-              height: `${particle.size}px`,
-              backgroundColor: particle.color,
-              opacity: particle.opacity,
-              animationDelay: `${particle.animationDelay}s`,
-              animationDuration: `${particle.speed}s`
-            }}
-          />
-        ))}
-        
-        {/* Sanftes Netzwerk - das Hauptelement */}
-        <svg className="absolute inset-0 w-full h-full">
-          {networks.map((node) => (
-            <g key={node.id}>
-              <circle
-                cx={`${node.x}%`}
-                cy={`${node.y}%`}
-                r="2"
-                fill="rgba(59, 130, 246, 0.5)"
-                className="animate-pulse-soft"
-                style={{
-                  animationDelay: `${node.pulseSpeed}s`
-                }}
-              />
-              {/* Verbindungslinien zu anderen Knoten */}
-              {networks.slice(node.id + 1).slice(0, node.connections).map((targetNode) => (
-                <line
-                  key={`${node.id}-${targetNode.id}`}
-                  x1={`${node.x}%`}
-                  y1={`${node.y}%`}
-                  x2={`${targetNode.x}%`}
-                  y2={`${targetNode.y}%`}
-                  stroke="rgba(59, 130, 246, 0.3)"
-                  strokeWidth="0.5"
-                  className="animate-pulse-soft"
-                  style={{
-                    animationDelay: `${Math.random() * 3}s`
-                  }}
-                />
-              ))}
-            </g>
-          ))}
-        </svg>
       </div>
 
       {/* Hauptinhalt */}
