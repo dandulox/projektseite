@@ -315,6 +315,74 @@ const ProjectDashboard = () => {
           </div>
         </div>
 
+        {/* Willkommensnachricht für neue Benutzer */}
+        {stats.totalProjects === 0 && (
+          <div className="mb-8">
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-8 border border-blue-200 dark:border-blue-800">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Award className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-blue-900 dark:text-blue-100 mb-4 text-center">
+                  Willkommen bei der Projektseite! 🎉
+                </h3>
+                <p className="text-blue-700 dark:text-blue-300 mb-6 text-lg text-center">
+                  Du hast noch keine Projekte erstellt. Lass uns das ändern und dein erstes Projekt starten!
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                  <div className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-4 border border-blue-200/50 dark:border-blue-800/50">
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-3">
+                      <Target className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 text-center">1. Projekt erstellen</h4>
+                    <p className="text-sm text-blue-700 dark:text-blue-300 text-center">
+                      Erstelle dein erstes Projekt und definiere Ziele
+                    </p>
+                  </div>
+                  
+                  <div className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-4 border border-blue-200/50 dark:border-blue-800/50">
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-3">
+                      <Users className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 text-center">2. Team bilden</h4>
+                    <p className="text-sm text-blue-700 dark:text-blue-300 text-center">
+                      Lade Teammitglieder ein und arbeite zusammen
+                    </p>
+                  </div>
+                  
+                  <div className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-4 border border-blue-200/50 dark:border-blue-800/50">
+                    <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mx-auto mb-3">
+                      <Activity className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 text-center">3. Module organisieren</h4>
+                    <p className="text-sm text-blue-700 dark:text-blue-300 text-center">
+                      Teile dein Projekt in überschaubare Module auf
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button
+                    onClick={() => navigate('/projects')}
+                    className="btn-primary text-lg px-8 py-4"
+                  >
+                    <Target className="w-5 h-5" />
+                    <span>Erstes Projekt erstellen</span>
+                  </button>
+                  <button
+                    onClick={() => navigate('/teams')}
+                    className="btn-secondary text-lg px-8 py-4"
+                  >
+                    <Users className="w-5 h-5" />
+                    <span>Team verwalten</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="page-header">
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
@@ -347,7 +415,7 @@ const ProjectDashboard = () => {
 
         {/* Basis-Statistiken */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+          <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Gesamt</p>
@@ -359,7 +427,7 @@ const ProjectDashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+          <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Aktiv</p>
@@ -371,7 +439,7 @@ const ProjectDashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+          <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Abgeschlossen</p>
@@ -383,7 +451,7 @@ const ProjectDashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+          <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Überfällig</p>
@@ -395,7 +463,7 @@ const ProjectDashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+          <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Ø Fortschritt</p>
@@ -429,7 +497,7 @@ const ProjectDashboard = () => {
           <div className="space-y-6 mb-8">
             {/* Zeitbasierte Statistiken */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+              <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Diese Woche erstellt</p>
@@ -441,7 +509,7 @@ const ProjectDashboard = () => {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+              <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Diese Woche abgeschlossen</p>
@@ -453,7 +521,7 @@ const ProjectDashboard = () => {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+              <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Diese Woche fällig</p>
@@ -465,7 +533,7 @@ const ProjectDashboard = () => {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+              <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Ø Bearbeitungszeit</p>
@@ -482,7 +550,7 @@ const ProjectDashboard = () => {
             {/* Verteilungs-Statistiken */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Status-Verteilung */}
-              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+              <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <PieChart className="w-5 h-5" />
                   Status-Verteilung
@@ -501,7 +569,7 @@ const ProjectDashboard = () => {
               </div>
 
               {/* Prioritäts-Verteilung */}
-              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+              <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <Activity className="w-5 h-5" />
                   Prioritäts-Verteilung
@@ -520,7 +588,7 @@ const ProjectDashboard = () => {
               </div>
 
               {/* Fortschritts-Verteilung */}
-              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+              <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <TrendingUp className="w-5 h-5" />
                   Fortschritts-Verteilung
@@ -560,7 +628,7 @@ const ProjectDashboard = () => {
 
             {/* Team-Verteilung */}
             {Object.keys(stats.teamDistribution).length > 0 && (
-              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+              <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <UserCheck className="w-5 h-5" />
                   Team-Verteilung
@@ -579,7 +647,7 @@ const ProjectDashboard = () => {
         )}
 
         {/* Filter */}
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-8">
+        <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
               <Filter className="w-5 h-5" />
@@ -823,80 +891,13 @@ const ProjectDashboard = () => {
             </div>
           )}
           
-          {filteredProjects.length === 0 && (
+          {filteredProjects.length === 0 && stats.totalProjects > 0 && (
             <div className="p-12 text-center">
-              {stats.totalProjects === 0 ? (
-                // Neuer Benutzer - Willkommensnachricht
-                <div className="max-w-2xl mx-auto">
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-8 border border-blue-200 dark:border-blue-800">
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                      <Award className="w-8 h-8 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-blue-900 dark:text-blue-100 mb-4">
-                      Willkommen bei der Projektseite! 🎉
-                    </h3>
-                    <p className="text-blue-700 dark:text-blue-300 mb-6 text-lg">
-                      Du hast noch keine Projekte erstellt. Lass uns das ändern und dein erstes Projekt starten!
-                    </p>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                      <div className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-4 border border-blue-200/50 dark:border-blue-800/50">
-                        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-3">
-                          <Target className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">1. Projekt erstellen</h4>
-                        <p className="text-sm text-blue-700 dark:text-blue-300">
-                          Erstelle dein erstes Projekt und definiere Ziele
-                        </p>
-                      </div>
-                      
-                      <div className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-4 border border-blue-200/50 dark:border-blue-800/50">
-                        <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-3">
-                          <Users className="w-5 h-5 text-green-600 dark:text-green-400" />
-                        </div>
-                        <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">2. Team bilden</h4>
-                        <p className="text-sm text-blue-700 dark:text-blue-300">
-                          Lade Teammitglieder ein und arbeite zusammen
-                        </p>
-                      </div>
-                      
-                      <div className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-4 border border-blue-200/50 dark:border-blue-800/50">
-                        <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mx-auto mb-3">
-                          <Activity className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                        </div>
-                        <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">3. Module organisieren</h4>
-                        <p className="text-sm text-blue-700 dark:text-blue-300">
-                          Teile dein Projekt in überschaubare Module auf
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                      <button
-                        onClick={() => navigate('/projects')}
-                        className="btn-primary text-lg px-8 py-4"
-                      >
-                        <Target className="w-5 h-5" />
-                        <span>Erstes Projekt erstellen</span>
-                      </button>
-                      <button
-                        onClick={() => navigate('/teams')}
-                        className="btn-secondary text-lg px-8 py-4"
-                      >
-                        <Users className="w-5 h-5" />
-                        <span>Team verwalten</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                // Filter-Ergebnis leer
-                <div className="text-slate-500 dark:text-slate-400">
-                  <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg">Keine Projekte gefunden</p>
-                  <p className="text-sm">Passen Sie die Filter an oder erstellen Sie ein neues Projekt</p>
-                </div>
-              )}
+              <div className="text-slate-500 dark:text-slate-400">
+                <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg">Keine Projekte gefunden</p>
+                <p className="text-sm">Passen Sie die Filter an oder erstellen Sie ein neues Projekt</p>
+              </div>
             </div>
           )}
         </div>

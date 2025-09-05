@@ -381,7 +381,7 @@ const UserManagement = () => {
         </div>
 
         {/* Filter */}
-        <div className="card">
+        <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
         <div className="flex flex-wrap gap-6 items-center">
           <div className="flex items-center" style={{gap: '1rem'}}>
             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Suche:</label>
@@ -414,7 +414,7 @@ const UserManagement = () => {
         </div>
 
         {/* Benutzer-Tabelle */}
-        <div className="card">
+        <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>

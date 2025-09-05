@@ -278,7 +278,7 @@ const GreetingManagement = () => {
           const count = groupedGreetings[period]?.length || 0;
           const activeCount = groupedGreetings[period]?.filter(g => g.is_active).length || 0;
           return (
-            <div key={period} className="card">
+            <div key={period} className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-4">
               <div className="flex items-center" style={{gap: '0.75rem'}}>
                 <div className={`p-2 rounded-lg bg-slate-100 dark:bg-slate-800 ${timePeriodColors[period]}`}>
                   {timePeriodIcons[period]}
@@ -296,7 +296,7 @@ const GreetingManagement = () => {
         </div>
 
         {/* Begrüßungen nach Stunden (0-23) */}
-        <div className="card">
+        <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
         <div className="flex items-center mb-6" style={{gap: '0.75rem'}}>
           <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400">
             <Clock className="w-4 h-4" />
