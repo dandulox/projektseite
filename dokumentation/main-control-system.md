@@ -104,7 +104,7 @@ scripts/batches/
 script1
 script2
 script3
-# Kommentar
+# System-Kommentar
 ```
 
 ### Beispiel-Batch

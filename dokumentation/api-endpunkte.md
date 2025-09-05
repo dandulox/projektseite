@@ -69,4 +69,3 @@
 ## Debug-Endpunkte (`/api/debug`)
 - `GET /api/debug/tables` - Alle Datenbank-Tabellen anzeigen
 - `GET /api/debug/columns/:table` - Spalten einer Tabelle anzeigen
-- `GET /api/debug/comments-tables` - Kommentar-Tabellen prüfen
