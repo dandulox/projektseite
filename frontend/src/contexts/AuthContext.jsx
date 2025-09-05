@@ -516,7 +516,7 @@ export const AuthProvider = ({ children }) => {
 
     // Modul löschen
     deleteModule: async (moduleId, moduleType = 'project') => {
-      return await apiRequest(`/modules/${moduleId}?module_type=${moduleType}`, {
+      return await apiRequest(`/modules/delete/${moduleId}?module_type=${moduleType}`, {
         method: 'DELETE',
       });
     },

@@ -655,8 +655,8 @@ router.delete('/permissions/:moduleId/:userId', authenticateToken, async (req, r
   }
 });
 
-// Modul löschen
-router.delete('/:id', authenticateToken, async (req, res) => {
+// Modul löschen - spezifische Route
+router.delete('/delete/:id', authenticateToken, async (req, res) => {
   try {
     const moduleId = req.params.id;
     const { module_type = 'project' } = req.query;
