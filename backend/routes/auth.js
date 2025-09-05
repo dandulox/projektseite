@@ -286,74 +286,109 @@ router.get('/profile/stats', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Projekt-Statistiken
-    const projectStats = await pool.query(`
-      SELECT 
-        COUNT(*) as total_projects,
-        COUNT(CASE WHEN status = 'active' THEN 1 END) as active_projects,
-        COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_projects,
-        COUNT(CASE WHEN status = 'on_hold' THEN 1 END) as on_hold_projects,
-        COALESCE(AVG(completion_percentage), 0) as avg_completion
-      FROM projects 
-      WHERE owner_id = $1
-    `, [userId]);
-
-    // Modul-Statistiken
-    const moduleStats = await pool.query(`
-      SELECT 
-        COUNT(*) as total_modules,
-        COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_modules,
-        COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress_modules,
-        COALESCE(SUM(actual_hours), 0) as total_hours,
-        COALESCE(SUM(estimated_hours), 0) as estimated_hours
-      FROM project_modules 
-      WHERE assigned_to = $1
-    `, [userId]);
-
-    // Team-Statistiken
-    const teamStats = await pool.query(`
-      SELECT 
-        COUNT(*) as total_teams,
-        COUNT(CASE WHEN tm.role = 'leader' THEN 1 END) as leading_teams,
-        COUNT(CASE WHEN tm.role = 'member' THEN 1 END) as member_teams
-      FROM team_memberships tm
-      WHERE tm.user_id = $1
-    `, [userId]);
-
-    // Aktivitäts-Statistiken (letzte 30 Tage) - vereinfacht
-    const activityStats = await pool.query(`
-      SELECT 
-        COUNT(*) as recent_activities,
-        MAX(created_at) as last_activity
-      FROM project_logs 
-      WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days'
-    `, [userId]);
-
-    res.json({
-      projects: projectStats.rows[0] || {
+    // Standard-Werte für den Fall, dass Abfragen fehlschlagen
+    const defaultStats = {
+      projects: {
         total_projects: 0,
         active_projects: 0,
         completed_projects: 0,
         on_hold_projects: 0,
         avg_completion: 0
       },
-      modules: moduleStats.rows[0] || {
+      modules: {
         total_modules: 0,
         completed_modules: 0,
         in_progress_modules: 0,
         total_hours: 0,
         estimated_hours: 0
       },
-      teams: teamStats.rows[0] || {
+      teams: {
         total_teams: 0,
         leading_teams: 0,
         member_teams: 0
       },
-      activity: activityStats.rows[0] || {
+      activity: {
         recent_activities: 0,
         last_activity: null
       }
-    });
+    };
+
+    try {
+      // Projekt-Statistiken
+      const projectStats = await pool.query(`
+        SELECT 
+          COUNT(*) as total_projects,
+          COUNT(CASE WHEN status = 'active' THEN 1 END) as active_projects,
+          COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_projects,
+          COUNT(CASE WHEN status = 'on_hold' THEN 1 END) as on_hold_projects,
+          COALESCE(AVG(completion_percentage), 0) as avg_completion
+        FROM projects 
+        WHERE owner_id = $1
+      `, [userId]);
+      
+      if (projectStats.rows.length > 0) {
+        defaultStats.projects = projectStats.rows[0];
+      }
+    } catch (err) {
+      console.warn('Projekt-Statistiken konnten nicht geladen werden:', err.message);
+    }
+
+    try {
+      // Modul-Statistiken
+      const moduleStats = await pool.query(`
+        SELECT 
+          COUNT(*) as total_modules,
+          COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_modules,
+          COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress_modules,
+          COALESCE(SUM(actual_hours), 0) as total_hours,
+          COALESCE(SUM(estimated_hours), 0) as estimated_hours
+        FROM project_modules 
+        WHERE assigned_to = $1
+      `, [userId]);
+      
+      if (moduleStats.rows.length > 0) {
+        defaultStats.modules = moduleStats.rows[0];
+      }
+    } catch (err) {
+      console.warn('Modul-Statistiken konnten nicht geladen werden:', err.message);
+    }
+
+    try {
+      // Team-Statistiken
+      const teamStats = await pool.query(`
+        SELECT 
+          COUNT(*) as total_teams,
+          COUNT(CASE WHEN tm.role = 'leader' THEN 1 END) as leading_teams,
+          COUNT(CASE WHEN tm.role = 'member' THEN 1 END) as member_teams
+        FROM team_memberships tm
+        WHERE tm.user_id = $1
+      `, [userId]);
+      
+      if (teamStats.rows.length > 0) {
+        defaultStats.teams = teamStats.rows[0];
+      }
+    } catch (err) {
+      console.warn('Team-Statistiken konnten nicht geladen werden:', err.message);
+    }
+
+    try {
+      // Aktivitäts-Statistiken (letzte 30 Tage) - vereinfacht
+      const activityStats = await pool.query(`
+        SELECT 
+          COUNT(*) as recent_activities,
+          MAX(created_at) as last_activity
+        FROM project_logs 
+        WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days'
+      `, [userId]);
+      
+      if (activityStats.rows.length > 0) {
+        defaultStats.activity = activityStats.rows[0];
+      }
+    } catch (err) {
+      console.warn('Aktivitäts-Statistiken konnten nicht geladen werden:', err.message);
+    }
+
+    res.json(defaultStats);
 
   } catch (error) {
     console.error('Statistik-Fehler:', error);
@@ -418,75 +453,121 @@ router.get('/user/:userId', authenticateToken, async (req, res) => {
 router.get('/user/:userId/stats', authenticateToken, async (req, res) => {
   try {
     const { userId } = req.params;
+    
+    // Validiere userId
+    if (!userId || isNaN(userId)) {
+      return res.status(400).json({ error: 'Ungültige Benutzer-ID' });
+    }
 
-    // Projekt-Statistiken
-    const projectStats = await pool.query(`
-      SELECT 
-        COUNT(*) as total_projects,
-        COUNT(CASE WHEN status = 'active' THEN 1 END) as active_projects,
-        COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_projects,
-        COUNT(CASE WHEN status = 'on_hold' THEN 1 END) as on_hold_projects,
-        COALESCE(AVG(completion_percentage), 0) as avg_completion
-      FROM projects 
-      WHERE owner_id = $1
-    `, [userId]);
+    // Prüfe ob Benutzer existiert
+    const userExists = await pool.query('SELECT id FROM users WHERE id = $1', [userId]);
+    if (userExists.rows.length === 0) {
+      return res.status(404).json({ error: 'Benutzer nicht gefunden' });
+    }
 
-    // Modul-Statistiken
-    const moduleStats = await pool.query(`
-      SELECT 
-        COUNT(*) as total_modules,
-        COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_modules,
-        COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress_modules,
-        COALESCE(SUM(actual_hours), 0) as total_hours,
-        COALESCE(SUM(estimated_hours), 0) as estimated_hours
-      FROM project_modules 
-      WHERE assigned_to = $1
-    `, [userId]);
-
-    // Team-Statistiken
-    const teamStats = await pool.query(`
-      SELECT 
-        COUNT(*) as total_teams,
-        COUNT(CASE WHEN tm.role = 'leader' THEN 1 END) as leading_teams,
-        COUNT(CASE WHEN tm.role = 'member' THEN 1 END) as member_teams
-      FROM team_memberships tm
-      WHERE tm.user_id = $1
-    `, [userId]);
-
-    // Aktivitäts-Statistiken (letzte 30 Tage) - vereinfacht
-    const activityStats = await pool.query(`
-      SELECT 
-        COUNT(*) as recent_activities,
-        MAX(created_at) as last_activity
-      FROM project_logs 
-      WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days'
-    `, [userId]);
-
-    res.json({
-      projects: projectStats.rows[0] || {
+    // Standard-Werte für den Fall, dass Abfragen fehlschlagen
+    const defaultStats = {
+      projects: {
         total_projects: 0,
         active_projects: 0,
         completed_projects: 0,
         on_hold_projects: 0,
         avg_completion: 0
       },
-      modules: moduleStats.rows[0] || {
+      modules: {
         total_modules: 0,
         completed_modules: 0,
         in_progress_modules: 0,
         total_hours: 0,
         estimated_hours: 0
       },
-      teams: teamStats.rows[0] || {
+      teams: {
         total_teams: 0,
         leading_teams: 0,
         member_teams: 0
       },
-      activity: activityStats.rows[0] || {
+      activity: {
         recent_activities: 0,
         last_activity: null
       }
-    });
+    };
+
+    try {
+      // Projekt-Statistiken
+      const projectStats = await pool.query(`
+        SELECT 
+          COUNT(*) as total_projects,
+          COUNT(CASE WHEN status = 'active' THEN 1 END) as active_projects,
+          COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_projects,
+          COUNT(CASE WHEN status = 'on_hold' THEN 1 END) as on_hold_projects,
+          COALESCE(AVG(completion_percentage), 0) as avg_completion
+        FROM projects 
+        WHERE owner_id = $1
+      `, [userId]);
+      
+      if (projectStats.rows.length > 0) {
+        defaultStats.projects = projectStats.rows[0];
+      }
+    } catch (err) {
+      console.warn('Projekt-Statistiken konnten nicht geladen werden:', err.message);
+    }
+
+    try {
+      // Modul-Statistiken
+      const moduleStats = await pool.query(`
+        SELECT 
+          COUNT(*) as total_modules,
+          COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_modules,
+          COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress_modules,
+          COALESCE(SUM(actual_hours), 0) as total_hours,
+          COALESCE(SUM(estimated_hours), 0) as estimated_hours
+        FROM project_modules 
+        WHERE assigned_to = $1
+      `, [userId]);
+      
+      if (moduleStats.rows.length > 0) {
+        defaultStats.modules = moduleStats.rows[0];
+      }
+    } catch (err) {
+      console.warn('Modul-Statistiken konnten nicht geladen werden:', err.message);
+    }
+
+    try {
+      // Team-Statistiken
+      const teamStats = await pool.query(`
+        SELECT 
+          COUNT(*) as total_teams,
+          COUNT(CASE WHEN tm.role = 'leader' THEN 1 END) as leading_teams,
+          COUNT(CASE WHEN tm.role = 'member' THEN 1 END) as member_teams
+        FROM team_memberships tm
+        WHERE tm.user_id = $1
+      `, [userId]);
+      
+      if (teamStats.rows.length > 0) {
+        defaultStats.teams = teamStats.rows[0];
+      }
+    } catch (err) {
+      console.warn('Team-Statistiken konnten nicht geladen werden:', err.message);
+    }
+
+    try {
+      // Aktivitäts-Statistiken (letzte 30 Tage) - vereinfacht
+      const activityStats = await pool.query(`
+        SELECT 
+          COUNT(*) as recent_activities,
+          MAX(created_at) as last_activity
+        FROM project_logs 
+        WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days'
+      `, [userId]);
+      
+      if (activityStats.rows.length > 0) {
+        defaultStats.activity = activityStats.rows[0];
+      }
+    } catch (err) {
+      console.warn('Aktivitäts-Statistiken konnten nicht geladen werden:', err.message);
+    }
+
+    res.json(defaultStats);
 
   } catch (error) {
     console.error('Statistik-Fehler:', error);
