@@ -166,8 +166,8 @@ const UserProfile = () => {
 
   // Berechne Mitgliedschaftsdauer
   const getMembershipDuration = () => {
-    if (!user?.created_at) return 'Unbekannt';
-    const created = new Date(user.created_at);
+    if (!profileUser?.created_at) return 'Unbekannt';
+    const created = new Date(profileUser.created_at);
     const now = new Date();
     const diffTime = Math.abs(now - created);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
