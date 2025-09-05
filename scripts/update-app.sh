@@ -123,6 +123,15 @@ log_info "Setze Ausführungsberechtigungen für alle Skripte..."
 chmod +x /opt/projektseite/scripts/*.sh
 log_success "Ausführungsberechtigungen für alle Skripte gesetzt"
 
+# Setze Ausführungsberechtigungen für Patch-Scripts
+log_info "Setze Ausführungsberechtigungen für Patch-Scripts..."
+if [ -d "/opt/projektseite/scripts/patches" ]; then
+    chmod +x /opt/projektseite/scripts/patches/*.sh
+    log_success "Ausführungsberechtigungen für Patch-Scripts gesetzt"
+else
+    log_warning "Patches-Verzeichnis nicht gefunden"
+fi
+
 # 4. Prüfe auf neue Dependencies
 log_info "4️⃣ Prüfe auf neue Dependencies..."
 
