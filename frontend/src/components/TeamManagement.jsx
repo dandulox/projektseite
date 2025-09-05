@@ -143,7 +143,7 @@ const TeamManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-blue-900 dark:to-indigo-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -186,7 +186,7 @@ const TeamManagement = () => {
                           {team.member_count} Mitglieder
                         </p>
                         {team.description && (
-                          <p className="text-sm text-slate-500 dark:text-slate-500 mt-1 line-clamp-2">
+                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
                             {team.description}
                           </p>
                         )}
@@ -286,7 +286,7 @@ const TeamManagement = () => {
                             <p className="text-sm text-slate-600 dark:text-slate-400">
                               {member.email}
                             </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-500">
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
                               Beigetreten: {new Date(member.joined_at).toLocaleDateString('de-DE')}
                             </p>
                           </div>
@@ -335,7 +335,7 @@ const TeamManagement = () => {
                             <p className="text-sm text-slate-600 dark:text-slate-400">
                               {project.owner_username}
                             </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-500">
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
                               {new Date(project.created_at).toLocaleDateString('de-DE')}
                             </p>
                           </div>

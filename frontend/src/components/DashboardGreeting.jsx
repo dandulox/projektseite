@@ -227,7 +227,7 @@ const DashboardGreeting = ({
               <span className="text-sm md:text-base text-slate-600 dark:text-slate-400">
                 {getTimePeriodText()}
               </span>
-              <span className="text-xs text-slate-500 dark:text-slate-500">
+              <span className="text-xs text-slate-500 dark:text-slate-400">
                 {currentTime.toLocaleTimeString('de-DE', { 
                   hour: '2-digit', 
                   minute: '2-digit' 
