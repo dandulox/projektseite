@@ -385,7 +385,7 @@ const VersionManagement = () => {
                   <div className="text-right">
                     <div className="flex items-center mb-2" style={{gap: '0.5rem'}}>
                       <Tag className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                      <span className="text-sm text-blue-600 dark:text-blue-400">Major Release</span>
+                      <span className="text-sm text-blue-600 dark:text-blue-400">Aktuelle Version</span>
                     </div>
                     <div className="flex items-center" style={{gap: '0.5rem'}}>
                       <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
