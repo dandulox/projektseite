@@ -207,11 +207,19 @@
 
   /* Welcome Page Button Styles */
   .btn-welcome-primary {
-    @apply px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-2xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 group;
+    @apply px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-2xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2;
+  }
+
+  .btn-welcome-primary.group {
+    @apply group;
   }
 
   .btn-welcome-secondary {
-    @apply px-8 py-4 bg-white/10 backdrop-blur-lg border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 group;
+    @apply px-8 py-4 bg-white/10 backdrop-blur-lg border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2;
+  }
+
+  .btn-welcome-secondary.group {
+    @apply group;
   }
 
   /* Light Mode Welcome Page Button Override */
@@ -267,7 +275,11 @@
 
   /* Navigation link styles */
   .nav-link {
-    @apply group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200;
+    @apply flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200;
+  }
+
+  .nav-link.group {
+    @apply group;
   }
 
   .nav-link-active {

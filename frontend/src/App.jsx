@@ -649,7 +649,7 @@ const WelcomePage = ({ theme, toggleTheme }) => {
               setAuthMode('login');
               setShowAuthForms(true);
             }}
-            className="btn-welcome-primary"
+            className="btn-welcome-primary group"
           >
             <LogIn className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
             <span>Anmelden</span>
@@ -660,7 +660,7 @@ const WelcomePage = ({ theme, toggleTheme }) => {
               setAuthMode('register');
               setShowAuthForms(true);
             }}
-            className="btn-welcome-secondary"
+            className="btn-welcome-secondary group"
           >
             <UserPlus className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
             <span>Registrieren</span>
