@@ -1,54 +1,62 @@
 # Datenbank-Patches
 
-Dieses Verzeichnis enthält SQL-Patches für die Projektseite-Datenbank.
+**⚠️ WICHTIGER HINWEIS: Dieses Verzeichnis ist nicht mehr aktiv!**
 
-## Verwendung
+Alle Datenbank-Patches wurden in die umfassende `database/init/01_schema.sql` integriert. Das Patch-System wurde vereinfacht, sodass nur noch eine einzige SQL-Datei existiert, die alle Features enthält.
 
-Das `db-patch.sh` Skript wendet automatisch alle Patches in diesem Verzeichnis an.
+## Aktuelle Struktur
 
-## Patch-Namenskonvention
+- `database/init/01_schema.sql` - **Vollständige Datenbank mit allen Features**
+- `database/patches/` - **Nicht mehr verwendet** (alle Patches integriert)
 
-- `001_` - Nummerierung für Reihenfolge
-- `beschreibung` - Kurze Beschreibung des Patches
-- `.sql` - SQL-Dateiendung
+## Integrierte Features
 
-## Beispiele
+Die neue `01_schema.sql` enthält alle vorherigen Patches:
 
-- `001_ensure_greetings_table.sql` - Stellt sicher, dass die greetings-Tabelle existiert
-- `002_example_patch_template.sql` - Template für neue Patches
-- `003_new_humor_greetings.sql` - Fügt neue humorvolle Begrüßungen hinzu
-- `004_team_functionality.sql` - Team-Funktionalität und Berechtigungen
-- `005_notifications_system.sql` - Benachrichtigungssystem
-- `008_module_management_system.sql` - Modulverwaltungs-System
-- `009_progress_tracking_system.sql` - Fortschrittsverfolgung
-- `010_notes_comments_system.sql` - Notizen/Kommentar-System für Projekte und Module
+- ✅ **Basis-Schema** - Benutzer, Projekte, Module
+- ✅ **Team-System** - Teams, Mitgliedschaften, Berechtigungen  
+- ✅ **Benachrichtigungssystem** - Vollständiges Notification-System
+- ✅ **Erweiterte Modulverwaltung** - Standalone-Module, Verbindungen
+- ✅ **Fortschritts-Tracking** - Automatische Berechnung
+- ✅ **Humorvolle Begrüßungen** - Fun-Feature mit Tageszeiten
+- ✅ **Umfassende Berechtigungen** - Modul- und Projekt-Berechtigungen
 
-## Patch-Erstellung
+## Migration von Patches
 
-1. Erstelle eine neue SQL-Datei mit der nächsten Nummer
-2. Verwende `CREATE TABLE IF NOT EXISTS` für neue Tabellen
-3. Verwende `ALTER TABLE` für Änderungen an bestehenden Tabellen
-4. Füge Kommentare hinzu, die den Patch beschreiben
-5. Teste den Patch vor der Bereitstellung
+Alle folgenden Patches wurden erfolgreich integriert:
 
-## Wichtige Hinweise
+- ~~`001_ensure_greetings_table.sql`~~ → Integriert
+- ~~`002_example_patch_template.sql`~~ → Entfernt (Template)
+- ~~`003_new_humor_greetings.sql`~~ → Integriert
+- ~~`004_team_functionality.sql`~~ → Integriert
+- ~~`005_notifications_system_fixed.sql`~~ → Integriert
+- ~~`008_module_management_system.sql`~~ → Integriert
+- ~~`009_progress_tracking_system.sql`~~ → Integriert
 
-- **Immer Backup erstellen** vor dem Anwenden von Patches
-- **Idempotent** - Patches können mehrfach ausgeführt werden
-- **Rückwärtskompatibel** - Keine Breaking Changes
-- **Getestet** - Alle Patches müssen getestet werden
+## Neue Datenbank-Initialisierung
 
-## Patch-System ausführen
+Da alle Patches integriert wurden, wird die Datenbank jetzt über die einheitliche Schema-Datei initialisiert:
 
 ```bash
 # Auf dem Server
 cd /opt/projektseite
-./scripts/db-patch.sh
+./scripts/init-database.sh
 ```
 
 Das Skript:
 1. Erstellt automatisch ein Backup
-2. Prüft den aktuellen Datenbank-Status
-3. Wendet alle verfügbaren Patches an
-4. Startet das Backend neu
-5. Zeigt den finalen Status
+2. Initialisiert die Datenbank mit der vollständigen `01_schema.sql`
+3. Startet das Backend neu
+4. Zeigt den finalen Status
+
+## Vorteile der neuen Struktur
+
+- ✅ **Vereinfacht** - Nur noch eine SQL-Datei
+- ✅ **Konsistent** - Alle Features sind sofort verfügbar
+- ✅ **Wartungsfreundlich** - Keine Patch-Abhängigkeiten
+- ✅ **Vollständig** - Alle Features in einer Datei
+- ✅ **Dokumentiert** - Umfassende Kommentare und Struktur
+
+## Für zukünftige Änderungen
+
+Neue Features sollten direkt in die `database/init/01_schema.sql` integriert werden, anstatt separate Patches zu erstellen.

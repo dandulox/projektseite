@@ -1,7 +1,12 @@
--- Projektseite Datenbank Schema
+-- Projektseite Datenbank Schema - Vollständige Version
 -- Erstellt: $(date)
+-- Enthält alle Features: Teams, Benachrichtigungen, Module, Fortschritts-Tracking
 
--- Erstelle die Haupttabellen
+-- ==============================================
+-- HAUPTTABELLEN
+-- ==============================================
+
+-- Benutzer-Tabelle
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -13,6 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Projekte-Tabelle
 CREATE TABLE IF NOT EXISTS projects (
     id SERIAL PRIMARY KEY,
     name VARCHAR(200) NOT NULL,
@@ -23,10 +29,13 @@ CREATE TABLE IF NOT EXISTS projects (
     target_date DATE,
     completion_percentage INTEGER DEFAULT 0 CHECK (completion_percentage >= 0 AND completion_percentage <= 100),
     owner_id INTEGER REFERENCES users(id),
+    team_id INTEGER REFERENCES teams(id),
+    visibility VARCHAR(20) DEFAULT 'private' CHECK (visibility IN ('private', 'team', 'public')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Projekt-Module-Tabelle (erweitert)
 CREATE TABLE IF NOT EXISTS project_modules (
     id SERIAL PRIMARY KEY,
     project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
@@ -38,10 +47,19 @@ CREATE TABLE IF NOT EXISTS project_modules (
     actual_hours DECIMAL(8,2),
     assigned_to INTEGER REFERENCES users(id),
     due_date DATE,
+    visibility VARCHAR(20) DEFAULT 'private' CHECK (visibility IN ('private', 'team', 'public')),
+    team_id INTEGER REFERENCES teams(id),
+    completion_percentage INTEGER DEFAULT 0 CHECK (completion_percentage >= 0 AND completion_percentage <= 100),
+    start_date DATE,
+    tags TEXT[],
+    dependencies TEXT[],
+    is_template BOOLEAN DEFAULT false,
+    template_id INTEGER REFERENCES project_modules(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Design-Einstellungen
 CREATE TABLE IF NOT EXISTS design_settings (
     id SERIAL PRIMARY KEY,
     setting_key VARCHAR(100) UNIQUE NOT NULL,
@@ -53,6 +71,7 @@ CREATE TABLE IF NOT EXISTS design_settings (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Begrüßungen-Tabelle (mit humorvollen Texten)
 CREATE TABLE IF NOT EXISTS greetings (
     id SERIAL PRIMARY KEY,
     text TEXT NOT NULL,
@@ -63,6 +82,7 @@ CREATE TABLE IF NOT EXISTS greetings (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Projekt-Logs
 CREATE TABLE IF NOT EXISTS project_logs (
     id SERIAL PRIMARY KEY,
     project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
@@ -72,15 +92,226 @@ CREATE TABLE IF NOT EXISTS project_logs (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Indizes für bessere Performance
+-- ==============================================
+-- TEAM-SYSTEM
+-- ==============================================
+
+-- Teams-Tabelle
+CREATE TABLE IF NOT EXISTS teams (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    team_leader_id INTEGER REFERENCES users(id),
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Team-Mitgliedschaften
+CREATE TABLE IF NOT EXISTS team_memberships (
+    id SERIAL PRIMARY KEY,
+    team_id INTEGER REFERENCES teams(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    role VARCHAR(20) DEFAULT 'member' CHECK (role IN ('leader', 'member', 'viewer')),
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(team_id, user_id)
+);
+
+-- Projekt-Berechtigungen
+CREATE TABLE IF NOT EXISTS project_permissions (
+    id SERIAL PRIMARY KEY,
+    project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    permission_type VARCHAR(20) DEFAULT 'view' CHECK (permission_type IN ('view', 'edit', 'admin')),
+    granted_by INTEGER REFERENCES users(id),
+    granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(project_id, user_id)
+);
+
+-- ==============================================
+-- BENACHRICHTIGUNGSSYSTEM
+-- ==============================================
+
+-- Benachrichtigungstypen
+CREATE TABLE IF NOT EXISTS notification_types (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Haupttabelle für Benachrichtigungen
+CREATE TABLE IF NOT EXISTS notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    from_user_id INTEGER NULL,
+    team_id INTEGER NULL,
+    project_id INTEGER NULL,
+    action_url VARCHAR(500) NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    read_at TIMESTAMP NULL,
+    
+    -- Fremdschlüssel-Constraints
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+    FOREIGN KEY (type) REFERENCES notification_types(name) ON DELETE RESTRICT
+);
+
+-- Benachrichtigungseinstellungen pro Benutzer
+CREATE TABLE IF NOT EXISTS user_notification_settings (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    notification_type VARCHAR(50) NOT NULL,
+    email_enabled BOOLEAN DEFAULT TRUE,
+    push_enabled BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    UNIQUE (user_id, notification_type),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (notification_type) REFERENCES notification_types(name) ON DELETE CASCADE
+);
+
+-- ==============================================
+-- MODUL-SYSTEM (ERWEITERT)
+-- ==============================================
+
+-- Eigenständige Module
+CREATE TABLE IF NOT EXISTS standalone_modules (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,
+    description TEXT,
+    status VARCHAR(50) DEFAULT 'planning' CHECK (status IN ('planning', 'active', 'on_hold', 'completed', 'cancelled')),
+    priority VARCHAR(20) DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'critical')),
+    start_date DATE,
+    target_date DATE,
+    completion_percentage INTEGER DEFAULT 0 CHECK (completion_percentage >= 0 AND completion_percentage <= 100),
+    owner_id INTEGER REFERENCES users(id),
+    team_id INTEGER REFERENCES teams(id),
+    visibility VARCHAR(20) DEFAULT 'private' CHECK (visibility IN ('private', 'team', 'public')),
+    estimated_hours DECIMAL(8,2),
+    actual_hours DECIMAL(8,2),
+    assigned_to INTEGER REFERENCES users(id),
+    tags TEXT[],
+    dependencies TEXT[],
+    is_template BOOLEAN DEFAULT false,
+    template_id INTEGER REFERENCES standalone_modules(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Modul-Kreuzverbindungen
+CREATE TABLE IF NOT EXISTS module_connections (
+    id SERIAL PRIMARY KEY,
+    source_module_id INTEGER NOT NULL,
+    source_module_type VARCHAR(20) NOT NULL CHECK (source_module_type IN ('project', 'standalone')),
+    target_module_id INTEGER NOT NULL,
+    target_module_type VARCHAR(20) NOT NULL CHECK (target_module_type IN ('project', 'standalone')),
+    connection_type VARCHAR(50) NOT NULL CHECK (connection_type IN ('depends_on', 'blocks', 'related_to', 'duplicates', 'supersedes')),
+    description TEXT,
+    created_by INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(source_module_id, source_module_type, target_module_id, target_module_type, connection_type)
+);
+
+-- Modul-Berechtigungen
+CREATE TABLE IF NOT EXISTS module_permissions (
+    id SERIAL PRIMARY KEY,
+    module_id INTEGER NOT NULL,
+    module_type VARCHAR(20) NOT NULL CHECK (module_type IN ('project', 'standalone')),
+    user_id INTEGER REFERENCES users(id),
+    permission_type VARCHAR(20) NOT NULL CHECK (permission_type IN ('view', 'edit', 'admin')),
+    granted_by INTEGER REFERENCES users(id),
+    granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(module_id, module_type, user_id)
+);
+
+-- Modul-Logs
+CREATE TABLE IF NOT EXISTS module_logs (
+    id SERIAL PRIMARY KEY,
+    module_id INTEGER NOT NULL,
+    module_type VARCHAR(20) NOT NULL CHECK (module_type IN ('project', 'standalone')),
+    user_id INTEGER REFERENCES users(id),
+    action VARCHAR(100) NOT NULL,
+    details TEXT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Modul-Team-Zuweisungen
+CREATE TABLE IF NOT EXISTS module_team_assignments (
+    id SERIAL PRIMARY KEY,
+    module_id INTEGER NOT NULL,
+    module_type VARCHAR(20) NOT NULL CHECK (module_type IN ('project', 'standalone')),
+    team_id INTEGER REFERENCES teams(id),
+    role VARCHAR(20) DEFAULT 'member' CHECK (role IN ('leader', 'member', 'viewer')),
+    assigned_by INTEGER REFERENCES users(id),
+    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(module_id, module_type, team_id)
+);
+
+-- ==============================================
+-- INDIZES FÜR PERFORMANCE
+-- ==============================================
+
+-- Basis-Indizes
 CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status);
 CREATE INDEX IF NOT EXISTS idx_projects_owner ON projects(owner_id);
+CREATE INDEX IF NOT EXISTS idx_projects_team ON projects(team_id);
+CREATE INDEX IF NOT EXISTS idx_projects_visibility ON projects(visibility);
 CREATE INDEX IF NOT EXISTS idx_modules_project ON project_modules(project_id);
 CREATE INDEX IF NOT EXISTS idx_modules_status ON project_modules(status);
+CREATE INDEX IF NOT EXISTS idx_modules_assigned ON project_modules(assigned_to);
 CREATE INDEX IF NOT EXISTS idx_logs_project ON project_logs(project_id);
 CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON project_logs(timestamp);
 
--- Trigger für updated_at
+-- Greetings-Indizes
+CREATE INDEX IF NOT EXISTS idx_greetings_time_period ON greetings(time_period);
+CREATE INDEX IF NOT EXISTS idx_greetings_hour ON greetings(hour);
+CREATE INDEX IF NOT EXISTS idx_greetings_active ON greetings(is_active);
+
+-- Team-Indizes
+CREATE INDEX IF NOT EXISTS idx_teams_leader ON teams(team_leader_id);
+CREATE INDEX IF NOT EXISTS idx_teams_active ON teams(is_active);
+CREATE INDEX IF NOT EXISTS idx_team_memberships_team ON team_memberships(team_id);
+CREATE INDEX IF NOT EXISTS idx_team_memberships_user ON team_memberships(user_id);
+CREATE INDEX IF NOT EXISTS idx_project_permissions_project ON project_permissions(project_id);
+CREATE INDEX IF NOT EXISTS idx_project_permissions_user ON project_permissions(user_id);
+
+-- Benachrichtigungs-Indizes
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON notifications(user_id, is_read);
+CREATE INDEX IF NOT EXISTS idx_notifications_team_id ON notifications(team_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_project_id ON notifications(project_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created_at);
+
+-- Modul-Indizes
+CREATE INDEX IF NOT EXISTS idx_standalone_modules_status ON standalone_modules(status);
+CREATE INDEX IF NOT EXISTS idx_standalone_modules_owner ON standalone_modules(owner_id);
+CREATE INDEX IF NOT EXISTS idx_standalone_modules_team ON standalone_modules(team_id);
+CREATE INDEX IF NOT EXISTS idx_standalone_modules_assigned ON standalone_modules(assigned_to);
+CREATE INDEX IF NOT EXISTS idx_module_connections_source ON module_connections(source_module_id, source_module_type);
+CREATE INDEX IF NOT EXISTS idx_module_connections_target ON module_connections(target_module_id, target_module_type);
+CREATE INDEX IF NOT EXISTS idx_module_permissions_module ON module_permissions(module_id, module_type);
+CREATE INDEX IF NOT EXISTS idx_module_permissions_user ON module_permissions(user_id);
+CREATE INDEX IF NOT EXISTS idx_module_logs_module ON module_logs(module_id, module_type);
+CREATE INDEX IF NOT EXISTS idx_module_logs_timestamp ON module_logs(timestamp);
+CREATE INDEX IF NOT EXISTS idx_module_team_assignments_module ON module_team_assignments(module_id, module_type);
+CREATE INDEX IF NOT EXISTS idx_module_team_assignments_team ON module_team_assignments(team_id);
+
+-- Fortschritts-Tracking-Indizes
+CREATE INDEX IF NOT EXISTS idx_project_modules_status ON project_modules(project_id, status);
+
+-- ==============================================
+-- TRIGGER UND FUNKTIONEN
+-- ==============================================
+
+-- Trigger-Funktion für updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -89,6 +320,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+-- Trigger für updated_at auf allen Tabellen
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -104,9 +336,368 @@ CREATE TRIGGER update_design_updated_at BEFORE UPDATE ON design_settings
 CREATE TRIGGER update_greetings_updated_at BEFORE UPDATE ON greetings
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_teams_updated_at BEFORE UPDATE ON teams
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_standalone_modules_updated_at BEFORE UPDATE ON standalone_modules
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Benachrichtigungs-Trigger
+CREATE OR REPLACE FUNCTION update_notification_read_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.is_read = true AND OLD.is_read = false THEN
+        NEW.read_at = NOW();
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER notification_read_trigger
+    BEFORE UPDATE ON notifications
+    FOR EACH ROW
+    EXECUTE FUNCTION update_notification_read_at();
+
+CREATE OR REPLACE FUNCTION update_user_notification_settings_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER user_notification_settings_updated_at_trigger
+    BEFORE UPDATE ON user_notification_settings
+    FOR EACH ROW
+    EXECUTE FUNCTION update_user_notification_settings_updated_at();
+
+-- ==============================================
+-- FORTSCHRITTS-TRACKING-FUNKTIONEN
+-- ==============================================
+
+-- Funktion zur Fortschrittsberechnung
+CREATE OR REPLACE FUNCTION calculate_project_progress(project_id INTEGER)
+RETURNS INTEGER AS $$
+DECLARE
+    total_modules INTEGER;
+    completed_modules INTEGER;
+    progress_percentage INTEGER;
+BEGIN
+    -- Zähle alle Module des Projekts
+    SELECT COUNT(*) INTO total_modules
+    FROM project_modules 
+    WHERE project_modules.project_id = calculate_project_progress.project_id;
+    
+    -- Wenn keine Module vorhanden sind, Fortschritt = 0%
+    IF total_modules = 0 THEN
+        RETURN 0;
+    END IF;
+    
+    -- Zähle abgeschlossene Module (Status = 'completed')
+    SELECT COUNT(*) INTO completed_modules
+    FROM project_modules 
+    WHERE project_modules.project_id = calculate_project_progress.project_id 
+    AND status = 'completed';
+    
+    -- Berechne Fortschritt in Prozent (gerundet)
+    progress_percentage := ROUND((completed_modules::DECIMAL / total_modules::DECIMAL) * 100);
+    
+    RETURN progress_percentage;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Funktion zur automatischen Fortschrittsaktualisierung
+CREATE OR REPLACE FUNCTION update_project_progress()
+RETURNS TRIGGER AS $$
+DECLARE
+    project_id INTEGER;
+    new_progress INTEGER;
+BEGIN
+    -- Bestimme die Projekt-ID basierend auf dem Trigger-Kontext
+    IF TG_OP = 'DELETE' THEN
+        project_id := OLD.project_id;
+    ELSE
+        project_id := NEW.project_id;
+    END IF;
+    
+    -- Berechne neuen Fortschritt
+    new_progress := calculate_project_progress(project_id);
+    
+    -- Aktualisiere den Fortschritt in der projects-Tabelle
+    UPDATE projects 
+    SET completion_percentage = new_progress, updated_at = NOW()
+    WHERE id = project_id;
+    
+    -- Gib den entsprechenden Datensatz zurück
+    IF TG_OP = 'DELETE' THEN
+        RETURN OLD;
+    ELSE
+        RETURN NEW;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger für automatische Fortschrittsaktualisierung
+CREATE TRIGGER trigger_update_progress_on_module_insert
+    AFTER INSERT ON project_modules
+    FOR EACH ROW
+    EXECUTE FUNCTION update_project_progress();
+
+CREATE TRIGGER trigger_update_progress_on_module_update
+    AFTER UPDATE ON project_modules
+    FOR EACH ROW
+    WHEN (OLD.status IS DISTINCT FROM NEW.status)
+    EXECUTE FUNCTION update_project_progress();
+
+CREATE TRIGGER trigger_update_progress_on_module_delete
+    AFTER DELETE ON project_modules
+    FOR EACH ROW
+    EXECUTE FUNCTION update_project_progress();
+
+-- ==============================================
+-- MODUL-BERECHTIGUNGS-FUNKTIONEN
+-- ==============================================
+
+-- Funktion für Modul-Berechtigungen
+CREATE OR REPLACE FUNCTION check_module_permission(
+    p_user_id INTEGER,
+    p_module_id INTEGER,
+    p_module_type VARCHAR(20),
+    p_required_permission VARCHAR(20) DEFAULT 'view'
+) RETURNS BOOLEAN AS $$
+DECLARE
+    user_role VARCHAR(20);
+    module_owner_id INTEGER;
+    module_team_id INTEGER;
+    team_role VARCHAR(20);
+    explicit_permission VARCHAR(20);
+BEGIN
+    -- Admin hat immer Zugriff
+    SELECT role INTO user_role FROM users WHERE id = p_user_id;
+    IF user_role = 'admin' THEN
+        RETURN TRUE;
+    END IF;
+
+    -- Modul-Details abrufen
+    IF p_module_type = 'project' THEN
+        SELECT owner_id, team_id INTO module_owner_id, module_team_id 
+        FROM project_modules pm 
+        JOIN projects p ON p.id = pm.project_id 
+        WHERE pm.id = p_module_id;
+    ELSE
+        SELECT owner_id, team_id INTO module_owner_id, module_team_id 
+        FROM standalone_modules WHERE id = p_module_id;
+    END IF;
+
+    -- Eigentümer hat immer Zugriff
+    IF module_owner_id = p_user_id THEN
+        RETURN TRUE;
+    END IF;
+
+    -- Prüfe Team-Berechtigung
+    IF module_team_id IS NOT NULL THEN
+        SELECT tm.role INTO team_role
+        FROM team_memberships tm
+        WHERE tm.team_id = module_team_id AND tm.user_id = p_user_id;
+
+        IF team_role IS NOT NULL THEN
+            IF team_role = 'leader' AND p_required_permission != 'admin' THEN
+                RETURN TRUE;
+            END IF;
+            IF team_role = 'member' AND p_required_permission IN ('view', 'edit') THEN
+                RETURN TRUE;
+            END IF;
+            IF team_role = 'viewer' AND p_required_permission = 'view' THEN
+                RETURN TRUE;
+            END IF;
+        END IF;
+    END IF;
+
+    -- Prüfe explizite Modul-Berechtigungen
+    SELECT permission_type INTO explicit_permission
+    FROM module_permissions
+    WHERE module_id = p_module_id AND module_type = p_module_type AND user_id = p_user_id;
+
+    IF explicit_permission IS NOT NULL THEN
+        IF explicit_permission = 'admin' THEN
+            RETURN TRUE;
+        END IF;
+        IF explicit_permission = 'edit' AND p_required_permission IN ('view', 'edit') THEN
+            RETURN TRUE;
+        END IF;
+        IF explicit_permission = 'view' AND p_required_permission = 'view' THEN
+            RETURN TRUE;
+        END IF;
+    END IF;
+
+    -- Prüfe Sichtbarkeit
+    IF p_required_permission = 'view' THEN
+        IF p_module_type = 'project' THEN
+            SELECT visibility INTO explicit_permission
+            FROM project_modules WHERE id = p_module_id;
+        ELSE
+            SELECT visibility INTO explicit_permission
+            FROM standalone_modules WHERE id = p_module_id;
+        END IF;
+        
+        IF explicit_permission = 'public' THEN
+            RETURN TRUE;
+        END IF;
+    END IF;
+
+    RETURN FALSE;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ==============================================
+-- BENACHRICHTIGUNGS-FUNKTIONEN
+-- ==============================================
+
+-- Funktion zum Bereinigen alter Benachrichtigungen
+CREATE OR REPLACE FUNCTION cleanup_old_notifications()
+RETURNS INTEGER AS $$
+DECLARE
+    deleted_count INTEGER;
+BEGIN
+    DELETE FROM notifications 
+    WHERE created_at < NOW() - INTERVAL '30 days' 
+    AND is_read = true;
+    
+    GET DIAGNOSTICS deleted_count = ROW_COUNT;
+    RETURN deleted_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ==============================================
+-- VIEWS
+-- ==============================================
+
+-- View für Benachrichtigungsstatistiken
+CREATE OR REPLACE VIEW notification_stats AS
+SELECT 
+    u.id as user_id,
+    u.username,
+    COUNT(n.id) as total_notifications,
+    COUNT(CASE WHEN n.is_read = false THEN 1 END) as unread_count,
+    COUNT(CASE WHEN n.is_read = false AND n.team_id IS NULL THEN 1 END) as unread_private,
+    COUNT(CASE WHEN n.is_read = false AND n.team_id IS NOT NULL THEN 1 END) as unread_team,
+    MAX(n.created_at) as last_notification
+FROM users u
+LEFT JOIN notifications n ON u.id = n.user_id
+GROUP BY u.id, u.username;
+
+-- ==============================================
+-- STANDARD-DATEN EINFÜGEN
+-- ==============================================
+
+-- Standard-Benachrichtigungstypen
+INSERT INTO notification_types (name, description) VALUES
+('project_created', 'Neues Projekt wurde erstellt'),
+('project_updated', 'Projekt wurde aktualisiert'),
+('project_deleted', 'Projekt wurde gelöscht'),
+('team_invite', 'Einladung zu einem Team'),
+('team_join', 'Neues Mitglied im Team'),
+('team_leave', 'Mitglied hat das Team verlassen'),
+('user_mention', 'Benutzer wurde erwähnt'),
+('system_alert', 'System-Benachrichtigung'),
+('project_comment', 'Kommentar zu einem Projekt'),
+('team_update', 'Team wurde aktualisiert')
+ON CONFLICT (name) DO NOTHING;
+
+-- Humorvolle Begrüßungen
+INSERT INTO greetings (text, time_period, hour, is_active) VALUES
+-- Morgens 🌅 (ca. 5–11 Uhr)
+('Guten Morgen! Zeit, motiviert zu wirken… mehr wollen wir ja gar nicht.', 'morning', NULL, true),
+('Willkommen im Level ‚Ich tue so, als wäre ich wach‘. 🛌', 'morning', NULL, true),
+('Kaffee ist fertig. Motivation… noch nicht. ☕', 'morning', NULL, true),
+('Dein Projekt wartet schon – genau wie dein Bett. 😏', 'morning', NULL, true),
+('Heute ist der perfekte Tag, um Dinge zu erledigen, die du gestern schon verschoben hast.', 'morning', NULL, true),
+
+-- Mittags 🥪 (ca. 11–16 Uhr)
+('Mittag! Endlich die Deadline, die wirklich jeder einhält. 🍽️', 'afternoon', NULL, true),
+('Der Körper will essen, das Projekt will Fortschritt – eins von beiden gewinnt.', 'afternoon', NULL, true),
+('Willkommen im Mittagskoma. Gehirn lädt… bitte warten. 💤', 'afternoon', NULL, true),
+('Perfekte Zeit, um To-Dos auf morgen zu verschieben.', 'afternoon', NULL, true),
+('Snack-Pause? Klar. Das Projekt kann warten. Wie immer. 🍪', 'afternoon', NULL, true),
+
+-- Abends 🌇 (ca. 16–22 Uhr)
+('Abend! Offiziell Feierabend, inoffiziell Panik, weil nichts fertig ist. 🫠', 'evening', NULL, true),
+('Heute viel geschafft… also zumindest auf Netflix. 📺', 'evening', NULL, true),
+('Perfekte Zeit, Projekte ‚nur noch kurz‘ zu machen. Spoiler: Es wird Mitternacht.', 'evening', NULL, true),
+('Deine To-Do-Liste lacht dich aus. Laut. 📜', 'evening', NULL, true),
+('Motivation offline. Snacks online. 🍫', 'evening', NULL, true),
+
+-- Nachts 🌙 (ca. 22–5 Uhr)
+('Mitternacht. Entweder Genie oder Wahnsinn – wir entscheiden später.', 'night', NULL, true),
+('Nachtschicht? Respekt. Oder Existenzkrise? 😅', 'night', NULL, true),
+('Alle schlafen, nur du trackst Projekte… und überlegst deine Lebensentscheidungen.', 'night', NULL, true),
+('Es gibt zwei Arten von Menschen: die, die jetzt schlafen – und dich. 🦉', 'night', NULL, true),
+('Die beste Zeit, um Projekte zu machen. Oder das Leben neu zu überdenken.', 'night', NULL, true)
+ON CONFLICT DO NOTHING;
+
+-- ==============================================
+-- KOMMENTARE FÜR DOKUMENTATION
+-- ==============================================
+
+-- Tabellen-Kommentare
+COMMENT ON TABLE users IS 'Benutzer der Anwendung mit Rollen und Berechtigungen';
+COMMENT ON TABLE projects IS 'Projekte mit Status, Priorität und Team-Zuordnung';
+COMMENT ON TABLE project_modules IS 'Module innerhalb von Projekten mit erweiterten Features';
+COMMENT ON TABLE design_settings IS 'Design-Einstellungen für die Anwendung';
+COMMENT ON TABLE greetings IS 'Humorvolle Begrüßungen für verschiedene Tageszeiten - Fun-Feature';
+COMMENT ON TABLE project_logs IS 'Aktivitäts-Logs für Projekte';
+COMMENT ON TABLE teams IS 'Teams für Projektorganisation';
+COMMENT ON TABLE team_memberships IS 'Mitgliedschaften von Benutzern in Teams';
+COMMENT ON TABLE project_permissions IS 'Erweiterte Berechtigungen für Projekte';
+COMMENT ON TABLE notification_types IS 'Definierte Typen von Benachrichtigungen';
+COMMENT ON TABLE notifications IS 'Benachrichtigungen für Benutzer';
+COMMENT ON TABLE user_notification_settings IS 'Benachrichtigungseinstellungen pro Benutzer';
+COMMENT ON TABLE standalone_modules IS 'Eigenständige Module, die nicht an Projekte gebunden sind';
+COMMENT ON TABLE module_connections IS 'Kreuzverbindungen zwischen Modulen (Abhängigkeiten, Blocker, etc.)';
+COMMENT ON TABLE module_permissions IS 'Explizite Berechtigungen für Module';
+COMMENT ON TABLE module_logs IS 'Aktivitäts-Logs für Module';
+COMMENT ON TABLE module_team_assignments IS 'Team-Zuweisungen für Module';
+
+-- Spalten-Kommentare
+COMMENT ON COLUMN greetings.text IS 'Der humorvolle Begrüßungstext';
+COMMENT ON COLUMN greetings.time_period IS 'Tageszeit (morning, afternoon, evening, night)';
+COMMENT ON COLUMN greetings.hour IS 'Spezifische Stunde (0-23) oder NULL für gesamte Tageszeit';
+COMMENT ON COLUMN greetings.is_active IS 'Ob die Begrüßung aktiv ist';
+COMMENT ON COLUMN projects.team_id IS 'Team, dem das Projekt zugeordnet ist';
+COMMENT ON COLUMN projects.visibility IS 'Sichtbarkeit des Projekts (private, team, public)';
+COMMENT ON COLUMN module_connections.connection_type IS 'Art der Verbindung: depends_on, blocks, related_to, duplicates, supersedes';
+COMMENT ON COLUMN module_permissions.permission_type IS 'Berechtigungstyp: view, edit, admin';
+COMMENT ON COLUMN module_team_assignments.role IS 'Rolle des Teams im Modul: leader, member, viewer';
+
+-- Funktions-Kommentare
+COMMENT ON FUNCTION calculate_project_progress(INTEGER) IS 'Berechnet den Fortschritt eines Projekts basierend auf abgeschlossenen Modulen';
+COMMENT ON FUNCTION update_project_progress() IS 'Trigger-Funktion zur automatischen Fortschrittsaktualisierung';
+COMMENT ON FUNCTION check_module_permission(INTEGER, INTEGER, VARCHAR(20), VARCHAR(20)) IS 'Prüft Berechtigungen für Module basierend auf Benutzer, Team und expliziten Berechtigungen';
+COMMENT ON FUNCTION cleanup_old_notifications() IS 'Bereinigt alte gelesene Benachrichtigungen (älter als 30 Tage)';
+
+-- Trigger-Kommentare
+COMMENT ON TRIGGER trigger_update_progress_on_module_insert ON project_modules IS 'Aktualisiert Projektfortschritt beim Hinzufügen neuer Module';
+COMMENT ON TRIGGER trigger_update_progress_on_module_update ON project_modules IS 'Aktualisiert Projektfortschritt bei Statusänderungen von Modulen';
+COMMENT ON TRIGGER trigger_update_progress_on_module_delete ON project_modules IS 'Aktualisiert Projektfortschritt beim Löschen von Modulen';
+
+-- ==============================================
+-- HINWEISE
+-- ==============================================
+
 -- Standard-Benutzer werden über das Initialisierungsskript erstellt
 -- Siehe: backend/scripts/create-default-users.js
 -- 
 -- Standard-Zugangsdaten:
 -- Admin: admin / admin
 -- User: user / user123
+
+-- Standard-Benachrichtigungseinstellungen werden automatisch für neue Benutzer erstellt
+-- über die Funktion in den Benachrichtigungs-APIs
+
+-- Alle Features sind vollständig integriert:
+-- ✅ Team-System mit Berechtigungen
+-- ✅ Benachrichtigungssystem mit Einstellungen
+-- ✅ Erweiterte Modulverwaltung
+-- ✅ Automatisches Fortschritts-Tracking
+-- ✅ Humorvolle Begrüßungen
+-- ✅ Umfassende Berechtigungsprüfung
