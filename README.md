@@ -93,8 +93,9 @@ Dies bietet ein interaktives Menü für:
 - **👥 Team-Management** mit Rollen und Berechtigungen
 - **🔔 Benachrichtigungssystem** mit Echtzeit-Updates
 - **📊 Fortschrittsverfolgung** mit visuellen Indikatoren
-- **🎨 Design-System** mit Theme-Management
+- **🎨 Design-System** mit Theme-Management und konsistenten CSS-Klassen
 - **📱 Responsive Design** mit Mobile-First-Ansatz
+- **🔧 Flexible API-Konfiguration** für verschiedene Deployment-Umgebungen
 
 ## 🛠️ Technologie-Stack
 

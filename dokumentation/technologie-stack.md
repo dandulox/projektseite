@@ -50,3 +50,18 @@ Das Frontend verwendet ein zentrales Design-System mit CSS-Variablen in `fronten
 - **Border-Farben**: Primary und Secondary für Rahmen
 - **Schatten**: Primary und Secondary für verschiedene Tiefen
 - **Glass-Effekte**: Für moderne UI-Elemente
+
+**Neue CSS-Klassen (Version 2.1):**
+- **`.page-header`**: Konsistente Header mit Hintergrund für bessere Lesbarkeit
+- **`.page-title`**: Einheitliche Titel-Styles
+- **`.page-subtitle`**: Einheitliche Untertitel-Styles
+- **`.btn-welcome-primary`**: Welcome Page primärer Button
+- **`.btn-welcome-secondary`**: Welcome Page sekundärer Button mit Light Mode Override
+- **`.auth-modal`**: Auth-Modal für Light Mode
+- **`.auth-modal-dark`**: Auth-Modal für Dark Mode
+
+**API-Konfiguration:**
+- **Dynamische API-URLs** basierend auf der aktuellen Domain
+- **Unterstützung für lokale Entwicklung** (localhost:3001)
+- **Produktions-Deployment** mit relativen Pfaden
+- **Umgebungsvariablen** für flexible Konfiguration

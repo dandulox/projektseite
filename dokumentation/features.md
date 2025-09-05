@@ -48,6 +48,9 @@
 - **Responsive Navigation** mit Mobile-Menu
 - **Benutzer-Dropdown** mit Profil-Zugriff
 - **Design-Einstellungen** (Schriftgröße, Kompakt-Modus)
+- **Konsistente Header-Styles** mit Hintergrund für bessere Lesbarkeit
+- **Welcome Page Buttons** mit Light/Dark Mode Optimierung
+- **Auth-Modal-Styles** für bessere Lesbarkeit in beiden Modi
 
 ## ✅ Implementiert
 - **Modulares Backend-Design** mit Express.js
@@ -74,6 +77,9 @@
 - **📈 Fortschrittsverfolgung** mit visuellen Indikatoren
 - **🏷️ Tag-System** und Abhängigkeitsmanagement für Module
 - **👤 Benutzerprofile** mit Einstellungen und Design-Anpassungen
+- **🎨 Erweiterte Design-Konsistenz** mit zentralen CSS-Klassen
+- **📱 Optimierte Mobile-Ansicht** für alle Komponenten
+- **🔧 API-URL-Konfiguration** für flexible Deployment-Umgebungen
 
 ## 🔄 Zu implementieren
 - Live-Edit-Funktionalität für Design-Einstellungen

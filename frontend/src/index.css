@@ -177,49 +177,50 @@
 
   /* Apple-style button */
   .btn-primary {
-    @apply bg-blue-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center gap-2 hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-lg;
+    @apply bg-blue-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-lg;
+    gap: 0.5rem;
   }
 
   .btn-secondary {
-    @apply bg-transparent text-blue-600 border border-blue-600 py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center gap-2 hover:bg-blue-600 hover:text-white hover:shadow-lg;
+    @apply bg-transparent text-blue-600 border border-blue-600 py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center hover:bg-blue-600 hover:text-white hover:shadow-lg;
+    gap: 0.5rem;
   }
 
   /* Button variants */
   .btn-success {
-    @apply bg-green-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center gap-2 hover:bg-green-700 hover:-translate-y-0.5 hover:shadow-lg;
+    @apply bg-green-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center hover:bg-green-700 hover:-translate-y-0.5 hover:shadow-lg;
+    gap: 0.5rem;
   }
 
   .btn-danger {
-    @apply bg-red-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center gap-2 hover:bg-red-700 hover:-translate-y-0.5 hover:shadow-lg;
+    @apply bg-red-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center hover:bg-red-700 hover:-translate-y-0.5 hover:shadow-lg;
+    gap: 0.5rem;
   }
 
   .btn-warning {
-    @apply bg-orange-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center gap-2 hover:bg-orange-700 hover:-translate-y-0.5 hover:shadow-lg;
+    @apply bg-orange-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center hover:bg-orange-700 hover:-translate-y-0.5 hover:shadow-lg;
+    gap: 0.5rem;
   }
 
   .btn-gradient-primary {
-    @apply bg-gradient-to-r from-blue-500 to-purple-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center gap-2 hover:from-blue-600 hover:to-purple-700 hover:-translate-y-0.5 hover:shadow-lg;
+    @apply bg-gradient-to-r from-blue-500 to-purple-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center hover:from-blue-600 hover:to-purple-700 hover:-translate-y-0.5 hover:shadow-lg;
+    gap: 0.5rem;
   }
 
   .btn-gradient-success {
-    @apply bg-gradient-to-r from-emerald-500 to-blue-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center gap-2 hover:from-emerald-600 hover:to-blue-700 hover:-translate-y-0.5 hover:shadow-lg;
+    @apply bg-gradient-to-r from-emerald-500 to-blue-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center hover:from-emerald-600 hover:to-blue-700 hover:-translate-y-0.5 hover:shadow-lg;
+    gap: 0.5rem;
   }
 
   /* Welcome Page Button Styles */
   .btn-welcome-primary {
-    @apply px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-2xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2;
-  }
-
-  .btn-welcome-primary.group {
-    @apply group;
+    @apply px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-2xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 flex items-center justify-center;
+    gap: 0.5rem;
   }
 
   .btn-welcome-secondary {
-    @apply px-8 py-4 bg-white/10 backdrop-blur-lg border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2;
-  }
-
-  .btn-welcome-secondary.group {
-    @apply group;
+    @apply px-8 py-4 bg-white/10 backdrop-blur-lg border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center justify-center;
+    gap: 0.5rem;
   }
 
   /* Light Mode Welcome Page Button Override */
@@ -278,9 +279,6 @@
     @apply flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200;
   }
 
-  .nav-link.group {
-    @apply group;
-  }
 
   .nav-link-active {
     @apply bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-md;
@@ -339,11 +337,13 @@
   }
 
   .form-error {
-    @apply text-sm text-red-600 dark:text-red-400 flex items-center space-x-1;
+    @apply text-sm text-red-600 dark:text-red-400 flex items-center;
+    gap: 0.25rem;
   }
 
   .form-success {
-    @apply text-sm text-green-600 dark:text-green-400 flex items-center space-x-1;
+    @apply text-sm text-green-600 dark:text-green-400 flex items-center;
+    gap: 0.25rem;
   }
 
   /* Status Badge styles */
