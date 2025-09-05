@@ -9,6 +9,7 @@ import UserSettings from './components/UserSettings';
 import UserProfile from './components/UserProfile';
 import GreetingManagement from './components/GreetingManagement';
 import TeamManagement from './components/TeamManagement';
+import VersionManagement from './components/VersionManagement';
 import ProjectManagement from './components/ProjectManagement';
 import ProjectDashboard from './components/ProjectDashboard';
 import RegisterFormStartPage from './components/RegisterFormStartPage';
@@ -470,6 +471,16 @@ const Admin = () => {
         >
           Begrüßungen
         </button>
+        <button
+          onClick={() => setActiveTab('version')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+            activeTab === 'version'
+              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+          }`}
+        >
+          Versionsverwaltung
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -498,7 +509,10 @@ const Admin = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
                 <span className="text-slate-700 dark:text-slate-300 text-lg">Version</span>
-                <span className="text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">1.0.0</span>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">2.0.0</span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500">"Phoenix"</span>
+                </div>
               </div>
               <div className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
                 <span className="text-slate-700 dark:text-slate-300 text-lg">Letztes Update</span>
@@ -512,6 +526,7 @@ const Admin = () => {
       {activeTab === 'users' && <UserManagement />}
       {activeTab === 'teams' && <TeamManagement />}
       {activeTab === 'greetings' && <GreetingManagement />}
+      {activeTab === 'version' && <VersionManagement />}
     </div>
   );
 };

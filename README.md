@@ -8,6 +8,7 @@ Die vollständige Dokumentation ist in den folgenden Dateien aufgeteilt:
 
 ### 🚀 Grundlagen
 - **[Features](dokumentation/features.md)** - Alle implementierten und geplanten Features
+- **[Versionsverlauf](dokumentation/versionsverlauf.md)** - Changelog und Versionshistorie
 - **[Technologie-Stack](dokumentation/technologie-stack.md)** - Verwendete Technologien und Frameworks
 - **[Projektstruktur](dokumentation/projektstruktur.md)** - Detaillierte Verzeichnisstruktur
 
@@ -96,6 +97,10 @@ Dies bietet ein interaktives Menü für:
 - **🎨 Design-System** mit Theme-Management und konsistenten CSS-Klassen
 - **📱 Responsive Design** mit Mobile-First-Ansatz
 - **🔧 Flexible API-Konfiguration** für verschiedene Deployment-Umgebungen
+
+## 📋 Aktuelle Version
+
+**Version 2.0.0 "Phoenix"** - Siehe [Versionsverlauf](dokumentation/versionsverlauf.md) für detaillierte Changelog-Informationen.
 
 ## 🛠️ Technologie-Stack
 
