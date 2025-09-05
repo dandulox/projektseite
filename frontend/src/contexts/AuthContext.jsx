@@ -523,7 +523,7 @@ export const AuthProvider = ({ children }) => {
 
     // Modul-Berechtigung vergeben
     grantPermission: async (moduleId, moduleType, userId, permissionType) => {
-      return await apiRequest(`/modules/${moduleId}/permissions`, {
+      return await apiRequest(`/modules/permissions/${moduleId}`, {
         method: 'POST',
         body: JSON.stringify({ 
           user_id: userId, 
@@ -535,14 +535,14 @@ export const AuthProvider = ({ children }) => {
 
     // Modul-Berechtigung entfernen
     revokePermission: async (moduleId, moduleType, userId) => {
-      return await apiRequest(`/modules/${moduleId}/permissions/${userId}?module_type=${moduleType}`, {
+      return await apiRequest(`/modules/permissions/${moduleId}/${userId}?module_type=${moduleType}`, {
         method: 'DELETE',
       });
     },
 
     // Modul-Berechtigungen abrufen
     getModulePermissions: async (moduleId, moduleType) => {
-      return await apiRequest(`/modules/${moduleId}/permissions?module_type=${moduleType}`);
+      return await apiRequest(`/modules/permissions/${moduleId}?module_type=${moduleType}`);
     },
 
     // Modul-Abhängigkeit erstellen

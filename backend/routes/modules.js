@@ -195,10 +195,10 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
-// Modul-Berechtigungen abrufen
-router.get('/:id/permissions', authenticateToken, async (req, res) => {
+// Modul-Berechtigungen abrufen - spezifische Route
+router.get('/permissions/:moduleId', authenticateToken, async (req, res) => {
   try {
-    const moduleId = req.params.id;
+    const moduleId = req.params.moduleId;
     const { module_type = 'project' } = req.query;
 
     // Prüfe Berechtigung
@@ -584,10 +584,10 @@ router.put('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Modul-Berechtigung vergeben
-router.post('/:id/permissions', authenticateToken, async (req, res) => {
+// Modul-Berechtigung vergeben - spezifische Route
+router.post('/permissions/:moduleId', authenticateToken, async (req, res) => {
   try {
-    const moduleId = req.params.id;
+    const moduleId = req.params.moduleId;
     const { user_id, permission_type, module_type = 'project' } = req.body;
 
     if (!user_id || !permission_type) {
@@ -625,10 +625,10 @@ router.post('/:id/permissions', authenticateToken, async (req, res) => {
   }
 });
 
-// Modul-Berechtigung entfernen
-router.delete('/:id/permissions/:userId', authenticateToken, async (req, res) => {
+// Modul-Berechtigung entfernen - spezifische Route
+router.delete('/permissions/:moduleId/:userId', authenticateToken, async (req, res) => {
   try {
-    const moduleId = req.params.id;
+    const moduleId = req.params.moduleId;
     const userId = req.params.userId;
     const { module_type = 'project' } = req.query;
 
