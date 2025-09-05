@@ -1,0 +1,6 @@
+# Projektseite Batch: backup
+# Erstellt: $(date)
+# Beschreibung: Backup erstellen
+
+backup
+logs
