@@ -301,7 +301,7 @@ const ProjectDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-blue-900 dark:to-indigo-900 p-6">
+    <div className="p-6">
       <div className="max-w-7xl mx-auto">
         {/* Begrüßung */}
         <div className="mb-6">
@@ -604,7 +604,7 @@ const ProjectDashboard = () => {
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
               >
                 <option value="">Alle Status</option>
                 <option value="planning">Planung</option>
@@ -623,7 +623,7 @@ const ProjectDashboard = () => {
               <select
                 value={filters.team_id}
                 onChange={(e) => setFilters({ ...filters, team_id: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
               >
                 <option value="">Alle Teams</option>
                 {teams.map((team) => (
@@ -641,7 +641,7 @@ const ProjectDashboard = () => {
               <select
                 value={filters.priority}
                 onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
               >
                 <option value="">Alle Prioritäten</option>
                 <option value="low">Niedrig</option>
@@ -657,7 +657,7 @@ const ProjectDashboard = () => {
                   type="checkbox"
                   checked={filters.showOverdue}
                   onChange={(e) => setFilters({ ...filters, showOverdue: e.target.checked })}
-                  className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500 bg-white dark:bg-slate-800"
                 />
                 <span className="ml-2 text-sm text-slate-700 dark:text-slate-300">
                   Überfällige anzeigen

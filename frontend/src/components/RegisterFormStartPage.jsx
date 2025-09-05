@@ -123,12 +123,12 @@ const RegisterFormStartPage = ({ onSwitchToLogin, onSuccess }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Benutzername */}
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Benutzername
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <User className="h-5 w-5 text-white/70" />
+                <User className="h-5 w-5 text-slate-400" />
               </div>
               <input
                 type="text"
@@ -136,7 +136,7 @@ const RegisterFormStartPage = ({ onSwitchToLogin, onSuccess }) => {
                 value={formData.username}
                 onChange={handleChange}
                 required
-                className={`input-glass w-full pl-10 ${
+                className={`input w-full pl-10 ${
                   errors.username 
                     ? 'border-red-400 focus:ring-red-400' 
                     : ''
@@ -154,12 +154,12 @@ const RegisterFormStartPage = ({ onSwitchToLogin, onSuccess }) => {
 
           {/* E-Mail */}
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               E-Mail-Adresse
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-white/70" />
+                <Mail className="h-5 w-5 text-slate-400" />
               </div>
               <input
                 type="email"
@@ -167,7 +167,7 @@ const RegisterFormStartPage = ({ onSwitchToLogin, onSuccess }) => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className={`input-glass w-full pl-10 ${
+                className={`input w-full pl-10 ${
                   errors.email 
                     ? 'border-red-400 focus:ring-red-400' 
                     : ''
@@ -185,12 +185,12 @@ const RegisterFormStartPage = ({ onSwitchToLogin, onSuccess }) => {
 
           {/* Passwort */}
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Passwort
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-white/70" />
+                <Lock className="h-5 w-5 text-slate-400" />
               </div>
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -198,7 +198,7 @@ const RegisterFormStartPage = ({ onSwitchToLogin, onSuccess }) => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className={`input-glass w-full pl-10 pr-12 ${
+                className={`input w-full pl-10 pr-12 ${
                   errors.password 
                     ? 'border-red-400 focus:ring-red-400' 
                     : ''
@@ -211,9 +211,9 @@ const RegisterFormStartPage = ({ onSwitchToLogin, onSuccess }) => {
                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
               >
                 {showPassword ? (
-                  <EyeOff className="h-5 w-5 text-white/70 hover:text-white" />
+                  <EyeOff className="h-5 w-5 text-slate-400 hover:text-slate-600" />
                 ) : (
-                  <Eye className="h-5 w-5 text-white/70 hover:text-white" />
+                  <Eye className="h-5 w-5 text-slate-400 hover:text-slate-600" />
                 )}
               </button>
             </div>
@@ -227,12 +227,12 @@ const RegisterFormStartPage = ({ onSwitchToLogin, onSuccess }) => {
 
           {/* Passwort bestätigen */}
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Passwort bestätigen
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-white/70" />
+                <Lock className="h-5 w-5 text-slate-400" />
               </div>
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
@@ -240,7 +240,7 @@ const RegisterFormStartPage = ({ onSwitchToLogin, onSuccess }) => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
-                className={`input-glass w-full pl-10 pr-12 ${
+                className={`input w-full pl-10 pr-12 ${
                   errors.confirmPassword 
                     ? 'border-red-400 focus:ring-red-400' 
                     : ''
@@ -253,9 +253,9 @@ const RegisterFormStartPage = ({ onSwitchToLogin, onSuccess }) => {
                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
               >
                 {showConfirmPassword ? (
-                  <EyeOff className="h-5 w-5 text-white/70 hover:text-white" />
+                  <EyeOff className="h-5 w-5 text-slate-400 hover:text-slate-600" />
                 ) : (
-                  <Eye className="h-5 w-5 text-white/70 hover:text-white" />
+                  <Eye className="h-5 w-5 text-slate-400 hover:text-slate-600" />
                 )}
               </button>
             </div>
@@ -269,21 +269,21 @@ const RegisterFormStartPage = ({ onSwitchToLogin, onSuccess }) => {
 
           {/* Rolle */}
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Rolle
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Shield className="h-5 w-5 text-white/70" />
+                <Shield className="h-5 w-5 text-slate-400" />
               </div>
               <select
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-sm border border-white/30 rounded-lg text-white focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                className="select w-full pl-10"
               >
-                <option value="user" className="bg-slate-800 text-white">Benutzer</option>
-                <option value="viewer" className="bg-slate-800 text-white">Betrachter</option>
+                <option value="user">Benutzer</option>
+                <option value="viewer">Betrachter</option>
               </select>
             </div>
           </div>
@@ -310,11 +310,11 @@ const RegisterFormStartPage = ({ onSwitchToLogin, onSuccess }) => {
 
         {/* Switch to Login */}
         <div className="mt-6 text-center">
-          <p className="text-white/80">
+          <p className="text-slate-600 dark:text-slate-400">
             Bereits ein Account?{' '}
             <button
               onClick={onSwitchToLogin}
-              className="text-blue-300 hover:text-blue-200 font-medium transition-colors duration-200"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors duration-200"
             >
               Jetzt anmelden
             </button>

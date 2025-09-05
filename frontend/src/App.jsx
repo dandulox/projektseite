@@ -788,7 +788,7 @@ const AppContent = () => {
   return (
     <Router>
       <div className={`min-h-screen transition-colors duration-300 flex flex-col ${
-        theme === 'dark' ? 'bg-slate-900' : 'bg-slate-50'
+        theme === 'dark' ? 'bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900' : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'
       }`}>
         <Routes>
           <Route path="/" element={<WelcomePage theme={theme} toggleTheme={toggleTheme} />} />
@@ -831,7 +831,7 @@ const AppContent = () => {
                 isMobileMenuOpen={isMobileMenuOpen}
                 setIsMobileMenuOpen={setIsMobileMenuOpen}
               />
-              <main className="flex-1">
+              <main className="flex-1 py-8 page-container">
                 <TeamManagement />
               </main>
               <Footer />

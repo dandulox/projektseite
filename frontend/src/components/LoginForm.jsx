@@ -105,7 +105,7 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Benutzername/E-Mail */}
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Benutzername oder E-Mail
             </label>
             <div className="relative">
@@ -118,7 +118,7 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
                 value={formData.username}
                 onChange={handleChange}
                 required
-                className={`input-glass w-full pl-10 ${
+                className={`input w-full pl-10 ${
                   errors.username 
                     ? 'border-red-400 focus:ring-red-400' 
                     : ''
@@ -136,12 +136,12 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
 
           {/* Passwort */}
           <div>
-            <label className="block text-sm font-medium text-white mb-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Passwort
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-white/70" />
+                <Lock className="h-5 w-5 text-slate-400" />
               </div>
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -149,7 +149,7 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className={`input-glass w-full pl-10 pr-12 ${
+                className={`input w-full pl-10 pr-12 ${
                   errors.password 
                     ? 'border-red-400 focus:ring-red-400' 
                     : ''
@@ -162,9 +162,9 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
               >
                 {showPassword ? (
-                  <EyeOff className="h-5 w-5 text-white/70 hover:text-white" />
+                  <EyeOff className="h-5 w-5 text-slate-400 hover:text-slate-600" />
                 ) : (
-                  <Eye className="h-5 w-5 text-white/70 hover:text-white" />
+                  <Eye className="h-5 w-5 text-slate-400 hover:text-slate-600" />
                 )}
               </button>
             </div>
@@ -198,7 +198,7 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
 
         {/* Switch to Register */}
         <div className="mt-6 text-center">
-          <p className="text-white/80">
+          <p className="text-slate-600 dark:text-slate-400">
             Noch kein Account?{' '}
             <button
               onClick={onSwitchToRegister}
