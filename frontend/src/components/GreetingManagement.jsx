@@ -259,7 +259,7 @@ const GreetingManagement = () => {
             </div>
             <button
               onClick={() => setShowCreateForm(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+              className="btn-primary"
             >
               <Plus className="w-4 h-4" />
               Neue Begrüßung
@@ -313,18 +313,14 @@ const GreetingManagement = () => {
                     <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
                       {greeting.hour !== null ? `${greeting.hour}:00 Uhr` : 'Keine Stunde'}
                     </span>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      greeting.is_active 
-                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                        : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                    }`}>
+                    <span className={greeting.is_active ? 'badge-success' : 'badge-danger'}>
                       {greeting.is_active ? 'Aktiv' : 'Inaktiv'}
                     </span>
                   </div>
                   <textarea
                     value={formData.text}
                     onChange={(e) => setFormData({...formData, text: e.target.value})}
-                    className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white filter-none"
+                    className="textarea w-full filter-none"
                     style={{ filter: 'none' }}
                     rows="3"
                     placeholder="Begrüßungstext eingeben..."
@@ -333,7 +329,7 @@ const GreetingManagement = () => {
                     <select
                       value={formData.time_period}
                       onChange={(e) => setFormData({...formData, time_period: e.target.value})}
-                      className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm"
+                      className="select flex-1 text-sm"
                     >
                       {Object.entries(timePeriodLabels).map(([key, label]) => (
                         <option key={key} value={key}>{label}</option>
@@ -345,7 +341,7 @@ const GreetingManagement = () => {
                       max="23"
                       value={formData.hour || ''}
                       onChange={(e) => setFormData({...formData, hour: e.target.value ? parseInt(e.target.value) : null})}
-                      className="w-16 px-2 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm"
+                      className="input w-16 text-sm"
                       placeholder="Stunde"
                     />
                   </div>
@@ -353,14 +349,14 @@ const GreetingManagement = () => {
                     <button
                       onClick={() => handleUpdate(greeting.id, formData)}
                       disabled={updateMutation.isPending}
-                      className="flex-1 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 flex items-center justify-center space-x-1 text-sm"
+                      className="btn-success flex-1 text-sm px-3 py-1 disabled:opacity-50"
                     >
                       <Save className="w-3 h-3" />
                       <span>Speichern</span>
                     </button>
                     <button
                       onClick={cancelEdit}
-                      className="flex-1 px-3 py-1 bg-slate-500 text-white rounded hover:bg-slate-600 flex items-center justify-center space-x-1 text-sm"
+                      className="btn-secondary flex-1 text-sm px-3 py-1"
                     >
                       <X className="w-3 h-3" />
                       <span>Abbrechen</span>
@@ -393,11 +389,7 @@ const GreetingManagement = () => {
                   </div>
                   <p className="text-sm text-slate-900 dark:text-white mb-2 filter-none" style={{ filter: 'none' }}>{greeting.text}</p>
                   <div className="flex items-center justify-between">
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      greeting.is_active 
-                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                        : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                    }`}>
+                    <span className={greeting.is_active ? 'badge-success' : 'badge-danger'}>
                       {greeting.is_active ? 'Aktiv' : 'Inaktiv'}
                     </span>
                     <span className="text-xs text-slate-500 dark:text-slate-400">
@@ -413,8 +405,8 @@ const GreetingManagement = () => {
 
       {/* Erstellungsformular */}
       {showCreateForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="modal-overlay">
+          <div className="modal-content">
             <div className="p-6 border-b border-slate-200 dark:border-slate-700">
               <h3 className="text-xl font-bold text-slate-900 dark:text-white">Neue Begrüßung erstellen</h3>
             </div>
@@ -426,7 +418,7 @@ const GreetingManagement = () => {
                 <textarea
                   value={formData.text}
                   onChange={(e) => setFormData({...formData, text: e.target.value})}
-                  className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white filter-none"
+                  className="textarea w-full filter-none"
                   style={{ filter: 'none' }}
                   rows="3"
                   placeholder="Geben Sie hier den Begrüßungstext ein..."
@@ -441,7 +433,7 @@ const GreetingManagement = () => {
                   <select
                     value={formData.time_period}
                     onChange={(e) => setFormData({...formData, time_period: e.target.value})}
-                    className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                    className="select w-full"
                     required
                   >
                     {Object.entries(timePeriodLabels).map(([key, label]) => (
@@ -459,7 +451,7 @@ const GreetingManagement = () => {
                     max="23"
                     value={formData.hour || ''}
                     onChange={(e) => setFormData({...formData, hour: e.target.value ? parseInt(e.target.value) : null})}
-                    className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                    className="input w-full"
                     placeholder="Stunde (optional)"
                   />
                 </div>
@@ -480,14 +472,14 @@ const GreetingManagement = () => {
                 <button
                   type="button"
                   onClick={() => setShowCreateForm(false)}
-                  className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                  className="btn-secondary"
                 >
                   Abbrechen
                 </button>
                 <button
                   type="submit"
                   disabled={createMutation.isPending}
-                  className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50"
+                  className="btn-gradient-primary disabled:opacity-50"
                 >
                   {createMutation.isPending ? 'Erstelle...' : 'Erstellen'}
                 </button>

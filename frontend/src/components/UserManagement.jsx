@@ -310,12 +310,12 @@ const UserManagement = () => {
   // Rolle-Badge
   const getRoleBadge = (role) => {
     const styles = {
-      admin: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300',
-      user: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
-      viewer: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+      admin: 'badge-danger',
+      user: 'badge-info',
+      viewer: 'badge-success'
     };
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[role]}`}>
+      <span className={styles[role]}>
         {role === 'admin' ? 'Administrator' : role === 'user' ? 'Benutzer' : 'Betrachter'}
       </span>
     );
@@ -324,12 +324,12 @@ const UserManagement = () => {
   // Status-Badge
   const getStatusBadge = (isActive) => {
     return isActive ? (
-      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 flex items-center space-x-1">
+      <span className="badge-success flex items-center space-x-1">
         <UserCheck className="w-3 h-3" />
         <span>Aktiv</span>
       </span>
     ) : (
-      <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 flex items-center space-x-1">
+      <span className="badge-danger flex items-center space-x-1">
         <UserX className="w-3 h-3" />
         <span>Inaktiv</span>
       </span>

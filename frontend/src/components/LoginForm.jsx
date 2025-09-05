@@ -202,7 +202,7 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
             Noch kein Account?{' '}
             <button
               onClick={onSwitchToRegister}
-              className="text-blue-300 hover:text-blue-200 font-medium transition-colors duration-200"
+              className="btn-link"
             >
               Jetzt registrieren
             </button>

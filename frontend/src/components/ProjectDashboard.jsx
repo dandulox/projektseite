@@ -327,7 +327,7 @@ const ProjectDashboard = () => {
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={loadDashboardData}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="btn-primary"
               >
                 <RefreshCw className="w-4 h-4" />
                 <span className="hidden sm:inline">Aktualisieren</span>
@@ -335,7 +335,7 @@ const ProjectDashboard = () => {
               </button>
               <button
                 onClick={() => navigate('/projects')}
-                className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="btn-secondary"
               >
                 <ArrowRight className="w-4 h-4" />
                 <span className="hidden sm:inline">Zu Projekten</span>
@@ -668,7 +668,7 @@ const ProjectDashboard = () => {
         </div>
 
         {/* Projektliste */}
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+        <div className="card">
           <div className="p-6 border-b border-slate-200 dark:border-slate-700">
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
               Projekte ({filteredProjects.length})
@@ -685,7 +685,7 @@ const ProjectDashboard = () => {
                   <div
                     key={project.id}
                     onClick={() => handleProjectClick(project.id)}
-                    className="bg-slate-50 dark:bg-slate-700 rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200 border border-slate-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-blue-600"
+                    className="card-interactive"
                   >
                     {/* Header mit Ampelsystem */}
                     <div className="flex items-start justify-between mb-4">
@@ -697,10 +697,10 @@ const ProjectDashboard = () => {
                           {project.owner_username}
                         </p>
                       </div>
-                      <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                        trafficLight.color === 'red' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                        trafficLight.color === 'yellow' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                        'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                      <div className={`flex items-center gap-1 text-xs font-medium ${
+                        trafficLight.color === 'red' ? 'badge-danger' :
+                        trafficLight.color === 'yellow' ? 'badge-warning' :
+                        'badge-success'
                       }`}>
                         <TrafficLightIcon className="w-3 h-3" />
                         {trafficLight.text}
@@ -766,10 +766,10 @@ const ProjectDashboard = () => {
                           <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
                             {project.name}
                           </h3>
-                          <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                            trafficLight.color === 'red' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                            trafficLight.color === 'yellow' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                            'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                          <div className={`flex items-center gap-1 text-xs font-medium ${
+                            trafficLight.color === 'red' ? 'badge-danger' :
+                            trafficLight.color === 'yellow' ? 'badge-warning' :
+                            'badge-success'
                           }`}>
                             <TrafficLightIcon className="w-3 h-3" />
                             {trafficLight.text}
