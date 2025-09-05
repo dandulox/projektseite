@@ -1,4 +1,4 @@
-# Projektseite Main Control System
+# Main Control System - Projektseite
 
 Das Main Control System bietet eine zentrale Steuerung für alle Projektseite-Scripts mit Unterstützung für Einzelausführung, Warteschlangen und Batch-Operationen.
 
@@ -27,8 +27,6 @@ sudo ./scripts/main-control.sh
 7. **System-Status anzeigen** - Docker, Services, Verzeichnisse
 8. **Log-Datei anzeigen** - Protokoll anzeigen
 9. **Schnellstart-Optionen** - Vordefinierte Sequenzen
-
----
 
 ## 📦 Batch Runner: `batch-runner.sh`
 
@@ -62,8 +60,6 @@ sudo ./scripts/batch-runner.sh -c start backup test
 - **wipe** - System-Wipe (stop + wipe)
 - **restore** - Restore (stop + restore + start + test)
 
----
-
 ## 📝 Batch Creator: `create-batch.sh`
 
 ### Verwendung
@@ -86,8 +82,6 @@ sudo ./scripts/create-batch.sh
 6. **Batch-Datei ausführen** - Direkt ausführen
 7. **Verfügbare Scripts anzeigen** - Script-Liste
 8. **Vordefinierte Batches anzeigen** - Preset-Liste
-
----
 
 ## 📁 Batch-Dateien
 
@@ -128,8 +122,6 @@ test
 logs
 ```
 
----
-
 ## 🔧 Verfügbare Scripts
 
 | Script | Beschreibung |
@@ -150,8 +142,6 @@ logs
 | debug | Debug-Build durchführen |
 | fix | Systemd-Probleme beheben |
 | admin | Admin-Benutzer erstellen |
-
----
 
 ## 🚀 Verwendungsszenarien
 
@@ -220,8 +210,6 @@ sudo ./scripts/batch-runner.sh -p wipe
 sudo ./scripts/batch-runner.sh stop wipe
 ```
 
----
-
 ## 📊 Logging und Monitoring
 
 ### Log-Dateien
@@ -250,8 +238,6 @@ ls -la /opt/backups/projektseite/
 ls -la /var/log/projektseite/
 ```
 
----
-
 ## ⚠️ Wichtige Hinweise
 
 ### Sicherheit
@@ -268,8 +254,6 @@ ls -la /var/log/projektseite/
 - **Parallelisierung**: Scripts werden sequenziell ausgeführt
 - **Timeout**: Keine expliziten Timeouts (Scripts bestimmen selbst)
 - **Ressourcen**: Docker-Container werden vor neuen Operationen gestoppt
-
----
 
 ## 🔧 Troubleshooting
 
@@ -301,8 +285,6 @@ sudo mkdir -p /var/log/projektseite
 sudo chown $USER:$USER /var/log/projektseite
 ```
 
----
-
 ## 📞 Support
 
 Bei Problemen mit dem Main Control System:
@@ -311,9 +293,3 @@ Bei Problemen mit dem Main Control System:
 2. **Scripts einzeln testen**: Direkte Ausführung
 3. **System-Status**: `main-control.sh` → Option 7
 4. **Batch-Dateien prüfen**: `create-batch.sh` → Option 4
-
----
-
-**Erstellt**: $(date)  
-**Version**: 1.0.0  
-**Autor**: Projektseite Team

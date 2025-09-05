@@ -1,54 +1,103 @@
 # Projektseite Frontend
 
-## Design-Problem behoben ✅
+React-basiertes Frontend für die Projektseite-Anwendung mit modernem Design und responsivem Layout.
 
-Das Design-Problem wurde behoben. Die folgenden Dateien wurden korrigiert:
+## 🚀 Features
 
-- `src/index.css` - CSS-Styles und Tailwind-Importe korrigiert
-- `tailwind.config.js` - Tailwind-Konfiguration erweitert
-- `postcss.config.js` - PostCSS-Konfiguration vereinfacht
-- `package.json` - Abhängigkeiten bereinigt
+- **React 18** mit modernen Hooks
+- **Tailwind CSS** für Styling mit CSS-Variablen
+- **Vite** als Build-Tool und Development Server
+- **Responsive Design** mit Mobile-First-Ansatz
+- **Theme-Management** (Light/Dark Mode)
+- **CSS-Variablen** für konsistentes Design
 
-## Upload-Anweisungen
+## 🛠️ Entwicklung
 
-### 1. Abhängigkeiten installieren
+### Abhängigkeiten installieren
 ```bash
 cd frontend
 npm install
 ```
 
-### 2. Entwicklungsserver starten (optional)
+### Entwicklungsserver starten
 ```bash
 npm run dev
 ```
 
-### 3. Produktions-Build erstellen
+### Produktions-Build erstellen
 ```bash
 npm run build
 ```
 
-### 4. Dateien hochladen
-Laden Sie den gesamten `frontend`-Ordner auf Ihren Server hoch.
+## 📁 Struktur
 
-### 5. Server neu starten
-Starten Sie Ihren Docker-Container neu, damit die Änderungen wirksam werden.
+```
+frontend/
+├── src/
+│   ├── components/          # React-Komponenten
+│   │   ├── LoginForm.jsx
+│   │   ├── UserManagement.jsx
+│   │   ├── ProjectManagement.jsx
+│   │   ├── ModuleManagement.jsx
+│   │   ├── TeamManagement.jsx
+│   │   └── ...
+│   ├── pages/              # Seiten-Komponenten
+│   │   └── AuthPage.jsx
+│   ├── contexts/           # React Contexts
+│   │   └── AuthContext.jsx
+│   ├── App.jsx             # Haupt-App-Komponente
+│   ├── main.jsx            # React Entry Point
+│   └── index.css           # Globale Styles mit CSS-Variablen
+├── index.html              # HTML-Template
+├── nginx.conf              # Nginx-Konfiguration
+├── vite.config.js          # Vite-Konfiguration
+├── tailwind.config.cjs     # Tailwind CSS-Konfiguration
+└── postcss.config.cjs      # PostCSS-Konfiguration
+```
 
-## Wichtige Hinweise
+## 🎨 Design-System
 
-- **Tailwind CSS**: Wird jetzt korrekt kompiliert und geladen
-- **Responsive Design**: Funktioniert auf allen Bildschirmgrößen
-- **Dark Mode**: Unterstützt automatischen Theme-Wechsel
-- **Browser-Kompatibilität**: Funktioniert in allen modernen Browsern
+Das Frontend verwendet ein zentrales Design-System mit CSS-Variablen:
 
-## Bekannte Probleme
+- **Light/Dark Mode** Support
+- **Responsive Design** für alle Bildschirmgrößen
+- **Konsistente Farbpalette** mit CSS-Variablen
+- **Moderne UI-Komponenten** mit Tailwind CSS
 
-- Keine bekannten Probleme mehr
-- Design wird korrekt geladen
-- Alle CSS-Klassen funktionieren
+## 🔧 Konfiguration
 
-## Support
+### Tailwind CSS
+- Konfiguriert in `tailwind.config.cjs`
+- Erweiterte Farbpalette und Komponenten
+- Responsive Breakpoints
 
-Bei Problemen überprüfen Sie:
-1. Ob alle Dateien korrekt hochgeladen wurden
-2. Ob der Server neu gestartet wurde
-3. Ob die Browser-Cache geleert wurde
+### Vite
+- Konfiguriert in `vite.config.js`
+- Optimierte Builds für Produktion
+- Hot Module Replacement für Entwicklung
+
+### PostCSS
+- Konfiguriert in `postcss.config.cjs`
+- Tailwind CSS Integration
+- Autoprefixer für Browser-Kompatibilität
+
+## 📱 Responsive Design
+
+- **Mobile-First** Ansatz
+- **Breakpoints**: sm, md, lg, xl, 2xl
+- **Flexible Layouts** für alle Bildschirmgrößen
+- **Touch-optimierte** Benutzeroberfläche
+
+## 🌐 Browser-Kompatibilität
+
+- **Moderne Browser**: Chrome, Firefox, Safari, Edge
+- **ES6+ Features** mit Vite-Transpilation
+- **CSS Grid und Flexbox** Support
+- **Progressive Enhancement**
+
+## 📚 Weitere Dokumentation
+
+Für detaillierte Informationen siehe:
+- **[Setup-Anweisungen](../dokumentation/setup-anweisungen.md)**
+- **[Technologie-Stack](../dokumentation/technologie-stack.md)**
+- **[Features](../dokumentation/features.md)**
