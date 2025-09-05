@@ -295,3 +295,4 @@ const ModuleDetails = ({ module, moduleType = 'project', onClose, onEdit, onDele
 };
 
 export default ModuleDetails;
+

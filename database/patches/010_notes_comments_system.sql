@@ -380,3 +380,4 @@ SELECT
 FROM projects p, users u
 WHERE u.username = 'admin'
 LIMIT 1;
+

@@ -49,8 +49,14 @@ const CommentsSection = ({ targetType, targetId, className = '' }) => {
       if (response.ok) {
         const data = await response.json();
         setComments(data.comments || []);
+      } else if (response.status === 503) {
+        const errorData = await response.json();
+        console.warn('Kommentar-System nicht installiert:', errorData.message);
+        setComments([]);
+        toast.error('Kommentar-System nicht installiert. Bitte führen Sie den Datenbank-Patch aus.');
       } else {
         console.error('Fehler beim Laden der Kommentare');
+        toast.error('Fehler beim Laden der Kommentare');
       }
     } catch (error) {
       console.error('Fehler beim Laden der Kommentare:', error);
@@ -84,6 +90,10 @@ const CommentsSection = ({ targetType, targetId, className = '' }) => {
         toast.success('Kommentar erfolgreich erstellt');
         loadComments();
         return data.comment;
+      } else if (response.status === 503) {
+        const errorData = await response.json();
+        toast.error('Kommentar-System nicht installiert. Bitte führen Sie den Datenbank-Patch aus.');
+        return null;
       } else {
         const error = await response.json();
         throw new Error(error.error || 'Fehler beim Erstellen des Kommentars');
@@ -576,3 +586,4 @@ const CommentsSection = ({ targetType, targetId, className = '' }) => {
 };
 
 export default CommentsSection;
+

@@ -117,6 +117,31 @@ app.get('/debug/columns/:table', async (req, res) => {
   }
 });
 
+// Debug Route - Kommentar-Tabellen prüfen
+app.get('/debug/comments-tables', async (req, res) => {
+  try {
+    const pool = require('./config/database');
+    const result = await pool.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name LIKE '%comment%'
+      ORDER BY table_name
+    `);
+    
+    res.json({ 
+      comment_tables: result.rows.map(row => row.table_name),
+      count: result.rows.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      error: 'Fehler beim Abrufen der Kommentar-Tabellen',
+      message: error.message 
+    });
+  }
+});
+
 // Debug Route - Test der Modul-Erstellung
 app.post('/debug/test-module', async (req, res) => {
   try {

@@ -148,6 +148,22 @@ router.get('/:targetType/:targetId', authenticateToken, async (req, res) => {
     const { targetType, targetId } = req.params;
     const { include_private = false } = req.query;
 
+    // Prüfe ob Kommentar-Tabellen existieren
+    const tableCheck = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'comments'
+      );
+    `);
+
+    if (!tableCheck.rows[0].exists) {
+      return res.status(503).json({ 
+        error: 'Kommentar-System nicht installiert',
+        message: 'Die Kommentar-Tabellen existieren noch nicht. Bitte führen Sie den Datenbank-Patch aus.'
+      });
+    }
+
     // Prüfe Berechtigung
     if (!(await checkTargetPermission(req.user.id, targetType, targetId, 'view'))) {
       return res.status(403).json({ error: 'Keine Berechtigung für dieses Ziel' });
@@ -161,6 +177,12 @@ router.get('/:targetType/:targetId', authenticateToken, async (req, res) => {
     res.json({ comments: result.rows });
   } catch (error) {
     console.error('Fehler beim Abrufen der Kommentare:', error);
+    if (error.message.includes('relation "comments" does not exist')) {
+      return res.status(503).json({ 
+        error: 'Kommentar-System nicht installiert',
+        message: 'Die Kommentar-Tabellen existieren noch nicht. Bitte führen Sie den Datenbank-Patch aus.'
+      });
+    }
     res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
@@ -179,6 +201,22 @@ router.post('/', authenticateToken, async (req, res) => {
     if (!content || !target_type || !target_id) {
       return res.status(400).json({ 
         error: 'Inhalt, Ziel-Typ und Ziel-ID sind erforderlich' 
+      });
+    }
+
+    // Prüfe ob Kommentar-Tabellen existieren
+    const tableCheck = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'comments'
+      );
+    `);
+
+    if (!tableCheck.rows[0].exists) {
+      return res.status(503).json({ 
+        error: 'Kommentar-System nicht installiert',
+        message: 'Die Kommentar-Tabellen existieren noch nicht. Bitte führen Sie den Datenbank-Patch aus.'
       });
     }
 
@@ -452,3 +490,4 @@ router.post('/:id/mentions', authenticateToken, async (req, res) => {
 });
 
 module.exports = router;
+
