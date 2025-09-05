@@ -15,8 +15,13 @@ Das `db-patch.sh` Skript wendet automatisch alle Patches in diesem Verzeichnis a
 ## Beispiele
 
 - `001_ensure_greetings_table.sql` - Stellt sicher, dass die greetings-Tabelle existiert
-- `002_add_user_preferences.sql` - Fügt Benutzereinstellungen hinzu
-- `003_update_project_status.sql` - Aktualisiert Projekt-Status-Optionen
+- `002_example_patch_template.sql` - Template für neue Patches
+- `003_new_humor_greetings.sql` - Fügt neue humorvolle Begrüßungen hinzu
+- `004_team_functionality.sql` - Team-Funktionalität und Berechtigungen
+- `005_notifications_system.sql` - Benachrichtigungssystem
+- `008_module_management_system.sql` - Modulverwaltungs-System
+- `009_progress_tracking_system.sql` - Fortschrittsverfolgung
+- `010_notes_comments_system.sql` - Notizen/Kommentar-System für Projekte und Module
 
 ## Patch-Erstellung
 

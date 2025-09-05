@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import ModuleForm from './ModuleForm';
+import CommentsSection from './CommentsSection';
+import ModuleDetails from './ModuleDetails';
 
 const ProjectManagement = () => {
   const { projectApi, teamApi, moduleApi, user, isAdmin } = useAuth();
@@ -14,6 +16,7 @@ const ProjectManagement = () => {
   const [showCreateModuleForm, setShowCreateModuleForm] = useState(false);
   const [showEditModuleForm, setShowEditModuleForm] = useState(false);
   const [selectedModule, setSelectedModule] = useState(null);
+  const [showModuleDetails, setShowModuleDetails] = useState(false);
   const [filters, setFilters] = useState({
     team_id: '',
     status: '',
@@ -148,10 +151,16 @@ const ProjectManagement = () => {
       await moduleApi.deleteModule(moduleId, 'project');
       toast.success('Modul erfolgreich gelöscht');
       setSelectedModule(null);
+      setShowModuleDetails(false);
       loadProjectDetails(selectedProject.project.id);
     } catch (error) {
       toast.error(error.message || 'Fehler beim Löschen des Moduls');
     }
+  };
+
+  const handleShowModuleDetails = (module) => {
+    setSelectedModule(module);
+    setShowModuleDetails(true);
   };
 
   const handleUpdateProjectProgress = async () => {
@@ -505,7 +514,7 @@ const ProjectManagement = () => {
                     </div>
                     <div className="space-y-3">
                       {selectedProject.modules.map((module) => (
-                        <div key={module.id} className="border border-slate-200 dark:border-slate-600 rounded-lg p-3">
+                        <div key={module.id} className="border border-slate-200 dark:border-slate-600 rounded-lg p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer" onClick={() => handleShowModuleDetails(module)}>
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
@@ -606,6 +615,17 @@ const ProjectManagement = () => {
                         Keine Aktivitäten vorhanden
                       </div>
                     )}
+                  </div>
+                </div>
+
+                {/* Kommentare */}
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+                  <div className="p-6">
+                    <CommentsSection 
+                      targetType="project" 
+                      targetId={selectedProject.project.id}
+                      className=""
+                    />
                   </div>
                 </div>
               </div>
@@ -1208,6 +1228,25 @@ const ProjectManagement = () => {
               setSelectedModule(null);
             }}
             onSuccess={() => loadProjectDetails(selectedProject.project.id)}
+          />
+        )}
+
+        {/* Module Details Modal */}
+        {showModuleDetails && selectedModule && (
+          <ModuleDetails
+            module={selectedModule}
+            moduleType="project"
+            onClose={() => {
+              setShowModuleDetails(false);
+              setSelectedModule(null);
+            }}
+            onEdit={(module) => {
+              setShowModuleDetails(false);
+              setSelectedModule(module);
+              setShowEditModuleForm(true);
+            }}
+            onDelete={handleDeleteModule}
+            onUpdate={handleUpdateModule}
           />
         )}
       </div>
