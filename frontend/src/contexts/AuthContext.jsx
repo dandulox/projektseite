@@ -300,6 +300,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Benutzer-Funktionen
+  const userApi = {
+    // Benutzer suchen
+    getUsers: async (filters = {}) => {
+      const params = new URLSearchParams(filters);
+      return await apiRequest(`/admin/users?${params}`);
+    },
+  };
+
   // Admin-Funktionen
   const adminApi = {
     // Alle Benutzer abrufen
@@ -440,7 +449,7 @@ export const AuthProvider = ({ children }) => {
     },
 
     // Projekt-Berechtigung vergeben
-    grantProjectPermission: async (projectId, userId, permissionType) => {
+    grantPermission: async (projectId, userId, permissionType) => {
       return await apiRequest(`/projects/${projectId}/permissions`, {
         method: 'POST',
         body: JSON.stringify({ user_id: userId, permission_type: permissionType }),
@@ -448,10 +457,15 @@ export const AuthProvider = ({ children }) => {
     },
 
     // Projekt-Berechtigung entfernen
-    revokeProjectPermission: async (projectId, userId) => {
+    revokePermission: async (projectId, userId) => {
       return await apiRequest(`/projects/${projectId}/permissions/${userId}`, {
         method: 'DELETE',
       });
+    },
+
+    // Projekt-Berechtigungen abrufen
+    getProjectPermissions: async (projectId) => {
+      return await apiRequest(`/projects/${projectId}/permissions`);
     },
 
     // Projektfortschritt aktualisieren
@@ -508,7 +522,7 @@ export const AuthProvider = ({ children }) => {
     },
 
     // Modul-Berechtigung vergeben
-    grantModulePermission: async (moduleId, userId, permissionType, moduleType = 'project') => {
+    grantPermission: async (moduleId, moduleType, userId, permissionType) => {
       return await apiRequest(`/modules/${moduleId}/permissions`, {
         method: 'POST',
         body: JSON.stringify({ 
@@ -520,10 +534,15 @@ export const AuthProvider = ({ children }) => {
     },
 
     // Modul-Berechtigung entfernen
-    revokeModulePermission: async (moduleId, userId, moduleType = 'project') => {
+    revokePermission: async (moduleId, moduleType, userId) => {
       return await apiRequest(`/modules/${moduleId}/permissions/${userId}?module_type=${moduleType}`, {
         method: 'DELETE',
       });
+    },
+
+    // Modul-Berechtigungen abrufen
+    getModulePermissions: async (moduleId, moduleType) => {
+      return await apiRequest(`/modules/${moduleId}/permissions?module_type=${moduleType}`);
     },
 
     // Modul-Abhängigkeit erstellen
@@ -559,6 +578,7 @@ export const AuthProvider = ({ children }) => {
     saveUserSettings,
     loadUserSettings,
     adminApi,
+    userApi,
     teamApi,
     projectApi,
     moduleApi,

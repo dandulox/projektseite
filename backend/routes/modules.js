@@ -613,4 +613,102 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// Modul-Berechtigungen abrufen
+router.get('/:id/permissions', authenticateToken, async (req, res) => {
+  try {
+    const moduleId = req.params.id;
+    const { module_type = 'project' } = req.query;
+
+    // Prüfe Berechtigung
+    if (!(await checkModulePermission(req.user.id, moduleId, module_type, 'view'))) {
+      return res.status(403).json({ error: 'Keine Berechtigung für dieses Modul' });
+    }
+
+    // Berechtigungen abrufen
+    const result = await pool.query(`
+      SELECT mp.*, u.username, u.email, u.role as user_role
+      FROM module_permissions mp
+      JOIN users u ON u.id = mp.user_id
+      WHERE mp.module_id = $1 AND mp.module_type = $2
+      ORDER BY mp.granted_at DESC
+    `, [moduleId, module_type]);
+
+    res.json({ permissions: result.rows });
+  } catch (error) {
+    console.error('Fehler beim Abrufen der Modul-Berechtigungen:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
+// Modul-Berechtigung vergeben
+router.post('/:id/permissions', authenticateToken, async (req, res) => {
+  try {
+    const moduleId = req.params.id;
+    const { user_id, permission_type, module_type = 'project' } = req.body;
+
+    if (!user_id || !permission_type) {
+      return res.status(400).json({ error: 'Benutzer-ID und Berechtigungstyp sind erforderlich' });
+    }
+
+    // Prüfe Berechtigung
+    if (!(await checkModulePermission(req.user.id, moduleId, module_type, 'admin'))) {
+      return res.status(403).json({ error: 'Keine Berechtigung zum Vergeben von Modul-Berechtigungen' });
+    }
+
+    // Prüfe ob Benutzer existiert
+    const userResult = await pool.query('SELECT id, username FROM users WHERE id = $1', [user_id]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Benutzer nicht gefunden' });
+    }
+
+    // Berechtigung vergeben
+    const result = await pool.query(`
+      INSERT INTO module_permissions (module_id, module_type, user_id, permission_type, granted_by)
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT (module_id, module_type, user_id) 
+      DO UPDATE SET permission_type = $4, granted_by = $5, granted_at = NOW()
+      RETURNING *
+    `, [moduleId, module_type, user_id, permission_type, req.user.id]);
+
+    res.status(201).json({
+      message: 'Berechtigung erfolgreich vergeben',
+      permission: result.rows[0],
+      user: userResult.rows[0]
+    });
+  } catch (error) {
+    console.error('Fehler beim Vergeben der Modul-Berechtigung:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
+// Modul-Berechtigung entfernen
+router.delete('/:id/permissions/:userId', authenticateToken, async (req, res) => {
+  try {
+    const moduleId = req.params.id;
+    const userId = req.params.userId;
+    const { module_type = 'project' } = req.query;
+
+    // Prüfe Berechtigung
+    if (!(await checkModulePermission(req.user.id, moduleId, module_type, 'admin'))) {
+      return res.status(403).json({ error: 'Keine Berechtigung zum Entfernen von Modul-Berechtigungen' });
+    }
+
+    // Berechtigung entfernen
+    const result = await pool.query(`
+      DELETE FROM module_permissions 
+      WHERE module_id = $1 AND module_type = $2 AND user_id = $3
+      RETURNING *
+    `, [moduleId, module_type, userId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Berechtigung nicht gefunden' });
+    }
+
+    res.json({ message: 'Berechtigung erfolgreich entfernt' });
+  } catch (error) {
+    console.error('Fehler beim Entfernen der Modul-Berechtigung:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
 module.exports = router;

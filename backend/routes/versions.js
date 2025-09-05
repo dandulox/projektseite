@@ -36,6 +36,7 @@ router.get('/current', async (req, res) => {
         major: version.major_version,
         minor: version.minor_version,
         patch: version.patch_version,
+        versionType: version.version_type,
         codename: version.codename,
         releaseDate: version.release_date,
         changes: version.changes,
@@ -65,6 +66,7 @@ router.get('/history', async (req, res) => {
       major: version.major_version,
       minor: version.minor_version,
       patch: version.patch_version,
+      versionType: version.version_type,
       codename: version.codename,
       releaseDate: version.release_date,
       changes: version.changes,
@@ -89,7 +91,7 @@ router.get('/history', async (req, res) => {
 // Neue Version erstellen (nur Admin)
 router.post('/create', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { major, minor, patch, codename, releaseDate, changes } = req.body;
+    const { major, minor, patch, versionType, codename, releaseDate, changes } = req.body;
     
     // Validierung
     if (!major || !releaseDate) {
@@ -121,10 +123,10 @@ router.post('/create', authenticateToken, requireAdmin, async (req, res) => {
       
       // Erstelle neue Version
       const result = await pool.query(
-        `INSERT INTO system_versions (major_version, minor_version, patch_version, codename, release_date, changes, is_current)
-         VALUES ($1, $2, $3, $4, $5, $6, true)
+        `INSERT INTO system_versions (major_version, minor_version, patch_version, version_type, codename, release_date, changes, is_current)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, true)
          RETURNING *`,
-        [major, minor, patch, codename, releaseDate, changes]
+        [major, minor, patch, versionType || 'major', codename, releaseDate, changes]
       );
       
       // Committe Transaktion
@@ -165,7 +167,7 @@ router.post('/create', authenticateToken, requireAdmin, async (req, res) => {
 router.put('/update/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { major, minor, patch, codename, releaseDate, changes } = req.body;
+    const { major, minor, patch, versionType, codename, releaseDate, changes } = req.body;
     
     // Validierung
     if (!major || !releaseDate) {
@@ -205,10 +207,10 @@ router.put('/update/:id', authenticateToken, requireAdmin, async (req, res) => {
     const result = await pool.query(
       `UPDATE system_versions 
        SET major_version = $1, minor_version = $2, patch_version = $3, 
-           codename = $4, release_date = $5, changes = $6, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $7
+           version_type = $4, codename = $5, release_date = $6, changes = $7, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $8
        RETURNING *`,
-      [major, minor, patch, codename, releaseDate, changes, id]
+      [major, minor, patch, versionType || 'major', codename, releaseDate, changes, id]
     );
     
     const updatedVersion = result.rows[0];
@@ -220,6 +222,7 @@ router.put('/update/:id', authenticateToken, requireAdmin, async (req, res) => {
         major: updatedVersion.major_version,
         minor: updatedVersion.minor_version,
         patch: updatedVersion.patch_version,
+        versionType: updatedVersion.version_type,
         codename: updatedVersion.codename,
         releaseDate: updatedVersion.release_date,
         changes: updatedVersion.changes,

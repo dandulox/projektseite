@@ -702,8 +702,9 @@ COMMENT ON TRIGGER trigger_update_progress_on_module_delete ON project_modules I
 CREATE TABLE IF NOT EXISTS system_versions (
     id SERIAL PRIMARY KEY,
     major_version INTEGER NOT NULL,
-    minor_version INTEGER NOT NULL,
-    patch_version INTEGER NOT NULL,
+    minor_version INTEGER, -- Changed to allow NULL
+    patch_version INTEGER, -- Changed to allow NULL
+    version_type VARCHAR(20) DEFAULT 'major' CHECK (version_type IN ('major', 'minor', 'patch')),
     codename VARCHAR(50),
     release_date DATE NOT NULL,
     changes TEXT,
@@ -730,8 +731,8 @@ CREATE TRIGGER trigger_update_system_versions_updated_at
     EXECUTE FUNCTION update_system_versions_updated_at();
 
 -- Initiale Version einfügen
-INSERT INTO system_versions (major_version, minor_version, patch_version, codename, release_date, changes, is_current)
-VALUES (2, 0, 0, 'Phoenix', '2024-12-19', 'Major Release mit vollständiger Projektverwaltung, Modulverwaltung, Team-Management, Benachrichtigungssystem, Fortschrittsverfolgung, Design-System und Mobile-Optimierung', true)
+INSERT INTO system_versions (major_version, minor_version, patch_version, version_type, codename, release_date, changes, is_current)
+VALUES (2, 0, 0, 'major', 'Phoenix', '2024-12-19', 'Major Release mit vollständiger Projektverwaltung, Modulverwaltung, Team-Management, Benachrichtigungssystem, Fortschrittsverfolgung, Design-System und Mobile-Optimierung', true)
 ON CONFLICT DO NOTHING;
 
 -- Alle Features sind vollständig integriert:

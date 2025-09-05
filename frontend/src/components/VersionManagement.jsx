@@ -57,7 +57,8 @@ const VersionManagement = () => {
     patch: 0,
     codename: 'Phoenix',
     releaseDate: new Date().toISOString().split('T')[0],
-    changes: ''
+    changes: '',
+    versionType: 'major' // manueller Versions-Typ
   });
 
   // Aktuelle Version und Versionshistorie von der API laden
@@ -119,6 +120,17 @@ const VersionManagement = () => {
   };
 
   const handleEdit = () => {
+    if (currentVersion) {
+      setNewVersion({
+        major: currentVersion.major,
+        minor: currentVersion.minor,
+        patch: currentVersion.patch,
+        codename: currentVersion.codename || '',
+        releaseDate: currentVersion.releaseDate.split('T')[0],
+        changes: currentVersion.changes || '',
+        versionType: currentVersion.versionType || 'major'
+      });
+    }
     setIsEditing(true);
   };
 
@@ -160,6 +172,7 @@ const VersionManagement = () => {
           major: newVersion.major,
           minor: newVersion.minor,
           patch: newVersion.patch,
+          versionType: newVersion.versionType,
           codename: newVersion.codename,
           releaseDate: newVersion.releaseDate,
           changes: newVersion.changes
@@ -220,7 +233,8 @@ const VersionManagement = () => {
     return labels[type] || labels.current;
   };
 
-  const versionType = getVersionType(newVersion.major, newVersion.minor, newVersion.patch);
+  // Verwende den manuell gewählten versionType
+  const versionType = newVersion.versionType;
 
   // Loading-Anzeige
   if (loading && !currentVersion) {
@@ -315,6 +329,54 @@ const VersionManagement = () => {
                   onChange={(e) => handleInputChange('releaseDate', e.target.value)}
                   className="input w-full"
                 />
+              </div>
+            </div>
+
+            {/* Versions-Typ Auswahl */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                Versions-Typ (bestimmt Akzentfarbe)
+              </label>
+              <div className="flex flex-wrap gap-4">
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="versionType"
+                    value="major"
+                    checked={newVersion.versionType === 'major'}
+                    onChange={(e) => handleInputChange('versionType', e.target.value)}
+                    className="mr-2 text-red-600 focus:ring-red-500"
+                  />
+                  <span className="text-sm text-slate-700 dark:text-slate-300 flex items-center">
+                    🔴 Major Release
+                  </span>
+                </label>
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="versionType"
+                    value="minor"
+                    checked={newVersion.versionType === 'minor'}
+                    onChange={(e) => handleInputChange('versionType', e.target.value)}
+                    className="mr-2 text-yellow-600 focus:ring-yellow-500"
+                  />
+                  <span className="text-sm text-slate-700 dark:text-slate-300 flex items-center">
+                    🟡 Minor Update
+                  </span>
+                </label>
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="versionType"
+                    value="patch"
+                    checked={newVersion.versionType === 'patch'}
+                    onChange={(e) => handleInputChange('versionType', e.target.value)}
+                    className="mr-2 text-green-600 focus:ring-green-500"
+                  />
+                  <span className="text-sm text-slate-700 dark:text-slate-300 flex items-center">
+                    🟢 Patch
+                  </span>
+                </label>
               </div>
             </div>
 
@@ -433,39 +495,41 @@ const VersionManagement = () => {
               <div className="space-y-3">
                 {versionHistory.length > 0 ? (
                   versionHistory.map((version) => {
-                    // Bestimme Versions-Typ und Akzentfarbe
-                    const getVersionTypeAndColor = (major, minor, patch) => {
-                      if (patch > 0) {
-                        return {
-                          type: 'patch',
-                          color: 'green',
-                          bgColor: 'bg-green-50 dark:bg-green-900/20',
-                          borderColor: 'border-green-200 dark:border-green-800',
-                          textColor: 'text-green-700 dark:text-green-300',
-                          badgeColor: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                        };
-                      } else if (minor > 0) {
-                        return {
-                          type: 'minor',
-                          color: 'yellow',
-                          bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
-                          borderColor: 'border-yellow-200 dark:border-yellow-800',
-                          textColor: 'text-yellow-700 dark:text-yellow-300',
-                          badgeColor: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
-                        };
-                      } else {
-                        return {
-                          type: 'major',
-                          color: 'red',
-                          bgColor: 'bg-red-50 dark:bg-red-900/20',
-                          borderColor: 'border-red-200 dark:border-red-800',
-                          textColor: 'text-red-700 dark:text-red-300',
-                          badgeColor: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                        };
+                    // Verwende den versionType aus der Datenbank
+                    const getVersionTypeAndColor = (versionType) => {
+                      switch (versionType) {
+                        case 'patch':
+                          return {
+                            type: 'patch',
+                            color: 'green',
+                            bgColor: 'bg-green-50 dark:bg-green-900/20',
+                            borderColor: 'border-green-200 dark:border-green-800',
+                            textColor: 'text-green-700 dark:text-green-300',
+                            badgeColor: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                          };
+                        case 'minor':
+                          return {
+                            type: 'minor',
+                            color: 'yellow',
+                            bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
+                            borderColor: 'border-yellow-200 dark:border-yellow-800',
+                            textColor: 'text-yellow-700 dark:text-yellow-300',
+                            badgeColor: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                          };
+                        case 'major':
+                        default:
+                          return {
+                            type: 'major',
+                            color: 'red',
+                            bgColor: 'bg-red-50 dark:bg-red-900/20',
+                            borderColor: 'border-red-200 dark:border-red-800',
+                            textColor: 'text-red-700 dark:text-red-300',
+                            badgeColor: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                          };
                       }
                     };
 
-                    const versionStyle = getVersionTypeAndColor(version.major, version.minor, version.patch);
+                    const versionStyle = getVersionTypeAndColor(version.versionType || 'major');
 
                     return (
                       <div key={version.id} className={`p-3 ${versionStyle.bgColor} rounded-lg border ${versionStyle.borderColor}`}>

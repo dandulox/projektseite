@@ -453,6 +453,32 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// Projekt-Berechtigungen abrufen
+router.get('/:id/permissions', authenticateToken, async (req, res) => {
+  try {
+    const projectId = req.params.id;
+
+    // Prüfe Berechtigung
+    if (!(await checkProjectPermission(req.user.id, projectId, 'view'))) {
+      return res.status(403).json({ error: 'Keine Berechtigung für dieses Projekt' });
+    }
+
+    // Berechtigungen abrufen
+    const result = await pool.query(`
+      SELECT pp.*, u.username, u.email, u.role as user_role
+      FROM project_permissions pp
+      JOIN users u ON u.id = pp.user_id
+      WHERE pp.project_id = $1
+      ORDER BY pp.granted_at DESC
+    `, [projectId]);
+
+    res.json({ permissions: result.rows });
+  } catch (error) {
+    console.error('Fehler beim Abrufen der Projekt-Berechtigungen:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
 // Projekt-Berechtigung vergeben
 router.post('/:id/permissions', authenticateToken, async (req, res) => {
   try {

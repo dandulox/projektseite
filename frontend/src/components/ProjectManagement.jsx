@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import ModuleForm from './ModuleForm';
 import UserCard from './UserCard';
+import UserAssignment from './UserAssignment';
 
 const ProjectManagement = () => {
   const { projectApi, teamApi, moduleApi, user, isAdmin } = useAuth();
@@ -31,6 +32,8 @@ const ProjectManagement = () => {
     visibility: 'private'
   });
   const [teamMembers, setTeamMembers] = useState([]);
+  const [projectPermissions, setProjectPermissions] = useState([]);
+  const [modulePermissions, setModulePermissions] = useState({});
 
   useEffect(() => {
     loadProjects();
@@ -81,6 +84,28 @@ const ProjectManagement = () => {
     try {
       const response = await projectApi.getProject(projectId);
       setSelectedProject(response);
+      
+      // Projekt-Berechtigungen laden
+      try {
+        const permissionsResponse = await projectApi.getProjectPermissions(projectId);
+        setProjectPermissions(permissionsResponse.permissions || []);
+      } catch (permissionError) {
+        console.warn('Projekt-Berechtigungen konnten nicht geladen werden:', permissionError);
+        setProjectPermissions([]);
+      }
+      
+      // Modul-Berechtigungen für alle Module laden
+      const modulePermissionsData = {};
+      for (const module of response.modules || []) {
+        try {
+          const modulePermissionsResponse = await moduleApi.getModulePermissions(module.id, 'project');
+          modulePermissionsData[module.id] = modulePermissionsResponse.permissions || [];
+        } catch (permissionError) {
+          console.warn(`Modul-Berechtigungen für Modul ${module.id} konnten nicht geladen werden:`, permissionError);
+          modulePermissionsData[module.id] = [];
+        }
+      }
+      setModulePermissions(modulePermissionsData);
     } catch (error) {
       toast.error('Fehler beim Laden der Projekt-Details');
     }
@@ -454,6 +479,19 @@ const ProjectManagement = () => {
                             </span>
                           )}
                         </div>
+                        
+                        {/* Benutzer-Zuweisung */}
+                        <div className="mt-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-slate-500 dark:text-slate-400">Zugewiesene Benutzer:</span>
+                            <UserAssignment
+                              projectId={selectedProject.project.id}
+                              assignedUsers={projectPermissions}
+                              onAssignmentChange={() => loadProjectDetails(selectedProject.project.id)}
+                              className="inline-flex"
+                            />
+                          </div>
+                        </div>
                         <div className="flex items-center gap-2 mt-3">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(selectedProject.project.status)}`}>
                             {getStatusText(selectedProject.project.status)}
@@ -578,24 +616,15 @@ const ProjectManagement = () => {
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityBadgeColor(module.priority)}`}>
                                   {getPriorityText(module.priority)}
                                 </span>
-                                {module.assigned_username && (
-                                  <div className="mt-1">
-                                    <UserCard 
-                                      user={{
-                                        id: module.assigned_to,
-                                        username: module.assigned_username,
-                                        email: module.assigned_email || '',
-                                        role: module.assigned_role || 'user',
-                                        is_active: true,
-                                        created_at: module.assigned_created_at || new Date().toISOString()
-                                      }}
-                                      size="small"
-                                      showRole={false}
-                                      showStatus={false}
-                                      className="p-1"
-                                    />
-                                  </div>
-                                )}
+                                <div className="mt-1">
+                                  <UserAssignment
+                                    moduleId={module.id}
+                                    moduleType="project"
+                                    assignedUsers={modulePermissions[module.id] || []}
+                                    onAssignmentChange={() => loadProjectDetails(selectedProject.project.id)}
+                                    className="inline-flex"
+                                  />
+                                </div>
                               </div>
                               <div className="mt-2">
                                 <div className="flex justify-between items-center">
