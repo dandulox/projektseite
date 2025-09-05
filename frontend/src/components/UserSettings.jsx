@@ -173,12 +173,12 @@ const UserSettings = () => {
     <div className="p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
+        <div className="page-header">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
+            <h1 className="page-title">
               Benutzereinstellungen
             </h1>
-            <p className="text-slate-600 dark:text-slate-400">
+            <p className="page-subtitle">
               Verwalten Sie Ihre Kontoeinstellungen und Präferenzen
             </p>
           </div>

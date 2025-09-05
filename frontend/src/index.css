@@ -205,11 +205,38 @@
     @apply bg-gradient-to-r from-emerald-500 to-blue-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center gap-2 hover:from-emerald-600 hover:to-blue-700 hover:-translate-y-0.5 hover:shadow-lg;
   }
 
+  /* Welcome Page Button Styles */
+  .btn-welcome-primary {
+    @apply px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-2xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 group;
+  }
+
+  .btn-welcome-secondary {
+    @apply px-8 py-4 bg-white/10 backdrop-blur-lg border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 group;
+  }
+
+  /* Light Mode Welcome Page Button Override */
+  [data-theme="light"] .btn-welcome-secondary {
+    @apply bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200;
+  }
+
   /* Card styles - konsistentes Design für alle Seiten */
   .card {
     @apply bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-xl dark:shadow-slate-900/30 border border-slate-200 dark:border-slate-700 hover:shadow-2xl dark:hover:shadow-slate-900/40 hover:-translate-y-1 transition-all duration-300;
     max-width: 100%;
     width: 100%;
+  }
+
+  /* Header styles mit Hintergrund für bessere Lesbarkeit */
+  .page-header {
+    @apply bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-200/50 dark:border-slate-700/50 mb-6;
+  }
+
+  .page-title {
+    @apply text-3xl font-bold text-slate-900 dark:text-white mb-2;
+  }
+
+  .page-subtitle {
+    @apply text-slate-600 dark:text-slate-400;
   }
 
   /* Input styles */
@@ -279,6 +306,15 @@
 
   .modal-small {
     @apply modal p-6 w-full max-w-md;
+  }
+
+  /* Auth Modal Styles für bessere Lesbarkeit */
+  .auth-modal {
+    @apply bg-white/90 dark:bg-slate-800/90 backdrop-blur-lg border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto;
+  }
+
+  .auth-modal-dark {
+    @apply bg-white/10 backdrop-blur-lg border-white/20;
   }
 
   /* Form styles */

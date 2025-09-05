@@ -432,9 +432,11 @@ const Admin = () => {
 
   return (
     <div className="space-y-8 fade-in">
-      <div className="text-center">
-        <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6">Administration</h1>
-        <p className="text-xl text-slate-600 dark:text-slate-400">Verwalten Sie Benutzer, Einstellungen und Systemkonfigurationen.</p>
+      <div className="page-header">
+        <div className="text-center">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6">Administration</h1>
+          <p className="text-xl text-slate-600 dark:text-slate-400">Verwalten Sie Benutzer, Einstellungen und Systemkonfigurationen.</p>
+        </div>
       </div>
 
       {/* Tab Navigation */}
@@ -658,7 +660,7 @@ const WelcomePage = ({ theme, toggleTheme }) => {
               setAuthMode('login');
               setShowAuthForms(true);
             }}
-            className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-2xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 group"
+            className="btn-welcome-primary"
           >
             <LogIn className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
             <span>Anmelden</span>
@@ -669,7 +671,7 @@ const WelcomePage = ({ theme, toggleTheme }) => {
               setAuthMode('register');
               setShowAuthForms(true);
             }}
-            className="px-8 py-4 bg-white/10 backdrop-blur-lg border border-white/20 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 group"
+            className="btn-welcome-secondary"
           >
             <UserPlus className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
             <span>Registrieren</span>
@@ -688,9 +690,9 @@ const WelcomePage = ({ theme, toggleTheme }) => {
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <div className={`${
               theme === 'dark' 
-                ? 'bg-white/10 backdrop-blur-lg border-white/20' 
-                : 'bg-white/90 backdrop-blur-lg border-slate-200/50'
-            } rounded-2xl p-8 border max-w-md w-full max-h-[90vh] overflow-y-auto`}>
+                ? 'auth-modal-dark' 
+                : 'auth-modal'
+            }`}>
               {/* Header */}
               <div className="text-center mb-6">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">

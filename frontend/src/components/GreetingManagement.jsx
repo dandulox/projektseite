@@ -35,6 +35,11 @@ const getApiBaseUrl = () => {
     return `http://${currentHost}:3001/api`;
   }
   
+  // Für Produktionsumgebung ohne Port (Standard-HTTP/HTTPS): Verwende Port 3001
+  if (!currentPort || currentPort === '80' || currentPort === '443') {
+    return `http://${currentHost}:3001/api`;
+  }
+  
   // Fallback: Verwende relative Pfade
   return '/api';
 };

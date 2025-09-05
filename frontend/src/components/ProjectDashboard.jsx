@@ -316,11 +316,11 @@ const ProjectDashboard = () => {
         </div>
 
         {/* Header */}
-        <div className="mb-8">
+        <div className="page-header">
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Projekt-Dashboard</h1>
-              <p className="text-slate-600 dark:text-slate-400 mt-2">
+              <h1 className="page-title">Projekt-Dashboard</h1>
+              <p className="page-subtitle">
                 Übersicht über alle Projekte und deren aktuellen Status
               </p>
             </div>

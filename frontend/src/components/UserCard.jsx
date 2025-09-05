@@ -12,6 +12,38 @@ import {
   ExternalLink
 } from 'lucide-react';
 
+// API Base URL - dynamisch basierend auf der aktuellen Domain
+const getApiBaseUrl = () => {
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // Verwende relative Pfade für lokale Entwicklung oder gleiche Domain
+  const currentHost = window.location.hostname;
+  const currentPort = window.location.port;
+  
+  // Wenn wir auf localhost oder 127.0.0.1 sind, verwende Port 3001
+  if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
+    return `http://${currentHost}:3001/api`;
+  }
+  
+  // Für Produktionsumgebung: Verwende den gleichen Host mit Port 3001
+  // oder falls Port 3000, dann Backend auf 3001
+  if (currentPort === '3000') {
+    return `http://${currentHost}:3001/api`;
+  }
+  
+  // Für Produktionsumgebung ohne Port (Standard-HTTP/HTTPS): Verwende Port 3001
+  if (!currentPort || currentPort === '80' || currentPort === '443') {
+    return `http://${currentHost}:3001/api`;
+  }
+  
+  // Fallback: Verwende relative Pfade
+  return '/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
 const UserCard = ({ 
   user, 
   showHover = true, 
@@ -62,7 +94,7 @@ const UserCard = ({
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/auth/user/${user.id}/stats`, {
+      const response = await fetch(`${API_BASE_URL}/auth/user/${user.id}/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

@@ -203,7 +203,7 @@ const UserProfile = () => {
     <div className="p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
+        <div className="page-header">
           <div className="flex items-center justify-between mb-4">
             {!isOwnProfile && (
               <button
@@ -215,10 +215,10 @@ const UserProfile = () => {
               </button>
             )}
             <div className="flex-1 text-center">
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+              <h1 className="page-title">
                 {isOwnProfile ? 'Mein Profil' : 'Benutzerprofil'}
               </h1>
-              <p className="text-slate-600 dark:text-slate-400">
+              <p className="page-subtitle">
                 {isOwnProfile 
                   ? 'Ihre persönlichen Informationen und Kontodetails'
                   : `Profil von ${targetUser?.username || 'Benutzer'}`
