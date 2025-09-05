@@ -24,6 +24,7 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
     username: user?.username || '',
     email: user?.email || '',
+    password: '',
     role: user?.role || 'user',
     is_active: user?.is_active ?? true
   });
@@ -76,6 +77,23 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
               required
             />
           </div>
+          
+          {!user && (
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Passwort
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="input w-full"
+                required={!user}
+                placeholder="Passwort für neuen Benutzer"
+              />
+            </div>
+          )}
           
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
