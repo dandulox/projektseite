@@ -7,15 +7,33 @@ Dieser Ordner enthält alle Patch-Scripts für die Installation und Aktualisieru
 ```
 scripts/patches/
 ├── README.md                           # Diese Datei
+├── patch-manager.sh                   # Patch-Management-Tool
 ├── install-activity-log.sh            # Aktivitätslog-System Installation
 └── [weitere Patch-Scripts...]         # Zukünftige Patches
 ```
 
 ## Verwendung
 
-### Aktivitätslog-System installieren
+### Patch-Manager verwenden (Empfohlen)
 
 ```bash
+# Alle verfügbaren Patches anzeigen
+./scripts/patches/patch-manager.sh list
+
+# Status eines Patches prüfen
+./scripts/patches/patch-manager.sh status activity-log
+
+# Patch installieren
+./scripts/patches/patch-manager.sh install activity-log
+
+# Hilfe anzeigen
+./scripts/patches/patch-manager.sh help
+```
+
+### Direkte Installation
+
+```bash
+# Aktivitätslog-System direkt installieren
 ./scripts/patches/install-activity-log.sh
 ```
 

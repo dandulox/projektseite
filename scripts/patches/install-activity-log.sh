@@ -33,6 +33,7 @@ warning() {
 if [ ! -f "database/patches/002_activity_log_enhancement.sql" ]; then
     error "Aktivitätslog-Patch-Datei nicht gefunden!"
     error "Bitte führen Sie dieses Script aus dem Projektverzeichnis aus."
+    error "Erwarteter Pfad: database/patches/002_activity_log_enhancement.sql"
     exit 1
 fi
 
