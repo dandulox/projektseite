@@ -694,6 +694,46 @@ COMMENT ON TRIGGER trigger_update_progress_on_module_delete ON project_modules I
 -- Standard-Benachrichtigungseinstellungen werden automatisch für neue Benutzer erstellt
 -- über die Funktion in den Benachrichtigungs-APIs
 
+-- ========================================
+-- VERSIONSVERWALTUNG
+-- ========================================
+
+-- Tabelle für Versionsverwaltung
+CREATE TABLE IF NOT EXISTS system_versions (
+    id SERIAL PRIMARY KEY,
+    major_version INTEGER NOT NULL,
+    minor_version INTEGER NOT NULL,
+    patch_version INTEGER NOT NULL,
+    codename VARCHAR(50),
+    release_date DATE NOT NULL,
+    changes TEXT,
+    is_current BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Index für aktuelle Version
+CREATE INDEX IF NOT EXISTS idx_system_versions_current ON system_versions(is_current);
+
+-- Trigger für updated_at
+CREATE OR REPLACE FUNCTION update_system_versions_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_system_versions_updated_at
+    BEFORE UPDATE ON system_versions
+    FOR EACH ROW
+    EXECUTE FUNCTION update_system_versions_updated_at();
+
+-- Initiale Version einfügen
+INSERT INTO system_versions (major_version, minor_version, patch_version, codename, release_date, changes, is_current)
+VALUES (2, 0, 0, 'Phoenix', '2024-12-19', 'Major Release mit vollständiger Projektverwaltung, Modulverwaltung, Team-Management, Benachrichtigungssystem, Fortschrittsverfolgung, Design-System und Mobile-Optimierung', true)
+ON CONFLICT DO NOTHING;
+
 -- Alle Features sind vollständig integriert:
 -- ✅ Team-System mit Berechtigungen
 -- ✅ Benachrichtigungssystem mit Einstellungen
@@ -701,3 +741,4 @@ COMMENT ON TRIGGER trigger_update_progress_on_module_delete ON project_modules I
 -- ✅ Automatisches Fortschritts-Tracking
 -- ✅ Humorvolle Begrüßungen
 -- ✅ Umfassende Berechtigungsprüfung
+-- ✅ Versionsverwaltung mit Datenbank-Integration

@@ -397,9 +397,13 @@ const UserProfile = () => {
               </div>
             </div>
 
-            {/* Willkommensnachricht für neue Benutzer */}
+          </div>
+
+          {/* Profil-Details */}
+          <div className="lg:col-span-2">
+            {/* Willkommensnachricht für neue Benutzer - direkt über Profilinformationen */}
             {isOwnProfile && stats && (stats.projects?.total_projects === 0 && stats.teams?.total_teams === 0) && (
-              <div className="card mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
+              <div className="card mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
                 <div className="flex items-start space-x-4">
                   <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
                     <Award className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -438,10 +442,7 @@ const UserProfile = () => {
                 </div>
               </div>
             )}
-          </div>
 
-          {/* Profil-Details */}
-          <div className="lg:col-span-2">
             <div className="card">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-semibold text-slate-900 dark:text-white">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Tag, 
   Calendar, 
@@ -9,12 +9,47 @@ import {
   Save, 
   X,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  Loader
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+// API Base URL - dynamisch basierend auf der aktuellen Domain
+const getApiBaseUrl = () => {
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // Verwende relative Pfade für lokale Entwicklung oder gleiche Domain
+  const currentHost = window.location.hostname;
+  const currentPort = window.location.port;
+  
+  // Wenn wir auf localhost oder 127.0.0.1 sind, verwende Port 3001
+  if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
+    return `http://${currentHost}:3001/api`;
+  }
+  
+  // Für Produktionsumgebung: Verwende den gleichen Host mit Port 3001
+  // oder falls Port 3000, dann Backend auf 3001
+  if (currentPort === '3000') {
+    return `http://${currentHost}:3001/api`;
+  }
+  
+  // Für Produktionsumgebung ohne Port (Standard-HTTP/HTTPS): Verwende Port 3001
+  if (!currentPort || currentPort === '80' || currentPort === '443') {
+    return `http://${currentHost}:3001/api`;
+  }
+  
+  // Fallback: Verwende relative Pfade
+  return '/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
 const VersionManagement = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [currentVersion, setCurrentVersion] = useState(null);
   const [newVersion, setNewVersion] = useState({
     major: 2,
     minor: 0,
@@ -24,13 +59,42 @@ const VersionManagement = () => {
     changes: ''
   });
 
-  // Aktuelle Version
-  const currentVersion = {
-    major: 2,
-    minor: 0,
-    patch: 0,
-    codename: 'Phoenix',
-    releaseDate: '2024-12-19'
+  // Aktuelle Version von der API laden
+  useEffect(() => {
+    loadCurrentVersion();
+  }, []);
+
+  const loadCurrentVersion = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/versions/current`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentVersion(data.version);
+        setNewVersion({
+          major: data.version.major,
+          minor: data.version.minor,
+          patch: data.version.patch,
+          codename: data.version.codename || '',
+          releaseDate: data.version.releaseDate,
+          changes: data.version.changes || ''
+        });
+      } else {
+        toast.error('Fehler beim Laden der aktuellen Version');
+      }
+    } catch (error) {
+      console.error('Fehler beim Laden der aktuellen Version:', error);
+      toast.error('Fehler beim Laden der aktuellen Version');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEdit = () => {
@@ -38,21 +102,65 @@ const VersionManagement = () => {
   };
 
   const handleCancel = () => {
-    setNewVersion({
-      major: currentVersion.major,
-      minor: currentVersion.minor,
-      patch: currentVersion.patch,
-      codename: currentVersion.codename,
-      releaseDate: currentVersion.releaseDate,
-      changes: ''
-    });
+    if (currentVersion) {
+      setNewVersion({
+        major: currentVersion.major,
+        minor: currentVersion.minor,
+        patch: currentVersion.patch,
+        codename: currentVersion.codename || '',
+        releaseDate: currentVersion.releaseDate,
+        changes: currentVersion.changes || ''
+      });
+    }
     setIsEditing(false);
   };
 
-  const handleSave = () => {
-    // Hier würde die Version in der Datenbank gespeichert werden
-    toast.success(`Version ${newVersion.major}.${newVersion.minor}.${newVersion.patch} "${newVersion.codename}" gespeichert!`);
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      // Prüfe ob es eine neue Version oder Update ist
+      const isNewVersion = !currentVersion || 
+        newVersion.major !== currentVersion.major ||
+        newVersion.minor !== currentVersion.minor ||
+        newVersion.patch !== currentVersion.patch;
+      
+      const endpoint = isNewVersion ? '/versions/create' : `/versions/update/${currentVersion.id}`;
+      const method = isNewVersion ? 'POST' : 'PUT';
+      
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          major: newVersion.major,
+          minor: newVersion.minor,
+          patch: newVersion.patch,
+          codename: newVersion.codename,
+          releaseDate: newVersion.releaseDate,
+          changes: newVersion.changes
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.message);
+        setIsEditing(false);
+        // Lade die aktuelle Version neu
+        await loadCurrentVersion();
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message || 'Fehler beim Speichern der Version');
+      }
+    } catch (error) {
+      console.error('Fehler beim Speichern der Version:', error);
+      toast.error('Fehler beim Speichern der Version');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (field, value) => {
@@ -63,6 +171,7 @@ const VersionManagement = () => {
   };
 
   const getVersionType = (major, minor, patch) => {
+    if (!currentVersion) return 'current';
     if (major > currentVersion.major) return 'major';
     if (minor > currentVersion.minor) return 'minor';
     if (patch > currentVersion.patch) return 'patch';
@@ -91,6 +200,15 @@ const VersionManagement = () => {
 
   const versionType = getVersionType(newVersion.major, newVersion.minor, newVersion.patch);
 
+  // Loading-Anzeige
+  if (loading && !currentVersion) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="card">
@@ -98,7 +216,7 @@ const VersionManagement = () => {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
             Versionsverwaltung
           </h2>
-          {!isEditing && (
+          {!isEditing && currentVersion && (
             <button
               onClick={handleEdit}
               className="btn-primary"
@@ -206,47 +324,55 @@ const VersionManagement = () => {
             <div className="flex space-x-3">
               <button
                 onClick={handleCancel}
-                className="btn-secondary flex-1"
+                disabled={loading}
+                className="btn-secondary flex-1 disabled:opacity-50"
               >
                 <X className="w-4 h-4" />
                 <span>Abbrechen</span>
               </button>
               <button
                 onClick={handleSave}
-                className="btn-primary flex-1"
+                disabled={loading}
+                className="btn-primary flex-1 disabled:opacity-50"
               >
-                <Save className="w-4 h-4" />
-                <span>Version speichern</span>
+                {loading ? (
+                  <Loader className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                <span>{loading ? 'Speichern...' : 'Version speichern'}</span>
               </button>
             </div>
           </div>
         ) : (
           <div className="space-y-6">
             {/* Aktuelle Version */}
-            <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-blue-900 dark:text-blue-100">
-                    Aktuelle Version
-                  </h3>
-                  <p className="text-blue-700 dark:text-blue-300">
-                    {currentVersion.major}.{currentVersion.minor}.{currentVersion.patch} "{currentVersion.codename}"
-                  </p>
-                </div>
-                <div className="text-right">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Tag className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    <span className="text-sm text-blue-600 dark:text-blue-400">Major Release</span>
+            {currentVersion && (
+              <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xl font-bold text-blue-900 dark:text-blue-100">
+                      Aktuelle Version
+                    </h3>
+                    <p className="text-blue-700 dark:text-blue-300">
+                      {currentVersion.major}.{currentVersion.minor}.{currentVersion.patch} "{currentVersion.codename}"
+                    </p>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    <span className="text-sm text-blue-600 dark:text-blue-400">
-                      {new Date(currentVersion.releaseDate).toLocaleDateString('de-DE')}
-                    </span>
+                  <div className="text-right">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Tag className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      <span className="text-sm text-blue-600 dark:text-blue-400">Major Release</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      <span className="text-sm text-blue-600 dark:text-blue-400">
+                        {new Date(currentVersion.releaseDate).toLocaleDateString('de-DE')}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Versionsnummerierung Info */}
             <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">

@@ -237,7 +237,7 @@
 
   /* Header styles mit Hintergrund für bessere Lesbarkeit */
   .page-header {
-    @apply bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-200/50 dark:border-slate-700/50 mb-6;
+    @apply bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 mb-6 shadow-sm;
   }
 
   .page-title {
