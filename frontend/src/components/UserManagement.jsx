@@ -18,6 +18,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import UserCard from './UserCard';
 
 // Benutzer-Formular Komponente
 const UserForm = ({ user, onSubmit, onCancel }) => {
@@ -435,17 +436,13 @@ const UserManagement = () => {
                   {users.map((user) => (
                     <tr key={user.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                       <td className="py-4 px-6">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                            <span className="text-white font-semibold text-sm">
-                              {user.username.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                          <div>
-                            <div className="font-medium text-slate-900 dark:text-white">{user.username}</div>
-                            <div className="text-sm text-slate-500 dark:text-slate-400">{user.email}</div>
-                          </div>
-                        </div>
+                        <UserCard 
+                          user={user}
+                          size="medium"
+                          showRole={false}
+                          showStatus={false}
+                          className="p-0"
+                        />
                       </td>
                       <td className="py-4 px-6">
                         {getRoleBadge(user.role)}

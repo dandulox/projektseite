@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import ModuleForm from './ModuleForm';
+import UserCard from './UserCard';
 
 const ProjectManagement = () => {
   const { projectApi, teamApi, moduleApi, user, isAdmin } = useAuth();
@@ -351,9 +352,26 @@ const ProjectManagement = () => {
                           </span>
                         </div>
                         <div className="mt-2">
-                          <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
-                            <span>{project.owner_username}</span>
-                            <span>{project.completion_percentage}% ({project.module_count} Module)</span>
+                          <div className="flex justify-between items-center">
+                            <div className="flex-1">
+                              <UserCard 
+                                user={{
+                                  id: project.owner_id,
+                                  username: project.owner_username,
+                                  email: project.owner_email || '',
+                                  role: project.owner_role || 'user',
+                                  is_active: true,
+                                  created_at: project.owner_created_at || new Date().toISOString()
+                                }}
+                                size="small"
+                                showRole={false}
+                                showStatus={false}
+                                className="p-1"
+                              />
+                            </div>
+                            <span className="text-xs text-slate-500 dark:text-slate-400 ml-2">
+                              {project.completion_percentage}% ({project.module_count} Module)
+                            </span>
                           </div>
                           <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mt-1">
                             <div 
@@ -393,9 +411,23 @@ const ProjectManagement = () => {
                           </p>
                         )}
                         <div className="flex items-center gap-4 mt-4">
-                          <span className="text-sm text-slate-500 dark:text-slate-400">
-                            Eigentümer: {selectedProject.project.owner_username}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-slate-500 dark:text-slate-400">Eigentümer:</span>
+                            <UserCard 
+                              user={{
+                                id: selectedProject.project.owner_id,
+                                username: selectedProject.project.owner_username,
+                                email: selectedProject.project.owner_email || '',
+                                role: selectedProject.project.owner_role || 'user',
+                                is_active: true,
+                                created_at: selectedProject.project.owner_created_at || new Date().toISOString()
+                              }}
+                              size="small"
+                              showRole={false}
+                              showStatus={false}
+                              className="p-1"
+                            />
+                          </div>
                           {selectedProject.project.team_name && (
                             <span className="text-sm text-slate-500 dark:text-slate-400">
                               Team: {selectedProject.project.team_name}
@@ -527,9 +559,22 @@ const ProjectManagement = () => {
                                   {getPriorityText(module.priority)}
                                 </span>
                                 {module.assigned_username && (
-                                  <span className="text-xs text-slate-500 dark:text-slate-400">
-                                    {module.assigned_username}
-                                  </span>
+                                  <div className="mt-1">
+                                    <UserCard 
+                                      user={{
+                                        id: module.assigned_to,
+                                        username: module.assigned_username,
+                                        email: module.assigned_email || '',
+                                        role: module.assigned_role || 'user',
+                                        is_active: true,
+                                        created_at: module.assigned_created_at || new Date().toISOString()
+                                      }}
+                                      size="small"
+                                      showRole={false}
+                                      showStatus={false}
+                                      className="p-1"
+                                    />
+                                  </div>
                                 )}
                               </div>
                               <div className="mt-2">
@@ -586,9 +631,26 @@ const ProjectManagement = () => {
                       <div key={log.id} className="p-4">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="text-sm text-slate-900 dark:text-white">
-                              <span className="font-medium">{log.username}</span> {log.action}
-                            </p>
+                            <div className="flex items-center space-x-2">
+                              <UserCard 
+                                user={{
+                                  id: log.user_id,
+                                  username: log.username,
+                                  email: log.user_email || '',
+                                  role: log.user_role || 'user',
+                                  is_active: true,
+                                  created_at: log.user_created_at || new Date().toISOString()
+                                }}
+                                size="small"
+                                showRole={false}
+                                showStatus={false}
+                                showHover={false}
+                                className="p-1"
+                              />
+                              <span className="text-sm text-slate-900 dark:text-white">
+                                {log.action}
+                              </span>
+                            </div>
                             {log.details && (
                               <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                                 {log.details}

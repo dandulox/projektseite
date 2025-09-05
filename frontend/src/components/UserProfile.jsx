@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   User, 
@@ -13,36 +14,85 @@ import {
   Clock,
   Activity,
   Award,
-  Settings
+  Settings,
+  ArrowLeft,
+  Users,
+  FolderOpen,
+  MessageSquare
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const UserProfile = () => {
-  const { user, updateProfile } = useAuth();
+  const { user: currentUser, updateProfile } = useAuth();
+  const { userId } = useParams();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState(null);
+  const [profileUser, setProfileUser] = useState(null);
   const [profileData, setProfileData] = useState({
-    username: user?.username || '',
-    email: user?.email || ''
+    username: '',
+    email: ''
   });
+
+  // Bestimme, ob es das eigene Profil oder ein anderes ist
+  const isOwnProfile = !userId || userId === currentUser?.id?.toString();
+  const targetUser = isOwnProfile ? currentUser : profileUser;
 
   // Profil-Daten und Statistiken beim Laden aktualisieren
   useEffect(() => {
-    if (user) {
+    if (isOwnProfile && currentUser) {
       setProfileData({
-        username: user.username || '',
-        email: user.email || ''
+        username: currentUser.username || '',
+        email: currentUser.email || ''
       });
-      loadUserStats();
+      loadUserStats(currentUser.id);
+    } else if (!isOwnProfile && userId) {
+      loadOtherUserProfile(userId);
     }
-  }, [user]);
+  }, [currentUser, userId, isOwnProfile]);
+
+  // Anderen Benutzer laden
+  const loadOtherUserProfile = async (targetUserId) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/auth/user/${targetUserId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setProfileUser(data.user);
+        setProfileData({
+          username: data.user.username || '',
+          email: data.user.email || ''
+        });
+        loadUserStats(targetUserId);
+      } else {
+        toast.error('Benutzer nicht gefunden');
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error('Fehler beim Laden des Benutzerprofils:', error);
+      toast.error('Fehler beim Laden des Profils');
+      navigate('/dashboard');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Benutzerstatistiken laden
-  const loadUserStats = async () => {
+  const loadUserStats = async (targetUserId = null) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/auth/profile/stats', {
+      const userId = targetUserId || currentUser?.id;
+      const endpoint = isOwnProfile ? '/api/auth/profile/stats' : `/api/auth/user/${userId}/stats`;
+      
+      const response = await fetch(endpoint, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -133,18 +183,46 @@ const UserProfile = () => {
     }
   };
 
+  // Loading-Anzeige
+  if (loading || (!targetUser && !isOwnProfile)) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
-              Benutzerprofil
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400">
-              Ihre persönlichen Informationen und Kontodetails
-            </p>
+          <div className="flex items-center justify-between mb-4">
+            {!isOwnProfile && (
+              <button
+                onClick={() => navigate(-1)}
+                className="btn-secondary"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Zurück</span>
+              </button>
+            )}
+            <div className="flex-1 text-center">
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                {isOwnProfile ? 'Mein Profil' : 'Benutzerprofil'}
+              </h1>
+              <p className="text-slate-600 dark:text-slate-400">
+                {isOwnProfile 
+                  ? 'Ihre persönlichen Informationen und Kontodetails'
+                  : `Profil von ${targetUser?.username || 'Benutzer'}`
+                }
+              </p>
+            </div>
+            {!isOwnProfile && <div className="w-24"></div>}
           </div>
         </div>
 
@@ -160,31 +238,54 @@ const UserProfile = () => {
 
                 {/* Benutzer-Info */}
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-                  {user?.username}
+                  {targetUser?.username}
                 </h2>
                 <p className="text-slate-600 dark:text-slate-400 mb-4">
-                  {user?.email}
+                  {targetUser?.email}
                 </p>
 
                 {/* Rolle */}
                 <div className="mb-6">
-                  {getRoleBadge(user?.role)}
+                  {getRoleBadge(targetUser?.role)}
                 </div>
 
                 {/* Status */}
                 <div className="flex items-center justify-center space-x-2 mb-6">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-slate-600 dark:text-slate-400">Aktiv</span>
+                  <div className={`w-2 h-2 rounded-full ${targetUser?.is_active ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">
+                    {targetUser?.is_active ? 'Aktiv' : 'Inaktiv'}
+                  </span>
                 </div>
 
-                {/* Edit-Button */}
-                <button
-                  onClick={handleEdit}
-                  className="btn-primary w-full"
-                >
-                  <Edit className="w-4 h-4" />
-                  <span>Profil bearbeiten</span>
-                </button>
+                {/* Aktionen */}
+                {isOwnProfile ? (
+                  <button
+                    onClick={handleEdit}
+                    className="btn-primary w-full"
+                  >
+                    <Edit className="w-4 h-4" />
+                    <span>Profil bearbeiten</span>
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => navigate(`/messages?user=${targetUser?.id}`)}
+                      className="btn-secondary w-full"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      <span>Nachricht senden</span>
+                    </button>
+                    {currentUser?.role === 'admin' && (
+                      <button
+                        onClick={() => navigate(`/admin?tab=users&edit=${targetUser?.id}`)}
+                        className="btn-warning w-full"
+                      >
+                        <Settings className="w-4 h-4" />
+                        <span>Als Admin verwalten</span>
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -202,7 +303,7 @@ const UserProfile = () => {
                     <span className="text-sm text-slate-600 dark:text-slate-400">Mitglied seit</span>
                   </div>
                   <span className="text-sm font-medium text-slate-900 dark:text-white">
-                    {new Date(user?.created_at).toLocaleDateString('de-DE')}
+                    {new Date(targetUser?.created_at).toLocaleDateString('de-DE')}
                   </span>
                 </div>
 
@@ -226,7 +327,7 @@ const UserProfile = () => {
                     <span className="text-sm text-slate-600 dark:text-slate-400">Letzte Aktivität</span>
                   </div>
                   <span className="text-sm font-medium text-slate-900 dark:text-white">
-                    {user?.last_activity ? new Date(user.last_activity).toLocaleDateString('de-DE') : 'Heute'}
+                    {targetUser?.last_activity ? new Date(targetUser.last_activity).toLocaleDateString('de-DE') : 'Heute'}
                   </span>
                 </div>
 
@@ -268,7 +369,7 @@ const UserProfile = () => {
                 <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
                   Profil-Informationen
                 </h3>
-                {!isEditing && (
+                {isOwnProfile && !isEditing && (
                   <button
                     onClick={handleEdit}
                     className="btn-secondary"
@@ -348,7 +449,7 @@ const UserProfile = () => {
                     <div className="flex-1">
                       <p className="text-sm text-slate-600 dark:text-slate-400">Benutzername</p>
                       <p className="text-lg font-medium text-slate-900 dark:text-white">
-                        {user?.username}
+                        {targetUser?.username}
                       </p>
                     </div>
                   </div>
@@ -361,7 +462,7 @@ const UserProfile = () => {
                     <div className="flex-1">
                       <p className="text-sm text-slate-600 dark:text-slate-400">E-Mail-Adresse</p>
                       <p className="text-lg font-medium text-slate-900 dark:text-white">
-                        {user?.email}
+                        {targetUser?.email}
                       </p>
                     </div>
                   </div>
@@ -374,7 +475,7 @@ const UserProfile = () => {
                     <div className="flex-1">
                       <p className="text-sm text-slate-600 dark:text-slate-400">Rolle</p>
                       <div className="mt-1">
-                        {getRoleBadge(user?.role)}
+                        {getRoleBadge(targetUser?.role)}
                       </div>
                     </div>
                   </div>
@@ -387,7 +488,7 @@ const UserProfile = () => {
                     <div className="flex-1">
                       <p className="text-sm text-slate-600 dark:text-slate-400">Mitglied seit</p>
                       <p className="text-lg font-medium text-slate-900 dark:text-white">
-                        {new Date(user?.created_at).toLocaleDateString('de-DE', {
+                        {new Date(targetUser?.created_at).toLocaleDateString('de-DE', {
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric'
@@ -400,46 +501,48 @@ const UserProfile = () => {
             </div>
 
             {/* Zusätzliche Aktionen */}
-            <div className="card mt-6">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-                Kontoverwaltung
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button
-                  onClick={() => window.location.href = '/settings'}
-                  className="flex items-center space-x-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
-                >
-                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                    <Settings className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      Einstellungen
-                    </p>
-                    <p className="text-xs text-slate-600 dark:text-slate-400">
-                      Passwort, Benachrichtigungen & Design
-                    </p>
-                  </div>
-                </button>
+            {isOwnProfile && (
+              <div className="card mt-6">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+                  Kontoverwaltung
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <button
+                    onClick={() => navigate('/settings')}
+                    className="flex items-center space-x-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
+                  >
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                      <Settings className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                        Einstellungen
+                      </p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">
+                        Passwort, Benachrichtigungen & Design
+                      </p>
+                    </div>
+                  </button>
 
-                <button
-                  onClick={() => window.location.href = '/settings?tab=security'}
-                  className="flex items-center space-x-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
-                >
-                  <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
-                    <Shield className="w-5 h-5 text-red-600 dark:text-red-400" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      Sicherheit
-                    </p>
-                    <p className="text-xs text-slate-600 dark:text-slate-400">
-                      Passwort ändern & Sicherheitseinstellungen
-                    </p>
-                  </div>
-                </button>
+                  <button
+                    onClick={() => navigate('/settings?tab=security')}
+                    className="flex items-center space-x-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
+                  >
+                    <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+                      <Shield className="w-5 h-5 text-red-600 dark:text-red-400" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                        Sicherheit
+                      </p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">
+                        Passwort ändern & Sicherheitseinstellungen
+                      </p>
+                    </div>
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

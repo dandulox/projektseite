@@ -883,6 +883,21 @@ const AppContent = () => {
               <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
             </ProtectedRoute>
           } />
+          <Route path="/profile/:userId" element={
+            <ProtectedRoute>
+              <Header 
+                theme={theme} 
+                toggleTheme={toggleTheme}
+                isMobileMenuOpen={isMobileMenuOpen}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+              />
+              <main className="flex-1 py-8 page-container">
+                <UserProfile />
+              </main>
+              <Footer />
+              <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+            </ProtectedRoute>
+          } />
         </Routes>
         
         <Toaster 
