@@ -67,10 +67,26 @@ async function initializeDatabase() {
 // Funktion zum Anwenden aller Datenbank-Patches
 async function applyDatabasePatches() {
   try {
-    const patchesDir = path.join(__dirname, '../../database/patches');
+    // Prüfe verschiedene mögliche Pfade für Patches
+    const possiblePaths = [
+      path.join(__dirname, '../../database/patches'),  // Volume-Mount
+      path.join(__dirname, '../database/patches'),     // Im Backend-Verzeichnis
+      path.join(process.cwd(), 'database/patches'),    // Arbeitsverzeichnis
+      '/app/database/patches'                          // Absoluter Pfad
+    ];
     
-    if (!fs.existsSync(patchesDir)) {
-      console.log('📁 Kein Patches-Verzeichnis gefunden');
+    let patchesDir = null;
+    for (const patchPath of possiblePaths) {
+      if (fs.existsSync(patchPath)) {
+        patchesDir = patchPath;
+        console.log(`📁 Patches-Verzeichnis gefunden: ${patchPath}`);
+        break;
+      }
+    }
+    
+    if (!patchesDir) {
+      console.log('📁 Kein Patches-Verzeichnis gefunden in folgenden Pfaden:');
+      possiblePaths.forEach(p => console.log(`   - ${p}`));
       return;
     }
 
