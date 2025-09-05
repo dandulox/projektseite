@@ -6,12 +6,36 @@
 - **Log-Rotation**: Automatisch
 
 ## Manuelle Wartung
+
+### Schnellstart-Optionen (Empfohlen)
+```bash
+# Launcher starten für benutzerfreundliche Wartung
+sudo ./scripts/launcher.sh
+
+# Schnellstart-Optionen:
+# 4) Schnellstart-Optionen
+#   - 1) Komplette Installation
+#   - 2) System-Update
+#   - 3) System-Backup
+#   - 4) System-Wartung
+#   - 5) FastPatch (Patch-Manager)
+#   - 6) FastUpdate (App-Update)
+#   - 7) System-Wipe
+```
+
+### Einzelne Wartungsoperationen
 ```bash
 # Backup erstellen
 ./scripts/backup-system.sh
 
 # System aktualisieren
 ./scripts/update-system.sh
+
+# App-Update (nur Container)
+./scripts/update-app.sh
+
+# Patch-Manager für Systemupdates
+./scripts/patches/patch-manager.sh
 
 # Backup wiederherstellen
 ./scripts/restore-system.sh
@@ -21,6 +45,38 @@ docker-compose ps
 
 # Container-Logs anzeigen
 docker-compose logs -f [service]
+```
+
+### FastPatch - Patch-Management
+```bash
+# Patch-Manager starten
+./scripts/patches/patch-manager.sh
+
+# Verfügbare Patches anzeigen
+./scripts/patches/patch-manager.sh list
+
+# Patch-Status prüfen
+./scripts/patches/patch-manager.sh status activity-log
+
+# Patch installieren
+./scripts/patches/patch-manager.sh install activity-log
+
+# Hilfe anzeigen
+./scripts/patches/patch-manager.sh help
+```
+
+### FastUpdate - App-Update
+```bash
+# Schnelles App-Update
+./scripts/update-app.sh
+
+# Führt automatisch aus:
+# - Git-Pull (git reset --hard origin/main)
+# - Dependencies-Update (npm install)
+# - Docker-Build (docker-compose build)
+# - Container-Restart (docker-compose up -d)
+# - Service-Verfügbarkeit prüfen
+# - Update-Report erstellen
 ```
 
 ## Container-Verwaltung

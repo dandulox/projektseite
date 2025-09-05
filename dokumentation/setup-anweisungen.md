@@ -100,6 +100,37 @@ chmod +x scripts/*.sh
 ./scripts/init-database.sh
 ```
 
+## 🚀 System-Verwaltung
+
+### Launcher (Empfohlen für Wartung)
+```bash
+# Benutzerfreundliche System-Verwaltung
+sudo ./scripts/launcher.sh
+
+# Verfügbare Optionen:
+# 1) Main Control - Interaktive Steuerung aller Scripts
+# 2) Batch Runner - Batch-Ausführung von Scripts
+# 3) Batch Creator - Batch-Dateien erstellen und verwalten
+# 4) Schnellstart-Optionen - Vordefinierte Operationssequenzen
+#    - FastPatch (Patch-Manager) - Patch-Management für Systemupdates
+#    - FastUpdate (App-Update) - Schnelles App-Update mit Git-Pull
+# 5) System-Status - Aktueller Systemzustand
+# 6) Hilfe - Integrierte Dokumentation
+```
+
+### Main Control System
+```bash
+# Erweiterte System-Verwaltung
+sudo ./scripts/main-control.sh
+
+# Funktionen:
+# - Scripts einzeln ausführen
+# - Warteschlangen verwalten
+# - Batch-Operationen
+# - System-Status überwachen
+# - Logs anzeigen
+```
+
 ## 🌐 Verfügbare Services
 
 Nach dem erfolgreichen Start sind folgende Services verfügbar:

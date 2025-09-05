@@ -28,6 +28,61 @@ sudo ./scripts/main-control.sh
 8. **Log-Datei anzeigen** - Protokoll anzeigen
 9. **Schnellstart-Optionen** - Vordefinierte Sequenzen
 
+## 🚀 Launcher: `launcher.sh`
+
+### Verwendung
+```bash
+sudo ./scripts/launcher.sh
+```
+
+### Funktionen
+- **Einfacher Zugang**: Benutzerfreundliche Oberfläche für alle Scripts
+- **Schnellstart-Optionen**: Vordefinierte Operationssequenzen
+- **FastPatch**: Direkter Zugriff auf Patch-Manager
+- **FastUpdate**: Schnelles App-Update
+- **System-Status**: Überblick über Systemzustand
+- **Hilfe-System**: Integrierte Dokumentation
+
+### Menü-Optionen
+1. **Main Control** - Interaktive Steuerung aller Scripts
+2. **Batch Runner** - Batch-Ausführung von Scripts
+3. **Batch Creator** - Batch-Dateien erstellen und verwalten
+4. **Schnellstart-Optionen** - Vordefinierte Operationssequenzen
+   - Komplette Installation
+   - System-Update
+   - System-Backup
+   - System-Wartung
+   - **FastPatch (Patch-Manager)** - Patch-Management für Systemupdates
+   - **FastUpdate (App-Update)** - Schnelles App-Update mit Git-Pull
+   - System-Wipe
+5. **System-Status** - Aktueller Systemzustand
+6. **Hilfe** - Integrierte Dokumentation
+
+### FastPatch-Funktionalität
+```bash
+# Automatischer Start des Patch-Managers
+./scripts/patches/patch-manager.sh
+
+# Verfügbare Patches anzeigen
+./scripts/patches/patch-manager.sh list
+
+# Patch installieren
+./scripts/patches/patch-manager.sh install activity-log
+```
+
+### FastUpdate-Funktionalität
+```bash
+# Automatischer Start des App-Updates
+./scripts/update-app.sh
+
+# Führt automatisch aus:
+# - Git-Pull (git reset --hard origin/main)
+# - Dependencies-Update (npm install)
+# - Docker-Build (docker-compose build)
+# - Container-Restart (docker-compose up -d)
+# - Service-Verfügbarkeit prüfen
+```
+
 ## 📦 Batch Runner: `batch-runner.sh`
 
 ### Verwendung

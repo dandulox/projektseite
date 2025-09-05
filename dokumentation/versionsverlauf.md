@@ -1,5 +1,30 @@
 # Versionsverlauf - Projektseite
 
+## Version 2.1.0 "Script-Enhancement" - 2024-12-19
+
+### 🚀 Script-System & Verwaltung
+- **Launcher-System** mit benutzerfreundlicher Oberfläche für alle Scripts
+- **FastPatch-Funktionalität** für direkten Zugriff auf Patch-Manager
+- **FastUpdate-Funktionalität** für schnelles App-Update mit Git-Pull
+- **Zentralisierte Patch-Verwaltung** im `scripts/patches/` Verzeichnis
+- **Automatische Berechtigungssetzung** nach Git-Updates in allen Update-Scripts
+- **Berechtigungs-Management-Hilfsfunktion** für konsistente Script-Wartung
+
+### 🔧 System-Verbesserungen
+- **Patch-Manager** für einfache Installation und Verwaltung von Systemupdates
+- **Aktivitätslog-System** mit erweiterten Protokollierungsfunktionen
+- **Hilfsfunktionen** für Script-Berechtigungen und Wartung
+- **Erweiterte Dokumentation** für alle neuen Script-Funktionen
+- **Robuste Fehlerbehandlung** mit Fallback-Mechanismen
+
+### 📊 Script-Architektur
+- **Modulare Script-Struktur** mit separaten Verzeichnissen für verschiedene Funktionen
+- **Konsistente Menülogik** in allen Launcher-Scripts
+- **Integrierte Hilfe-Systeme** für bessere Benutzerführung
+- **Automatisierte Wartung** nach Git-Updates
+
+---
+
 ## Version 2.0.0 "Phoenix" - 2024-12-19
 
 ### 🚀 Major Features & System-Erweiterungen

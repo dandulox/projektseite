@@ -71,6 +71,17 @@ projektseite/
 │       └── dashboards/
 │           └── projektseite-overview.json # Grafana-Dashboard
 └── 🔧 scripts/
+    ├── launcher.sh                        # 🚀 Hauptlauncher (Empfohlen)
+    ├── main-control.sh                    # Erweiterte System-Verwaltung
+    ├── batch-runner.sh                    # Batch-Ausführung von Scripts
+    ├── create-batch.sh                    # Batch-Dateien erstellen
+    ├── functions/                         # Hilfsfunktionen
+    │   └── set-permissions.sh             # Berechtigungs-Management
+    ├── patches/                           # Patch-Scripts für Systemupdates
+    │   ├── patch-manager.sh               # Patch-Management-Tool
+    │   ├── install-activity-log.sh        # Aktivitätslog-System Installation
+    │   └── README.md                      # Patch-Dokumentation
+    ├── batches/                           # Batch-Dateien für automatisierte Tasks
     ├── setup-server.sh                    # Server-Setup (Ubuntu 24.04)
     ├── start-docker.sh                    # Docker-Container starten
     ├── check-logs.sh                      # Container-Logs überprüfen
@@ -83,6 +94,32 @@ projektseite/
     ├── backup-system.sh                   # System-Backups
     └── restore-system.sh                  # System-Wiederherstellung
 ```
+
+## Script-System
+
+### 🚀 Launcher (Empfohlen)
+- **Benutzerfreundliche Oberfläche** für alle Scripts
+- **Schnellstart-Optionen** mit vordefinierten Operationssequenzen
+- **FastPatch**: Direkter Zugriff auf Patch-Manager
+- **FastUpdate**: Schnelles App-Update mit Git-Pull
+- **Integrierte Hilfe** und Dokumentation
+
+### 🔧 Main Control System
+- **Interaktive Steuerung** aller Scripts
+- **Warteschlangen-Management** für Script-Ausführung
+- **Batch-Operationen** für automatisierte Tasks
+- **System-Status-Überwachung** und Logging
+
+### 📦 Patch-System
+- **Zentralisierte Patch-Verwaltung** im `patches/` Verzeichnis
+- **Patch-Manager** für einfache Installation und Verwaltung
+- **Automatische Berechtigungssetzung** nach Git-Updates
+- **Aktivitätslog-System** für erweiterte Protokollierung
+
+### 🛠️ Hilfsfunktionen
+- **Berechtigungs-Management** für alle Scripts
+- **Automatische Wartung** nach Git-Updates
+- **Fehlerbehandlung** mit Fallback-Mechanismen
 
 ## Backend-Struktur
 - **Modulare Architektur** mit separaten Route-Dateien
