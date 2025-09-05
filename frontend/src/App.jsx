@@ -419,6 +419,61 @@ const Projects = () => <ProjectManagement />;
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [currentVersion, setCurrentVersion] = useState(null);
+  const [loadingVersion, setLoadingVersion] = useState(false);
+
+  // API Base URL - dynamisch basierend auf der aktuellen Domain
+  const getApiBaseUrl = () => {
+    if (process.env.REACT_APP_API_URL) {
+      return process.env.REACT_APP_API_URL;
+    }
+    
+    const currentHost = window.location.hostname;
+    const currentPort = window.location.port;
+    
+    if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
+      return `http://${currentHost}:3001/api`;
+    }
+    
+    if (currentPort === '3000') {
+      return `http://${currentHost}:3001/api`;
+    }
+    
+    if (!currentPort || currentPort === '80' || currentPort === '443') {
+      return `http://${currentHost}:3001/api`;
+    }
+    
+    return '/api';
+  };
+
+  const API_BASE_URL = getApiBaseUrl();
+
+  // Aktuelle Version laden
+  useEffect(() => {
+    const loadCurrentVersion = async () => {
+      try {
+        setLoadingVersion(true);
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/versions/current`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setCurrentVersion(data.version);
+        }
+      } catch (error) {
+        console.error('Fehler beim Laden der aktuellen Version:', error);
+      } finally {
+        setLoadingVersion(false);
+      }
+    };
+
+    loadCurrentVersion();
+  }, []);
 
   return (
     <div className="space-y-8 fade-in">
@@ -507,11 +562,26 @@ const Admin = () => {
           <div className="card">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">System-Informationen</h2>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
+              <div 
+                className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 cursor-pointer"
+                onClick={() => setActiveTab('version')}
+              >
                 <span className="text-slate-700 dark:text-slate-300 text-lg">Version</span>
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">2.0.0</span>
-                  <span className="text-xs text-slate-400 dark:text-slate-500">"Phoenix"</span>
+                  {loadingVersion ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  ) : currentVersion ? (
+                    <>
+                      <span className="text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
+                        {currentVersion.major}.{currentVersion.minor}.{currentVersion.patch}
+                      </span>
+                      {currentVersion.codename && (
+                        <span className="text-xs text-slate-400 dark:text-slate-500">"{currentVersion.codename}"</span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">2.0.0</span>
+                  )}
                 </div>
               </div>
               <div className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">

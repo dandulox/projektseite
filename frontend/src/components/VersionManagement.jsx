@@ -249,9 +249,10 @@ const VersionManagement = () => {
                 <input
                   type="number"
                   min="0"
-                  value={newVersion.minor}
-                  onChange={(e) => handleInputChange('minor', parseInt(e.target.value) || 0)}
+                  value={newVersion.minor || ''}
+                  onChange={(e) => handleInputChange('minor', e.target.value === '' ? null : parseInt(e.target.value) || 0)}
                   className="input w-full"
+                  placeholder="0 oder leer für null"
                 />
               </div>
               <div>
@@ -261,9 +262,10 @@ const VersionManagement = () => {
                 <input
                   type="number"
                   min="0"
-                  value={newVersion.patch}
-                  onChange={(e) => handleInputChange('patch', parseInt(e.target.value) || 0)}
+                  value={newVersion.patch || ''}
+                  onChange={(e) => handleInputChange('patch', e.target.value === '' ? null : parseInt(e.target.value) || 0)}
                   className="input w-full"
+                  placeholder="0 oder leer für null"
                 />
               </div>
             </div>
@@ -316,7 +318,7 @@ const VersionManagement = () => {
                   {getVersionTypeLabel(versionType)}
                 </span>
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getVersionTypeColor(versionType)}`}>
-                  {newVersion.major}.{newVersion.minor}.{newVersion.patch}
+                  {newVersion.major}.{newVersion.minor || 'null'}.{newVersion.patch || 'null'}
                 </span>
               </div>
             </div>
@@ -395,24 +397,37 @@ const VersionManagement = () => {
               </div>
             </div>
 
-            {/* Versionsverlauf Link */}
+            {/* Versionsverlauf */}
             <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-lg font-semibold text-slate-900 dark:text-white">
-                    Versionsverlauf
-                  </h4>
+              <h4 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+                Versionsverlauf
+              </h4>
+              <div className="space-y-3">
+                <div className="p-3 bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-slate-900 dark:text-white">Version 2.0.0</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">"Phoenix"</span>
+                    </div>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">2024-12-19</span>
+                  </div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Detaillierte Changelog-Informationen
+                    Major Release mit vollständiger Projektverwaltung, Modulverwaltung, Team-Management, Benachrichtigungssystem, Fortschrittsverfolgung, Design-System und Mobile-Optimierung
                   </p>
                 </div>
-                <button
-                  onClick={() => window.open('/dokumentation/versionsverlauf.md', '_blank')}
-                  className="btn-secondary"
-                >
-                  <GitBranch className="w-4 h-4" />
-                  <span>Anzeigen</span>
-                </button>
+                
+                <div className="p-3 bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-slate-900 dark:text-white">Version 1.0.0</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">"Genesis"</span>
+                    </div>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">2024-12-01</span>
+                  </div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Initial Release mit Basis-System, Authentifizierung und einfacher Projektverwaltung
+                  </p>
+                </div>
               </div>
             </div>
           </div>

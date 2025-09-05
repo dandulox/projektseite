@@ -92,16 +92,16 @@ router.post('/create', authenticateToken, requireAdmin, async (req, res) => {
     const { major, minor, patch, codename, releaseDate, changes } = req.body;
     
     // Validierung
-    if (!major || !minor || !patch || !releaseDate) {
+    if (!major || !releaseDate) {
       return res.status(400).json({
         success: false,
-        message: 'Major, Minor, Patch und Release-Datum sind erforderlich'
+        message: 'Major Version und Release-Datum sind erforderlich'
       });
     }
     
     // Prüfe ob Version bereits existiert
     const existingVersion = await pool.query(
-      'SELECT id FROM system_versions WHERE major_version = $1 AND minor_version = $2 AND patch_version = $3',
+      'SELECT id FROM system_versions WHERE major_version = $1 AND (minor_version = $2 OR (minor_version IS NULL AND $2 IS NULL)) AND (patch_version = $3 OR (patch_version IS NULL AND $3 IS NULL))',
       [major, minor, patch]
     );
     
@@ -168,10 +168,10 @@ router.put('/update/:id', authenticateToken, requireAdmin, async (req, res) => {
     const { major, minor, patch, codename, releaseDate, changes } = req.body;
     
     // Validierung
-    if (!major || !minor || !patch || !releaseDate) {
+    if (!major || !releaseDate) {
       return res.status(400).json({
         success: false,
-        message: 'Major, Minor, Patch und Release-Datum sind erforderlich'
+        message: 'Major Version und Release-Datum sind erforderlich'
       });
     }
     
@@ -190,7 +190,7 @@ router.put('/update/:id', authenticateToken, requireAdmin, async (req, res) => {
     
     // Prüfe ob Version bereits existiert (außer der aktuellen)
     const duplicateVersion = await pool.query(
-      'SELECT id FROM system_versions WHERE major_version = $1 AND minor_version = $2 AND patch_version = $3 AND id != $4',
+      'SELECT id FROM system_versions WHERE major_version = $1 AND (minor_version = $2 OR (minor_version IS NULL AND $2 IS NULL)) AND (patch_version = $3 OR (patch_version IS NULL AND $3 IS NULL)) AND id != $4',
       [major, minor, patch, id]
     );
     
