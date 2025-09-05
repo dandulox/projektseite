@@ -1,17 +1,8 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { Pool } = require('pg');
+const pool = require('../config/database');
 const router = express.Router();
-
-// Datenbankverbindung
-const pool = new Pool({
-  user: process.env.DB_USER || 'admin',
-  host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'projektseite',
-  password: process.env.DB_PASSWORD || 'secure_password_123',
-  port: process.env.DB_PORT || 5432,
-});
 
 // JWT Secret
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';

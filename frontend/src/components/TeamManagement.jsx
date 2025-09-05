@@ -27,7 +27,6 @@ const TeamManagement = () => {
       setTeams(response.teams || []);
     } catch (error) {
       toast.error('Fehler beim Laden der Teams');
-      console.error('Error loading teams:', error);
     } finally {
       setLoading(false);
     }
@@ -38,7 +37,7 @@ const TeamManagement = () => {
       const response = await adminApi.getUsers(1, 100);
       setUsers(response.users || []);
     } catch (error) {
-      console.error('Error loading users:', error);
+      // Benutzer konnten nicht geladen werden
     }
   };
 
@@ -48,7 +47,6 @@ const TeamManagement = () => {
       setSelectedTeam(response);
     } catch (error) {
       toast.error('Fehler beim Laden der Team-Details');
-      console.error('Error loading team details:', error);
     }
   };
 

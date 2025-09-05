@@ -1,18 +1,9 @@
 const express = require('express');
-const { Pool } = require('pg');
+const pool = require('../config/database');
 const { authenticateToken } = require('./auth');
 const { createNotification, createTeamNotification } = require('./notifications');
 const { updateProjectProgress, calculateModuleProgress } = require('../utils/progressCalculator');
 const router = express.Router();
-
-// Datenbankverbindung
-const pool = new Pool({
-  user: process.env.DB_USER || 'admin',
-  host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'projektseite',
-  password: process.env.DB_PASSWORD || 'secure_password_123',
-  port: process.env.DB_PORT || 5432,
-});
 
 // Hilfsfunktion: Prüft Modul-Berechtigung
 const checkModulePermission = async (userId, moduleId, moduleType, requiredPermission = 'view') => {
@@ -575,8 +566,11 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 
     // Modul löschen (CASCADE löscht auch Logs und Verbindungen)
-    const tableName = module_type === 'project' ? 'project_modules' : 'standalone_modules';
-    await pool.query(`DELETE FROM ${tableName} WHERE id = $1`, [moduleId]);
+    if (module_type === 'project') {
+      await pool.query('DELETE FROM project_modules WHERE id = $1', [moduleId]);
+    } else {
+      await pool.query('DELETE FROM standalone_modules WHERE id = $1', [moduleId]);
+    }
 
     // Aktualisiere Projektfortschritt, wenn es sich um ein Projekt-Modul handelt
     if (module_type === 'project') {

@@ -1,17 +1,8 @@
 const express = require('express');
-const { Pool } = require('pg');
+const pool = require('../config/database');
 const { authenticateToken } = require('./auth');
 const { createNotification, createTeamNotification } = require('./notifications');
 const router = express.Router();
-
-// Datenbankverbindung
-const pool = new Pool({
-  user: process.env.DB_USER || 'admin',
-  host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'projektseite',
-  password: process.env.DB_PASSWORD || 'secure_password_123',
-  port: process.env.DB_PORT || 5432,
-});
 
 // Hilfsfunktion: Prüft ob Benutzer Team-Leader oder Admin ist
 const isTeamLeaderOrAdmin = async (userId, teamId) => {

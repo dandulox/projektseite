@@ -1,17 +1,8 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { Pool } = require('pg');
+const pool = require('../config/database');
 const { authenticateToken } = require('./auth');
 const router = express.Router();
-
-// Datenbankverbindung
-const pool = new Pool({
-  user: process.env.DB_USER || 'admin',
-  host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'projektseite',
-  password: process.env.DB_PASSWORD || 'secure_password_123',
-  port: process.env.DB_PORT || 5432,
-});
 
 // Middleware für Admin-Berechtigung
 const requireAdmin = (req, res, next) => {

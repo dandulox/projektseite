@@ -92,7 +92,6 @@ const ProjectDashboard = () => {
       
     } catch (error) {
       toast.error('Fehler beim Laden der Dashboard-Daten');
-      console.error('Error loading dashboard data:', error);
     } finally {
       setLoading(false);
     }

@@ -90,7 +90,7 @@ const DynamicGreeting = ({
     refetchOnWindowFocus: false,
     retry: 2,
     onError: (error) => {
-      console.warn('Fehler beim Abrufen der Begrüßung:', error);
+      // Fehler beim Abrufen der Begrüßung
     }
   });
 

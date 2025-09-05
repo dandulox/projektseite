@@ -97,7 +97,7 @@ const NotificationBell = () => {
         }
       }
     } catch (error) {
-      console.error('Fehler beim Abrufen der Benachrichtigungen:', error);
+      // Benachrichtigungen konnten nicht geladen werden
     } finally {
       setLoading(false);
     }
@@ -120,7 +120,7 @@ const NotificationBell = () => {
         setUnreadCounts(data.counts);
       }
     } catch (error) {
-      console.error('Fehler beim Abrufen der Benachrichtigungsanzahl:', error);
+      // Benachrichtigungsanzahl konnte nicht geladen werden
     }
   };
 
@@ -148,7 +148,7 @@ const NotificationBell = () => {
         fetchUnreadCounts();
       }
     } catch (error) {
-      console.error('Fehler beim Markieren der Benachrichtigung:', error);
+      // Benachrichtigung konnte nicht markiert werden
     }
   };
 
@@ -180,7 +180,7 @@ const NotificationBell = () => {
         fetchUnreadCounts();
       }
     } catch (error) {
-      console.error('Fehler beim Markieren aller Benachrichtigungen:', error);
+      // Benachrichtigungen konnten nicht markiert werden
     }
   };
 
@@ -208,7 +208,7 @@ const NotificationBell = () => {
         fetchUnreadCounts();
       }
     } catch (error) {
-      console.error('Fehler beim Löschen der Benachrichtigung:', error);
+      // Benachrichtigung konnte nicht gelöscht werden
     }
   };
 

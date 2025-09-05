@@ -46,7 +46,6 @@ const fetchGreetings = async () => {
   const response = await fetch(`${API_BASE_URL}/greetings`);
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('API Fehler:', response.status, errorText);
     throw new Error(`Fehler beim Abrufen der Begrüßungen: ${response.status} ${errorText}`);
   }
   return response.json();
@@ -62,7 +61,6 @@ const createGreeting = async (greetingData) => {
   });
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('API Fehler:', response.status, errorText);
     throw new Error(`Fehler beim Erstellen der Begrüßung: ${response.status} ${errorText}`);
   }
   return response.json();
@@ -78,7 +76,6 @@ const updateGreeting = async ({ id, ...greetingData }) => {
   });
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('API Fehler:', response.status, errorText);
     throw new Error(`Fehler beim Aktualisieren der Begrüßung: ${response.status} ${errorText}`);
   }
   return response.json();
@@ -90,7 +87,6 @@ const deleteGreeting = async (id) => {
   });
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('API Fehler:', response.status, errorText);
     throw new Error(`Fehler beim Löschen der Begrüßung: ${response.status} ${errorText}`);
   }
   return response.json();
@@ -137,7 +133,6 @@ const GreetingManagement = () => {
     retry: 2,
     retryDelay: 1000,
     onError: (error) => {
-      console.error('Query Fehler:', error);
       toast.error(`Fehler beim Laden der Begrüßungen: ${error.message}`);
     }
   });
@@ -153,7 +148,6 @@ const GreetingManagement = () => {
     },
     onError: (error) => {
       toast.error('Fehler beim Erstellen der Begrüßung');
-      console.error(error);
     },
   });
 
@@ -166,7 +160,6 @@ const GreetingManagement = () => {
     },
     onError: (error) => {
       toast.error('Fehler beim Aktualisieren der Begrüßung');
-      console.error(error);
     },
   });
 
@@ -178,7 +171,6 @@ const GreetingManagement = () => {
     },
     onError: (error) => {
       toast.error('Fehler beim Löschen der Begrüßung');
-      console.error(error);
     },
   });
 

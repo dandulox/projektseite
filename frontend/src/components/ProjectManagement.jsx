@@ -42,7 +42,6 @@ const ProjectManagement = () => {
       setProjects(response.projects || []);
     } catch (error) {
       toast.error('Fehler beim Laden der Projekte');
-      console.error('Error loading projects:', error);
     } finally {
       setLoading(false);
     }
@@ -53,7 +52,7 @@ const ProjectManagement = () => {
       const response = await teamApi.getTeams();
       setTeams(response.teams || []);
     } catch (error) {
-      console.error('Error loading teams:', error);
+      // Teams konnten nicht geladen werden
     }
   };
 
@@ -63,7 +62,6 @@ const ProjectManagement = () => {
       setSelectedProject(response);
     } catch (error) {
       toast.error('Fehler beim Laden der Projekt-Details');
-      console.error('Error loading project details:', error);
     }
   };
 

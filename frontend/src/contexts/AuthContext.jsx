@@ -54,7 +54,6 @@ const apiRequest = async (endpoint, options = {}) => {
 
     return data;
   } catch (error) {
-    console.error('API Request Error:', error);
     throw error;
   }
 };
@@ -147,7 +146,6 @@ export const AuthProvider = ({ children }) => {
       setUser(data.user);
       setIsAuthenticated(true);
     } catch (error) {
-      console.error('Token validation failed:', error);
       logout();
     } finally {
       setLoading(false);
@@ -171,7 +169,6 @@ export const AuthProvider = ({ children }) => {
       toast.success(`Willkommen zurück, ${data.user.username}!`);
       return { success: true };
     } catch (error) {
-      console.error('AuthContext: Login error:', error);
       toast.error(error.message);
       return { success: false, error: error.message };
     } finally {
@@ -207,7 +204,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await apiRequest('/auth/logout', { method: 'POST' });
     } catch (error) {
-      console.error('Logout error:', error);
+      // Logout-Fehler behandelt
     } finally {
       localStorage.removeItem('token');
       setUser(null);
@@ -294,7 +291,6 @@ export const AuthProvider = ({ children }) => {
       const settings = localStorage.getItem('userSettings');
       return settings ? JSON.parse(settings) : null;
     } catch (error) {
-      console.error('Fehler beim Laden der Einstellungen:', error);
       return null;
     }
   };

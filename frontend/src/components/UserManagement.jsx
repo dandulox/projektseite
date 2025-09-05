@@ -244,7 +244,6 @@ const UserManagement = () => {
       }));
     } catch (error) {
       toast.error('Fehler beim Laden der Benutzer');
-      console.error('Error loading users:', error);
     } finally {
       setLoading(false);
     }

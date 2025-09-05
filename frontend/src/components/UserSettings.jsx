@@ -99,7 +99,7 @@ const UserSettings = () => {
         // Erfolgreiche Aktualisierung
       }
     } catch (error) {
-      console.error('Profil-Update-Fehler:', error);
+      // Profil-Update-Fehler behandelt
     } finally {
       setLoading(false);
     }
@@ -130,7 +130,7 @@ const UserSettings = () => {
         });
       }
     } catch (error) {
-      console.error('Passwort-Änderungs-Fehler:', error);
+      // Passwort-Änderungs-Fehler behandelt
     } finally {
       setLoading(false);
     }
