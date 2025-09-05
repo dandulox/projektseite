@@ -83,7 +83,7 @@ const VersionManagement = () => {
           minor: data.version.minor,
           patch: data.version.patch,
           codename: data.version.codename || '',
-          releaseDate: data.version.releaseDate,
+          releaseDate: data.version.releaseDate ? data.version.releaseDate.split('T')[0] : new Date().toISOString().split('T')[0],
           changes: data.version.changes || ''
         });
       } else {
@@ -108,7 +108,7 @@ const VersionManagement = () => {
         minor: currentVersion.minor,
         patch: currentVersion.patch,
         codename: currentVersion.codename || '',
-        releaseDate: currentVersion.releaseDate,
+        releaseDate: currentVersion.releaseDate ? currentVersion.releaseDate.split('T')[0] : new Date().toISOString().split('T')[0],
         changes: currentVersion.changes || ''
       });
     }
@@ -368,7 +368,13 @@ const VersionManagement = () => {
                     <div className="flex items-center" style={{gap: '0.5rem'}}>
                       <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       <span className="text-sm text-blue-600 dark:text-blue-400">
-                        {new Date(currentVersion.releaseDate).toLocaleDateString('de-DE')}
+                        {new Date(currentVersion.releaseDate).toLocaleString('de-DE', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                       </span>
                     </div>
                   </div>
@@ -409,7 +415,15 @@ const VersionManagement = () => {
                       <span className="text-sm font-medium text-slate-900 dark:text-white">Version 2.0.0</span>
                       <span className="text-xs text-slate-500 dark:text-slate-400">"Phoenix"</span>
                     </div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">2024-12-19</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      {new Date('2024-12-19').toLocaleString('de-DE', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
                   </div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">
                     Major Release mit vollständiger Projektverwaltung, Modulverwaltung, Team-Management, Benachrichtigungssystem, Fortschrittsverfolgung, Design-System und Mobile-Optimierung
@@ -422,7 +436,15 @@ const VersionManagement = () => {
                       <span className="text-sm font-medium text-slate-900 dark:text-white">Version 1.0.0</span>
                       <span className="text-xs text-slate-500 dark:text-slate-400">"Genesis"</span>
                     </div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">2024-12-01</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      {new Date('2024-12-01').toLocaleString('de-DE', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
                   </div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">
                     Initial Release mit Basis-System, Authentifizierung und einfacher Projektverwaltung
