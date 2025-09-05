@@ -60,11 +60,61 @@ else
     export DB_PASSWORD=${DB_PASSWORD:-secure_password_123}
 fi
 
+# Prüfe Docker-Container-Konfiguration als Fallback
+if [ -f "docker/docker-compose.yml" ]; then
+    log "🔍 Prüfe Docker-Container-Konfiguration..."
+    
+    # Extrahiere Datenbankkonfiguration aus docker-compose.yml
+    if command -v docker &> /dev/null && docker ps | grep -q "projektseite-postgres"; then
+        log "✅ PostgreSQL-Container läuft, verwende Container-Verbindung"
+        export DB_HOST=${DB_HOST:-localhost}
+        export DB_PORT=${DB_PORT:-5432}
+        export DB_NAME=${DB_NAME:-projektseite}
+        export DB_USER=${DB_USER:-admin}
+        export DB_PASSWORD=${DB_PASSWORD:-secure_password_123}
+    else
+        warning "PostgreSQL-Container läuft nicht, verwende Standardwerte"
+    fi
+fi
+
 # Datenbankverbindung testen
 log "🔍 Teste Datenbankverbindung..."
+log "Verbindungsparameter: Host=$DB_HOST, Port=$DB_PORT, DB=$DB_NAME, User=$DB_USER"
+
+# Prüfe ob Docker-Container läuft
+if command -v docker &> /dev/null; then
+    if docker ps | grep -q "projektseite-postgres"; then
+        log "✅ PostgreSQL-Container läuft"
+    else
+        warning "PostgreSQL-Container läuft nicht. Versuche Container zu starten..."
+        if [ -f "docker/docker-compose.yml" ]; then
+            log "Starte PostgreSQL-Container..."
+            docker-compose -f docker/docker-compose.yml up -d postgres
+            sleep 10
+        fi
+    fi
+fi
+
+# Teste Datenbankverbindung
 if ! PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT 1;" > /dev/null 2>&1; then
     error "Datenbankverbindung fehlgeschlagen!"
-    error "Bitte prüfen Sie Ihre Datenbankkonfiguration."
+    error "Verbindungsparameter: Host=$DB_HOST, Port=$DB_PORT, DB=$DB_NAME, User=$DB_USER"
+    
+    # Diagnose-Informationen
+    log "🔍 Diagnose-Informationen:"
+    if command -v docker &> /dev/null; then
+        log "Docker-Container-Status:"
+        docker ps | grep postgres || log "Keine PostgreSQL-Container gefunden"
+    fi
+    
+    log "Verfügbare Ports:"
+    netstat -tlnp | grep :5432 || log "Port 5432 nicht verfügbar"
+    
+    log "PostgreSQL-Service-Status:"
+    systemctl status postgresql 2>/dev/null || log "PostgreSQL-Service nicht gefunden"
+    
+    error "Bitte prüfen Sie Ihre Datenbankkonfiguration und starten Sie die Container."
+    error "Verwenden Sie: docker-compose -f docker/docker-compose.yml up -d"
     exit 1
 fi
 success "Datenbankverbindung erfolgreich"

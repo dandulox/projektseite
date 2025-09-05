@@ -9,6 +9,7 @@ scripts/patches/
 ├── README.md                           # Diese Datei
 ├── patch-manager.sh                   # Patch-Management-Tool
 ├── install-activity-log.sh            # Aktivitätslog-System Installation
+├── fix-database-connection.sh         # Datenbankverbindung reparieren
 └── [weitere Patch-Scripts...]         # Zukünftige Patches
 ```
 
@@ -26,6 +27,9 @@ scripts/patches/
 # Patch installieren
 ./scripts/patches/patch-manager.sh install activity-log
 
+# Datenbankverbindung reparieren
+./scripts/patches/patch-manager.sh install fix-db
+
 # Hilfe anzeigen
 ./scripts/patches/patch-manager.sh help
 ```
@@ -35,42 +39,72 @@ scripts/patches/
 ```bash
 # Aktivitätslog-System direkt installieren
 ./scripts/patches/install-activity-log.sh
+
+# Datenbankverbindung reparieren
+./scripts/patches/fix-database-connection.sh
 ```
+
+## Verfügbare Patches
+
+### 1. Aktivitätslog-System (activity-log)
+- **Beschreibung**: Erweiterte Aktivitätslog-Tabellen mit automatischen Benachrichtigungen
+- **Features**:
+  - Projekt- und Modul-Aktivitätslogs
+  - Automatische Benachrichtigungen
+  - Team- und Private-Tab-Integration
+  - Erweiterte Protokollierung mit old_data/new_data
+
+### 2. Datenbankverbindung reparieren (fix-db)
+- **Beschreibung**: Repariert Datenbankverbindungsprobleme
+- **Features**:
+  - Docker-Container-Status prüfen
+  - PostgreSQL-Container starten
+  - Datenbankverbindung testen
+  - Diagnose-Informationen anzeigen
+
+## Fehlerbehebung
+
+### Datenbankverbindungsfehler
+
+Wenn Sie einen Fehler wie "Datenbankverbindung fehlgeschlagen!" erhalten:
+
+1. **Verwenden Sie das Reparatur-Script**:
+   ```bash
+   ./scripts/patches/patch-manager.sh install fix-db
+   ```
+
+2. **Oder manuell reparieren**:
+   ```bash
+   # Container starten
+   docker-compose -f docker/docker-compose.yml up -d postgres
+   
+   # Warten und testen
+   sleep 15
+   ./scripts/patches/install-activity-log.sh
+   ```
+
+3. **Prüfen Sie die Container**:
+   ```bash
+   docker ps | grep postgres
+   docker-compose -f docker/docker-compose.yml logs postgres
+   ```
+
+### Umgebungsvariablen
+
+Falls keine `.env`-Datei vorhanden ist, wird `env.example` als Vorlage bereitgestellt:
+
+```bash
+# Kopieren Sie die Vorlage
+cp env.example .env
+
+# Passen Sie die Werte an Ihre Konfiguration an
+nano .env
+```
+
+## Installation
 
 Dieses Script installiert:
 - Erweiterte Aktivitätslog-Tabellen
 - Automatische Trigger für Projekt- und Modul-Änderungen
 - Benachrichtigungsfunktionen
-- API-Endpunkte für Aktivitätslogs
-
-## Patch-Script Konventionen
-
-Alle Patch-Scripts sollten folgende Struktur haben:
-
-1. **Header**: Script-Name und Beschreibung
-2. **Umgebungsprüfung**: Prüfung der Voraussetzungen
-3. **Backup**: Automatisches Backup vor Änderungen
-4. **Installation**: Schritt-für-Schritt Installation
-5. **Verifikation**: Prüfung der erfolgreichen Installation
-6. **Dokumentation**: Nächste Schritte und verfügbare Features
-
-## Sicherheit
-
-- Alle Patch-Scripts erstellen automatisch Backups
-- Rollback-Funktionalität bei Fehlern
-- Detaillierte Logging und Fehlerbehandlung
-- Prüfung der Datenbankverbindung vor Änderungen
-
-## Neue Patches hinzufügen
-
-1. Script im `scripts/patches/` Ordner erstellen
-2. Konventionen befolgen (siehe oben)
-3. README.md aktualisieren
-4. Testen in Entwicklungsumgebung
-5. Dokumentation der neuen Features
-
-## Wartung
-
-- Regelmäßige Überprüfung der Patch-Scripts
-- Aktualisierung bei Änderungen der Datenbankstruktur
-- Entfernung veralteter Patches nach vollständiger Migration
+- Patch-Management-System

@@ -37,6 +37,7 @@ info() {
 # Verfügbare Patches definieren
 declare -A PATCHES=(
     ["activity-log"]="install-activity-log.sh:Aktivitätslog-System mit automatischen Benachrichtigungen"
+    ["fix-db"]="fix-database-connection.sh:Datenbankverbindung reparieren"
     # Weitere Patches können hier hinzugefügt werden
 )
 
