@@ -255,20 +255,22 @@ const GreetingManagement = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Begrüßungsverwaltung</h1>
-              <p className="text-slate-600 dark:text-slate-400">
-                Verwalten Sie die zeitbasierten Begrüßungen für Ihre Anwendung
-              </p>
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Begrüßungsverwaltung</h1>
+                <p className="text-slate-600 dark:text-slate-400">
+                  Verwalten Sie die zeitbasierten Begrüßungen für Ihre Anwendung
+                </p>
+              </div>
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="btn-primary"
+              >
+                <Plus className="w-4 h-4" />
+                Neue Begrüßung
+              </button>
             </div>
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="btn-primary"
-            >
-              <Plus className="w-4 h-4" />
-              Neue Begrüßung
-            </button>
           </div>
         </div>
 
@@ -278,7 +280,7 @@ const GreetingManagement = () => {
           const count = groupedGreetings[period]?.length || 0;
           const activeCount = groupedGreetings[period]?.filter(g => g.is_active).length || 0;
           return (
-            <div key={period} className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-4">
+            <div key={period} className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4">
               <div className="flex items-center" style={{gap: '0.75rem'}}>
                 <div className={`p-2 rounded-lg bg-slate-100 dark:bg-slate-800 ${timePeriodColors[period]}`}>
                   {timePeriodIcons[period]}
@@ -296,7 +298,7 @@ const GreetingManagement = () => {
         </div>
 
         {/* Begrüßungen nach Stunden (0-23) */}
-        <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
         <div className="flex items-center mb-6" style={{gap: '0.75rem'}}>
           <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400">
             <Clock className="w-4 h-4" />

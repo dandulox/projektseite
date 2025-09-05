@@ -289,64 +289,33 @@ router.post('/', authenticateToken, async (req, res) => {
       // Log-Fehler sollten das Projekt-Erstellen nicht blockieren
     }
 
-    // Automatische Team-Mitglieder-Zuordnung
+    // Nur Ersteller automatisch zuweisen (keine automatische Team-Zuordnung)
+    try {
+      await pool.query(`
+        INSERT INTO project_permissions (project_id, user_id, permission_type, granted_by)
+        VALUES ($1, $2, 'admin', $2)
+        ON CONFLICT (project_id, user_id) 
+        DO UPDATE SET permission_type = 'admin', granted_by = $2, granted_at = NOW()
+      `, [project.id, req.user.id]);
+    } catch (permissionError) {
+      console.warn('Konnte automatische Ersteller-Berechtigung nicht erstellen:', permissionError.message);
+    }
+
+    // Team-Benachrichtigung (ohne automatische Zuordnung)
     try {
       if (team_id) {
-        // Alle Team-Mitglieder automatisch dem Projekt zuweisen
-        const teamMembers = await pool.query(`
-          SELECT tm.user_id, tm.role as team_role
-          FROM team_memberships tm
-          WHERE tm.team_id = $1
-        `, [team_id]);
-
-        // Erstelle Projekt-Berechtigungen für alle Team-Mitglieder
-        for (const member of teamMembers.rows) {
-          let permissionType = 'view'; // Standard-Berechtigung
-          
-          // Team-Leader bekommt Admin-Rechte, Mitglieder bekommen Edit-Rechte
-          if (member.team_role === 'leader') {
-            permissionType = 'admin';
-          } else if (member.team_role === 'member') {
-            permissionType = 'edit';
-          }
-
-          try {
-            await pool.query(`
-              INSERT INTO project_permissions (project_id, user_id, permission_type, granted_by)
-              VALUES ($1, $2, $3, $4)
-              ON CONFLICT (project_id, user_id) 
-              DO UPDATE SET permission_type = $3, granted_by = $4, granted_at = NOW()
-            `, [project.id, member.user_id, permissionType, req.user.id]);
-          } catch (permissionError) {
-            console.warn(`Konnte Berechtigung für Benutzer ${member.user_id} nicht erstellen:`, permissionError.message);
-          }
-        }
-
-        // Team-Benachrichtigung für alle Team-Mitglieder
         await createTeamNotification(team_id, {
           type: 'project_created',
           title: 'Neues Projekt erstellt',
-          message: `"${name}" wurde in Ihrem Team erstellt und Sie wurden automatisch zugewiesen.`,
+          message: `"${name}" wurde in Ihrem Team erstellt.`,
           fromUserId: req.user.id,
           projectId: project.id,
           actionUrl: `/projects/${project.id}`
         });
-      } else {
-        // Wenn kein Team zugewiesen, automatisch dem Ersteller zuweisen
-        try {
-          await pool.query(`
-            INSERT INTO project_permissions (project_id, user_id, permission_type, granted_by)
-            VALUES ($1, $2, 'admin', $2)
-            ON CONFLICT (project_id, user_id) 
-            DO UPDATE SET permission_type = 'admin', granted_by = $2, granted_at = NOW()
-          `, [project.id, req.user.id]);
-        } catch (permissionError) {
-          console.warn('Konnte automatische Ersteller-Berechtigung nicht erstellen:', permissionError.message);
-        }
       }
-    } catch (assignmentError) {
-      console.error('Fehler bei der automatischen Team-Zuordnung:', assignmentError);
-      // Zuordnungsfehler sollten das Projekt-Erstellen nicht blockieren
+    } catch (notificationError) {
+      console.error('Fehler beim Erstellen der Benachrichtigungen:', notificationError);
+      // Benachrichtigungsfehler sollten das Projekt-Erstellen nicht blockieren
     }
 
     res.status(201).json({

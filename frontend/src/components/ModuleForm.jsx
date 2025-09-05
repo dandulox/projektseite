@@ -13,7 +13,7 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
     status: 'not_started',
     priority: 'medium',
     estimated_hours: '',
-    assigned_to: '',
+    assigned_to: [],
     due_date: '',
     visibility: 'private',
     team_id: '',
@@ -35,7 +35,7 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
         status: editModule.status || 'not_started',
         priority: editModule.priority || 'medium',
         estimated_hours: editModule.estimated_hours || '',
-        assigned_to: editModule.assigned_to || '',
+        assigned_to: editModule.assigned_to ? (Array.isArray(editModule.assigned_to) ? editModule.assigned_to : [editModule.assigned_to]) : [],
         due_date: editModule.due_date || '',
         visibility: editModule.visibility || 'private',
         team_id: editModule.team_id || '',
@@ -86,7 +86,7 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
       const moduleData = {
         ...formData,
         estimated_hours: formData.estimated_hours ? parseFloat(formData.estimated_hours) : null,
-        assigned_to: formData.assigned_to || null,
+        assigned_to: formData.assigned_to.length > 0 ? formData.assigned_to : null,
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
         dependencies: formData.dependencies ? formData.dependencies.split(',').map(dep => dep.trim()) : []
       };
@@ -118,6 +118,15 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
+    });
+  };
+
+  const handleMemberToggle = (userId) => {
+    setFormData({
+      ...formData,
+      assigned_to: formData.assigned_to.includes(userId)
+        ? formData.assigned_to.filter(id => id !== userId)
+        : [...formData.assigned_to, userId]
     });
   };
 
@@ -241,44 +250,50 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
             </div>
             
             {formData.team_id && teamMembers.length > 0 && (
-              <div>
+              <div className="col-span-2">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Zugewiesen an (Team-Mitglied)
+                  Zugewiesen an (Team-Mitglieder)
                 </label>
-                <select
-                  name="assigned_to"
-                  value={formData.assigned_to}
-                  onChange={handleChange}
-                  className="select w-full"
-                >
-                  <option value="">Nicht zugewiesen</option>
+                <div className="border border-slate-300 dark:border-slate-600 rounded-lg p-3 max-h-32 overflow-y-auto">
                   {teamMembers.map((member) => (
-                    <option key={member.user_id} value={member.user_id}>
-                      {member.username} ({member.role === 'leader' ? 'Team-Leader' : 'Mitglied'})
-                    </option>
+                    <label key={member.user_id} className="flex items-center space-x-2 py-1">
+                      <input
+                        type="checkbox"
+                        checked={formData.assigned_to.includes(member.user_id)}
+                        onChange={() => handleMemberToggle(member.user_id)}
+                        className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-slate-700 dark:text-slate-300">
+                        {member.username} ({member.role === 'leader' ? 'Team-Leader' : 'Mitglied'})
+                      </span>
+                    </label>
                   ))}
-                </select>
+                </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Nur Team-Mitglieder können ausgewählt werden
+                  Mehrere Team-Mitglieder können ausgewählt werden
                 </p>
               </div>
             )}
             
             {!formData.team_id && (
-              <div>
+              <div className="col-span-2">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Zugewiesen an
+                  Zugewiesen an (Benutzer-IDs)
                 </label>
                 <input
                   type="text"
                   name="assigned_to"
-                  value={formData.assigned_to}
-                  onChange={handleChange}
-                  placeholder="Benutzer-ID (optional)"
+                  value={formData.assigned_to.join(', ')}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const userIds = value ? value.split(',').map(id => id.trim()).filter(id => id) : [];
+                    setFormData({ ...formData, assigned_to: userIds });
+                  }}
+                  placeholder="Benutzer-IDs kommagetrennt (z.B. 1, 2, 3)"
                   className="input w-full"
                 />
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Ohne Team-Zuweisung: Manuelle Benutzer-ID eingeben
+                  Ohne Team-Zuweisung: Manuelle Benutzer-IDs eingeben (kommagetrennt)
                 </p>
               </div>
             )}

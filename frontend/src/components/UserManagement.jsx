@@ -360,28 +360,30 @@ const UserManagement = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
-                Benutzerverwaltung
-              </h1>
-              <p className="text-slate-600 dark:text-slate-400">
-                Verwalten Sie Benutzer, Rollen und Berechtigungen.
-              </p>
-            </div>
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div>
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
+                  Benutzerverwaltung
+                </h1>
+                <p className="text-slate-600 dark:text-slate-400">
+                  Verwalten Sie Benutzer, Rollen und Berechtigungen.
+                </p>
+              </div>
         
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="btn-primary"
-            >
-              <Plus className="w-4 h-4" />
-              Neuer Benutzer
-            </button>
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="btn-primary"
+              >
+                <Plus className="w-4 h-4" />
+                Neuer Benutzer
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Filter */}
-        <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
         <div className="flex flex-wrap gap-6 items-center">
           <div className="flex items-center" style={{gap: '1rem'}}>
             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Suche:</label>
@@ -414,7 +416,7 @@ const UserManagement = () => {
         </div>
 
         {/* Benutzer-Tabelle */}
-        <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
