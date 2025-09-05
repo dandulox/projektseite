@@ -118,10 +118,10 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
                 value={formData.username}
                 onChange={handleChange}
                 required
-                className={`w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-sm border rounded-lg text-white placeholder-white/70 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 ${
+                className={`input-glass w-full pl-10 ${
                   errors.username 
                     ? 'border-red-400 focus:ring-red-400' 
-                    : 'border-white/30'
+                    : ''
                 }`}
                 placeholder="Benutzername oder E-Mail eingeben..."
               />
@@ -149,10 +149,10 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className={`w-full pl-10 pr-12 py-3 bg-white/10 backdrop-blur-sm border rounded-lg text-white placeholder-white/70 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 ${
+                className={`input-glass w-full pl-10 pr-12 ${
                   errors.password 
                     ? 'border-red-400 focus:ring-red-400' 
-                    : 'border-white/30'
+                    : ''
                 }`}
                 placeholder="Passwort eingeben..."
               />
@@ -180,7 +180,7 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center space-x-2"
+            className="btn-gradient-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>

@@ -156,7 +156,7 @@ const TeamManagement = () => {
             </div>
             <button
               onClick={() => setShowCreateForm(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+              className="btn-primary"
             >
               Neues Team erstellen
             </button>
@@ -238,14 +238,14 @@ const TeamManagement = () => {
                         {selectedTeam.team.team_leader_id === user.id || isAdmin ? (
                           <button
                             onClick={() => handleDeleteTeam(selectedTeam.team.id)}
-                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                            className="btn-danger text-sm px-3 py-1"
                           >
                             Löschen
                           </button>
                         ) : (
                           <button
                             onClick={() => handleLeaveTeam(selectedTeam.team.id)}
-                            className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                            className="btn-secondary text-sm px-3 py-1"
                           >
                             Verlassen
                           </button>
@@ -263,7 +263,7 @@ const TeamManagement = () => {
                       {(selectedTeam.team.team_leader_id === user.id || isAdmin) && (
                         <button
                           onClick={() => setShowAddMemberForm(true)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                          className="btn-primary text-sm px-3 py-1"
                         >
                           Mitglied hinzufügen
                         </button>
@@ -370,8 +370,8 @@ const TeamManagement = () => {
 
         {/* Create Team Modal */}
         {showCreateForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-md">
+          <div className="modal-overlay">
+            <div className="modal-small">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                 Neues Team erstellen
               </h3>
@@ -384,7 +384,7 @@ const TeamManagement = () => {
                     type="text"
                     value={newTeam.name}
                     onChange={(e) => setNewTeam({ ...newTeam, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    className="input w-full"
                     required
                   />
                 </div>
@@ -395,7 +395,7 @@ const TeamManagement = () => {
                   <textarea
                     value={newTeam.description}
                     onChange={(e) => setNewTeam({ ...newTeam, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    className="textarea w-full"
                     rows={3}
                   />
                 </div>
@@ -403,13 +403,13 @@ const TeamManagement = () => {
                   <button
                     type="button"
                     onClick={() => setShowCreateForm(false)}
-                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                    className="btn-secondary flex-1"
                   >
                     Abbrechen
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    className="btn-primary flex-1"
                   >
                     Erstellen
                   </button>
@@ -421,8 +421,8 @@ const TeamManagement = () => {
 
         {/* Add Member Modal */}
         {showAddMemberForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-md">
+          <div className="modal-overlay">
+            <div className="modal-small">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                 Mitglied hinzufügen
               </h3>
@@ -434,7 +434,7 @@ const TeamManagement = () => {
                   <select
                     value={newMember.user_id}
                     onChange={(e) => setNewMember({ ...newMember, user_id: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    className="select w-full"
                     required
                   >
                     <option value="">Benutzer auswählen</option>
@@ -454,7 +454,7 @@ const TeamManagement = () => {
                   <select
                     value={newMember.role}
                     onChange={(e) => setNewMember({ ...newMember, role: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    className="select w-full"
                   >
                     <option value="member">Mitglied</option>
                     <option value="viewer">Betrachter</option>
@@ -464,13 +464,13 @@ const TeamManagement = () => {
                   <button
                     type="button"
                     onClick={() => setShowAddMemberForm(false)}
-                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                    className="btn-secondary flex-1"
                   >
                     Abbrechen
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    className="btn-primary flex-1"
                   >
                     Hinzufügen
                   </button>

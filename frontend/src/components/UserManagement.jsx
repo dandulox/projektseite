@@ -42,7 +42,7 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full">
+    <div className="modal-small">
       <div className="p-6">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
           {user ? 'Benutzer bearbeiten' : 'Neuer Benutzer'}
@@ -58,7 +58,7 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
               name="username"
               value={formData.username}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input w-full"
               required
             />
           </div>
@@ -72,7 +72,7 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input w-full"
               required
             />
           </div>
@@ -85,7 +85,7 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
               name="role"
               value={formData.role}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="select w-full"
             >
               <option value="user">Benutzer</option>
               <option value="admin">Administrator</option>
@@ -110,13 +110,13 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className="btn-secondary flex-1"
             >
               Abbrechen
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              className="btn-primary flex-1"
             >
               {user ? 'Aktualisieren' : 'Erstellen'}
             </button>
@@ -152,7 +152,7 @@ const PasswordResetForm = ({ user, onSubmit, onCancel }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full">
+    <div className="modal-small">
       <div className="p-6">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
           Passwort zurücksetzen
@@ -168,7 +168,7 @@ const PasswordResetForm = ({ user, onSubmit, onCancel }) => {
               name="newPassword"
               value={formData.newPassword}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input w-full"
               required
             />
           </div>
@@ -182,7 +182,7 @@ const PasswordResetForm = ({ user, onSubmit, onCancel }) => {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input w-full"
               required
             />
           </div>
@@ -191,13 +191,13 @@ const PasswordResetForm = ({ user, onSubmit, onCancel }) => {
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className="btn-secondary flex-1"
             >
               Abbrechen
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              className="btn-primary flex-1"
             >
               Passwort zurücksetzen
             </button>
@@ -353,7 +353,7 @@ const UserManagement = () => {
         
             <button
               onClick={() => setShowCreateForm(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+              className="btn-primary"
             >
               <Plus className="w-4 h-4" />
               Neuer Benutzer
@@ -372,7 +372,7 @@ const UserManagement = () => {
                 type="text"
                 value={filters.search}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
-                className="pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
+                className="input pl-10 w-64"
                 placeholder="Benutzername oder E-Mail..."
               />
             </div>
@@ -383,7 +383,7 @@ const UserManagement = () => {
             <select
               value={filters.role}
               onChange={(e) => handleFilterChange('role', e.target.value)}
-              className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="select"
             >
               <option value="">Alle Rollen</option>
               <option value="admin">Administrator</option>
@@ -481,7 +481,7 @@ const UserManagement = () => {
                   <button
                     onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
                     disabled={pagination.page === 1}
-                    className="px-3 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="btn-secondary text-sm px-3 py-1 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Zurück
                   </button>
@@ -491,7 +491,7 @@ const UserManagement = () => {
                   <button
                     onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
                     disabled={pagination.page === pagination.pages}
-                    className="px-3 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="btn-secondary text-sm px-3 py-1 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Weiter
                   </button>
@@ -504,7 +504,7 @@ const UserManagement = () => {
 
         {/* Modals */}
         {showCreateForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="modal-overlay">
             <UserForm
               onSubmit={handleCreateUser}
               onCancel={() => setShowCreateForm(false)}
@@ -513,7 +513,7 @@ const UserManagement = () => {
         )}
 
         {editingUser && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="modal-overlay">
             <UserForm
               user={editingUser}
               onSubmit={(data) => handleUpdateUser(editingUser.id, data)}
@@ -523,7 +523,7 @@ const UserManagement = () => {
         )}
 
         {showPasswordForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="modal-overlay">
             <PasswordResetForm
               user={showPasswordForm}
               onSubmit={handleResetPassword}

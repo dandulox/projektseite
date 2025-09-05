@@ -80,8 +80,8 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="modal-overlay">
+      <div className="modal-content">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
           {editModule ? 'Modul bearbeiten' : 'Neues Modul erstellen'}
         </h3>
@@ -97,7 +97,7 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                className="input w-full"
                 required
               />
             </div>
@@ -110,7 +110,7 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                className="select w-full"
               >
                 <option value="not_started">Nicht begonnen</option>
                 <option value="in_progress">In Bearbeitung</option>
@@ -127,7 +127,7 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
                 name="priority"
                 value={formData.priority}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                className="select w-full"
               >
                 <option value="low">Niedrig</option>
                 <option value="medium">Mittel</option>
@@ -146,7 +146,7 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
                 name="estimated_hours"
                 value={formData.estimated_hours}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                className="input w-full"
               />
             </div>
             
@@ -159,7 +159,7 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
                 name="due_date"
                 value={formData.due_date}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                className="input w-full"
               />
             </div>
             
@@ -171,7 +171,7 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
                 name="visibility"
                 value={formData.visibility}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                className="select w-full"
               >
                 <option value="private">Privat</option>
                 <option value="team">Team</option>
@@ -188,7 +188,7 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
               name="description"
               value={formData.description}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+              className="textarea w-full"
               rows={3}
             />
           </div>
@@ -203,7 +203,7 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
               value={formData.tags}
               onChange={handleChange}
               placeholder="frontend, backend, api"
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+              className="input w-full"
             />
           </div>
           
@@ -217,7 +217,7 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
               value={formData.dependencies}
               onChange={handleChange}
               placeholder="Design-Phase, Datenbank-Setup"
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+              className="input w-full"
             />
           </div>
           
@@ -225,14 +225,14 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="btn-secondary flex-1"
             >
               Abbrechen
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+              className="btn-primary flex-1 disabled:opacity-50"
             >
               {loading ? (editModule ? 'Aktualisiere...' : 'Erstelle...') : (editModule ? 'Aktualisieren' : 'Erstellen')}
             </button>

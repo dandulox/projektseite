@@ -233,7 +233,7 @@ const UserSettings = () => {
                           required
                           value={profileData.username}
                           onChange={(e) => setProfileData({...profileData, username: e.target.value})}
-                          className="w-full px-4 py-3 pl-12 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="input-icon w-full"
                           placeholder="Benutzername eingeben..."
                         />
                         <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -250,7 +250,7 @@ const UserSettings = () => {
                           required
                           value={profileData.email}
                           onChange={(e) => setProfileData({...profileData, email: e.target.value})}
-                          className="w-full px-4 py-3 pl-12 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="input-icon w-full"
                           placeholder="E-Mail-Adresse eingeben..."
                         />
                         <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -280,7 +280,7 @@ const UserSettings = () => {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium rounded-lg shadow-lg hover:shadow-blue-500/25 transition-all duration-300 flex items-center space-x-2 disabled:opacity-50"
+                      className="btn-gradient-primary disabled:opacity-50"
                     >
                       <Save className="w-4 h-4" />
                       <span>{loading ? 'Speichern...' : 'Profil speichern'}</span>
@@ -314,7 +314,7 @@ const UserSettings = () => {
                         required
                         value={passwordData.currentPassword}
                         onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                        className="w-full px-4 py-3 pl-12 pr-12 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="input-icon w-full pr-12"
                         placeholder="Aktuelles Passwort eingeben..."
                       />
                       <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -339,7 +339,7 @@ const UserSettings = () => {
                           required
                           value={passwordData.newPassword}
                           onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                          className="w-full px-4 py-3 pl-12 pr-12 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="input-icon w-full pr-12"
                           placeholder="Neues Passwort eingeben..."
                         />
                         <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -363,7 +363,7 @@ const UserSettings = () => {
                           required
                           value={passwordData.confirmPassword}
                           onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                          className="w-full px-4 py-3 pl-12 pr-12 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="input-icon w-full pr-12"
                           placeholder="Passwort bestätigen..."
                         />
                         <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -397,7 +397,7 @@ const UserSettings = () => {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-6 py-3 bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white font-medium rounded-lg shadow-lg hover:shadow-red-500/25 transition-all duration-300 flex items-center space-x-2 disabled:opacity-50"
+                      className="btn-danger disabled:opacity-50"
                     >
                       <Shield className="w-4 h-4" />
                       <span>{loading ? 'Ändern...' : 'Passwort ändern'}</span>
@@ -448,7 +448,7 @@ const UserSettings = () => {
                 <div className="flex justify-end">
                   <button 
                     onClick={handleNotificationsSave}
-                    className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium rounded-lg shadow-lg hover:shadow-green-500/25 transition-all duration-300 flex items-center space-x-2"
+                    className="btn-success"
                   >
                     <Save className="w-4 h-4" />
                     <span>Einstellungen speichern</span>
@@ -580,7 +580,7 @@ const UserSettings = () => {
                     <select
                       value={localDesignSettings.language}
                       onChange={(e) => handleDesignChange('language', e.target.value)}
-                      className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="select w-full"
                     >
                       <option value="de">Deutsch</option>
                       <option value="en">English</option>
@@ -637,7 +637,7 @@ const UserSettings = () => {
                 <div className="flex justify-end">
                   <button 
                     onClick={handleDesignSave}
-                    className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-medium rounded-lg shadow-lg hover:shadow-purple-500/25 transition-all duration-300 flex items-center space-x-2"
+                    className="btn-gradient-primary"
                   >
                     <Save className="w-4 h-4" />
                     <span>Design speichern</span>

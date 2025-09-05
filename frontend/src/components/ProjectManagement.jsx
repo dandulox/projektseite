@@ -258,7 +258,7 @@ const ProjectManagement = () => {
             </div>
             <button
               onClick={() => setShowCreateForm(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+              className="btn-primary"
             >
               Neues Projekt erstellen
             </button>
@@ -275,7 +275,7 @@ const ProjectManagement = () => {
               <select
                 value={filters.team_id}
                 onChange={(e) => setFilters({ ...filters, team_id: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                className="select w-full"
               >
                 <option value="">Alle Teams</option>
                 {teams.map((team) => (
@@ -292,7 +292,7 @@ const ProjectManagement = () => {
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                className="select w-full"
               >
                 <option value="">Alle Status</option>
                 <option value="planning">Planung</option>
@@ -309,7 +309,7 @@ const ProjectManagement = () => {
               <select
                 value={filters.visibility}
                 onChange={(e) => setFilters({ ...filters, visibility: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                className="select w-full"
               >
                 <option value="">Alle Sichtbarkeiten</option>
                 <option value="private">Privat</option>
@@ -419,20 +419,20 @@ const ProjectManagement = () => {
                           <>
                             <button
                               onClick={() => setShowEditForm(true)}
-                              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                              className="btn-primary text-sm px-3 py-1"
                             >
                               Bearbeiten
                             </button>
                             <button
                               onClick={handleUpdateProjectProgress}
-                              className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                              className="btn-success text-sm px-3 py-1"
                               title="Fortschritt basierend auf Modulen neu berechnen"
                             >
                               Fortschritt aktualisieren
                             </button>
                             <button
                               onClick={() => handleDeleteProject(selectedProject.project.id)}
-                              className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                              className="btn-danger text-sm px-3 py-1"
                             >
                               Löschen
                             </button>
@@ -498,7 +498,7 @@ const ProjectManagement = () => {
                       <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Module</h3>
                       <button
                         onClick={() => setShowCreateModuleForm(true)}
-                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                        className="btn-success text-sm px-3 py-1"
                       >
                         Modul hinzufügen
                       </button>
@@ -552,13 +552,13 @@ const ProjectManagement = () => {
                                         setSelectedModule(module);
                                         setShowEditModuleForm(true);
                                       }}
-                                      className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                                      className="btn-primary text-xs px-2 py-1"
                                     >
                                       Bearbeiten
                                     </button>
                                     <button
                                       onClick={() => handleDeleteModule(module.id)}
-                                      className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                                      className="btn-danger text-xs px-2 py-1"
                                     >
                                       Löschen
                                     </button>
@@ -630,8 +630,8 @@ const ProjectManagement = () => {
 
         {/* Create Project Modal */}
         {showCreateForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="modal-overlay">
+            <div className="modal-content">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                 Neues Projekt erstellen
               </h3>
@@ -645,7 +645,7 @@ const ProjectManagement = () => {
                       type="text"
                       value={newProject.name}
                       onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      className="input w-full"
                       required
                     />
                   </div>
@@ -656,7 +656,7 @@ const ProjectManagement = () => {
                     <select
                       value={newProject.status}
                       onChange={(e) => setNewProject({ ...newProject, status: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      className="select w-full"
                     >
                       <option value="planning">Planung</option>
                       <option value="active">Aktiv</option>
@@ -672,7 +672,7 @@ const ProjectManagement = () => {
                     <select
                       value={newProject.priority}
                       onChange={(e) => setNewProject({ ...newProject, priority: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      className="select w-full"
                     >
                       <option value="low">Niedrig</option>
                       <option value="medium">Mittel</option>
@@ -687,7 +687,7 @@ const ProjectManagement = () => {
                     <select
                       value={newProject.team_id}
                       onChange={(e) => setNewProject({ ...newProject, team_id: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      className="select w-full"
                     >
                       <option value="">Kein Team</option>
                       {teams.map((team) => (
@@ -704,7 +704,7 @@ const ProjectManagement = () => {
                     <select
                       value={newProject.visibility}
                       onChange={(e) => setNewProject({ ...newProject, visibility: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      className="select w-full"
                     >
                       <option value="private">Privat</option>
                       <option value="team">Team</option>
@@ -719,7 +719,7 @@ const ProjectManagement = () => {
                       type="date"
                       value={newProject.start_date}
                       onChange={(e) => setNewProject({ ...newProject, start_date: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      className="input w-full"
                     />
                   </div>
                   <div>
@@ -730,7 +730,7 @@ const ProjectManagement = () => {
                       type="date"
                       value={newProject.target_date}
                       onChange={(e) => setNewProject({ ...newProject, target_date: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      className="input w-full"
                     />
                   </div>
                 </div>
@@ -741,7 +741,7 @@ const ProjectManagement = () => {
                   <textarea
                     value={newProject.description}
                     onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    className="textarea w-full"
                     rows={3}
                   />
                 </div>
@@ -749,13 +749,13 @@ const ProjectManagement = () => {
                   <button
                     type="button"
                     onClick={() => setShowCreateForm(false)}
-                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="btn-secondary flex-1"
                   >
                     Abbrechen
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    className="btn-primary flex-1"
                   >
                     Erstellen
                   </button>
@@ -767,8 +767,8 @@ const ProjectManagement = () => {
 
         {/* Edit Project Modal */}
         {showEditForm && selectedProject && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="modal-overlay">
+            <div className="modal-content">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                 Projekt bearbeiten
               </h3>
@@ -785,7 +785,7 @@ const ProjectManagement = () => {
                         ...selectedProject,
                         project: { ...selectedProject.project, name: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      className="input w-full"
                       required
                     />
                   </div>
@@ -799,7 +799,7 @@ const ProjectManagement = () => {
                         ...selectedProject,
                         project: { ...selectedProject.project, status: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      className="select w-full"
                     >
                       <option value="planning">Planung</option>
                       <option value="active">Aktiv</option>
@@ -818,7 +818,7 @@ const ProjectManagement = () => {
                         ...selectedProject,
                         project: { ...selectedProject.project, priority: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      className="select w-full"
                     >
                       <option value="low">Niedrig</option>
                       <option value="medium">Mittel</option>
@@ -839,7 +839,7 @@ const ProjectManagement = () => {
                         ...selectedProject,
                         project: { ...selectedProject.project, completion_percentage: parseInt(e.target.value) }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      className="input w-full"
                     />
                   </div>
                   <div>
@@ -852,7 +852,7 @@ const ProjectManagement = () => {
                         ...selectedProject,
                         project: { ...selectedProject.project, visibility: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      className="select w-full"
                     >
                       <option value="private">Privat</option>
                       <option value="team">Team</option>
@@ -870,7 +870,7 @@ const ProjectManagement = () => {
                         ...selectedProject,
                         project: { ...selectedProject.project, start_date: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      className="input w-full"
                     />
                   </div>
                   <div>
@@ -884,7 +884,7 @@ const ProjectManagement = () => {
                         ...selectedProject,
                         project: { ...selectedProject.project, target_date: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                      className="input w-full"
                     />
                   </div>
                 </div>
@@ -898,7 +898,7 @@ const ProjectManagement = () => {
                       ...selectedProject,
                       project: { ...selectedProject.project, description: e.target.value }
                     })}
-                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-700 dark:text-white"
+                    className="textarea w-full"
                     rows={3}
                   />
                 </div>
@@ -906,13 +906,13 @@ const ProjectManagement = () => {
                   <button
                     type="button"
                     onClick={() => setShowEditForm(false)}
-                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="btn-secondary flex-1"
                   >
                     Abbrechen
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    className="btn-primary flex-1"
                   >
                     Speichern
                   </button>

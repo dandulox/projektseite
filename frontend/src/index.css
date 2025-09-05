@@ -184,6 +184,27 @@
     @apply bg-transparent text-blue-600 border border-blue-600 py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center gap-2 hover:bg-blue-600 hover:text-white hover:shadow-lg;
   }
 
+  /* Button variants */
+  .btn-success {
+    @apply bg-green-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center gap-2 hover:bg-green-700 hover:-translate-y-0.5 hover:shadow-lg;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center gap-2 hover:bg-red-700 hover:-translate-y-0.5 hover:shadow-lg;
+  }
+
+  .btn-warning {
+    @apply bg-orange-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center gap-2 hover:bg-orange-700 hover:-translate-y-0.5 hover:shadow-lg;
+  }
+
+  .btn-gradient-primary {
+    @apply bg-gradient-to-r from-blue-500 to-purple-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center gap-2 hover:from-blue-600 hover:to-purple-700 hover:-translate-y-0.5 hover:shadow-lg;
+  }
+
+  .btn-gradient-success {
+    @apply bg-gradient-to-r from-emerald-500 to-blue-600 text-white border-none py-3 px-6 rounded-full font-medium text-sm cursor-pointer transition-all duration-200 inline-flex items-center gap-2 hover:from-emerald-600 hover:to-blue-700 hover:-translate-y-0.5 hover:shadow-lg;
+  }
+
   /* Card styles - konsistentes Design für alle Seiten */
   .card {
     @apply bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-xl dark:shadow-slate-900/30 border border-slate-200 dark:border-slate-700 hover:shadow-2xl dark:hover:shadow-slate-900/40 hover:-translate-y-1 transition-all duration-300;
@@ -194,6 +215,26 @@
   /* Input styles */
   .input {
     @apply bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-slate-900 dark:text-slate-100 text-sm transition-all duration-200 focus:outline-none focus:border-blue-600 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] focus:bg-white dark:focus:bg-slate-700;
+  }
+
+  /* Input with icon */
+  .input-icon {
+    @apply bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-12 pr-4 text-slate-900 dark:text-slate-100 text-sm transition-all duration-200 focus:outline-none focus:border-blue-600 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] focus:bg-white dark:focus:bg-slate-700;
+  }
+
+  /* Glass input for special forms */
+  .input-glass {
+    @apply bg-white/10 backdrop-blur-sm border border-white/30 rounded-lg py-3 px-4 text-white placeholder-white/70 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200;
+  }
+
+  /* Select styles */
+  .select {
+    @apply bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-slate-900 dark:text-slate-100 text-sm transition-all duration-200 focus:outline-none focus:border-blue-600 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] focus:bg-white dark:focus:bg-slate-700;
+  }
+
+  /* Textarea styles */
+  .textarea {
+    @apply bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-slate-900 dark:text-slate-100 text-sm transition-all duration-200 focus:outline-none focus:border-blue-600 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)] focus:bg-white dark:focus:bg-slate-700 resize-vertical;
   }
 
   /* Navigation link styles */
@@ -220,6 +261,40 @@
 
   .status-warning {
     @apply text-amber-600 dark:text-amber-400;
+  }
+
+  /* Modal styles */
+  .modal {
+    @apply bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700;
+  }
+
+  .modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+  }
+
+  .modal-content {
+    @apply modal p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto;
+  }
+
+  .modal-small {
+    @apply modal p-6 w-full max-w-md;
+  }
+
+  /* Form styles */
+  .form-group {
+    @apply space-y-2;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-slate-700 dark:text-slate-300;
+  }
+
+  .form-error {
+    @apply text-sm text-red-600 dark:text-red-400 flex items-center space-x-1;
+  }
+
+  .form-success {
+    @apply text-sm text-green-600 dark:text-green-400 flex items-center space-x-1;
   }
 
   /* Konsistente Container-Breite für alle Seiten */
