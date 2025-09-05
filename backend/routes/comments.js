@@ -1,6 +1,5 @@
 const express = require('express');
 const { authenticateToken } = require('./auth');
-const { createNotification, createTeamNotification } = require('./notifications');
 const router = express.Router();
 
 // Datenbankverbindung
@@ -231,7 +230,7 @@ router.post('/', authenticateToken, async (req, res) => {
       WHERE comment_id = $5
     `, [target_type, target_id, req.user.id, true, commentId]);
 
-    // Benachrichtigungen erstellen
+    // Benachrichtigungen erstellen (vereinfacht)
     try {
       // Benachrichtigung für Team-Mitglieder (falls es ein Team-Projekt/Modul ist)
       let teamId = null;
@@ -257,15 +256,13 @@ router.post('/', authenticateToken, async (req, res) => {
       }
 
       if (teamId) {
-        await createTeamNotification(teamId, {
-          type: 'comment_added',
-          title: 'Neuer Kommentar',
-          message: `Ein neuer Kommentar wurde hinzugefügt.`,
-          fromUserId: req.user.id,
-          targetType: target_type,
-          targetId: target_id,
-          actionUrl: `/${target_type}s/${target_id}`
-        });
+        // Einfache Benachrichtigung erstellen
+        await pool.query(`
+          INSERT INTO notifications (user_id, type, title, message, from_user_id, target_type, target_id, action_url)
+          SELECT tm.user_id, 'comment_added', 'Neuer Kommentar', 'Ein neuer Kommentar wurde hinzugefügt.', $1, $2, $3, $4
+          FROM team_memberships tm
+          WHERE tm.team_id = $5 AND tm.user_id != $1
+        `, [req.user.id, target_type, target_id, `/${target_type}s/${target_id}`, teamId]);
       }
     } catch (notificationError) {
       console.error('Fehler beim Erstellen der Benachrichtigungen:', notificationError);
@@ -460,15 +457,10 @@ router.post('/:id/mentions', authenticateToken, async (req, res) => {
       // Benachrichtigungen für erwähnte Benutzer erstellen
       for (const userId of mentioned_user_ids) {
         try {
-          await createNotification(userId, {
-            type: 'comment_mention',
-            title: 'Sie wurden in einem Kommentar erwähnt',
-            message: `Sie wurden in einem Kommentar erwähnt.`,
-            fromUserId: req.user.id,
-            targetType: commentResult.rows[0].target_type,
-            targetId: commentResult.rows[0].target_id,
-            actionUrl: `/${commentResult.rows[0].target_type}s/${commentResult.rows[0].target_id}`
-          });
+          await pool.query(`
+            INSERT INTO notifications (user_id, type, title, message, from_user_id, target_type, target_id, action_url)
+            VALUES ($1, 'comment_mention', 'Sie wurden in einem Kommentar erwähnt', 'Sie wurden in einem Kommentar erwähnt.', $2, $3, $4, $5)
+          `, [userId, req.user.id, commentResult.rows[0].target_type, commentResult.rows[0].target_id, `/${commentResult.rows[0].target_type}s/${commentResult.rows[0].target_id}`]);
         } catch (notificationError) {
           console.error('Fehler beim Erstellen der Mention-Benachrichtigung:', notificationError);
         }
