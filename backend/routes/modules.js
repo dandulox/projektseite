@@ -195,6 +195,33 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
+// Modul-Berechtigungen abrufen
+router.get('/:id/permissions', authenticateToken, async (req, res) => {
+  try {
+    const moduleId = req.params.id;
+    const { module_type = 'project' } = req.query;
+
+    // Prüfe Berechtigung
+    if (!(await checkModulePermission(req.user.id, moduleId, module_type, 'view'))) {
+      return res.status(403).json({ error: 'Keine Berechtigung für dieses Modul' });
+    }
+
+    // Berechtigungen abrufen
+    const result = await pool.query(`
+      SELECT mp.*, u.username, u.email, u.role as user_role
+      FROM module_permissions mp
+      JOIN users u ON u.id = mp.user_id
+      WHERE mp.module_id = $1 AND mp.module_type = $2
+      ORDER BY mp.granted_at DESC
+    `, [moduleId, module_type]);
+
+    res.json({ permissions: result.rows });
+  } catch (error) {
+    console.error('Fehler beim Abrufen der Modul-Berechtigungen:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
 // Einzelnes Modul abrufen
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
@@ -553,33 +580,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error('Fehler beim Aktualisieren des Moduls:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
-  }
-});
-
-// Modul-Berechtigungen abrufen
-router.get('/:id/permissions', authenticateToken, async (req, res) => {
-  try {
-    const moduleId = req.params.id;
-    const { module_type = 'project' } = req.query;
-
-    // Prüfe Berechtigung
-    if (!(await checkModulePermission(req.user.id, moduleId, module_type, 'view'))) {
-      return res.status(403).json({ error: 'Keine Berechtigung für dieses Modul' });
-    }
-
-    // Berechtigungen abrufen
-    const result = await pool.query(`
-      SELECT mp.*, u.username, u.email, u.role as user_role
-      FROM module_permissions mp
-      JOIN users u ON u.id = mp.user_id
-      WHERE mp.module_id = $1 AND mp.module_type = $2
-      ORDER BY mp.granted_at DESC
-    `, [moduleId, module_type]);
-
-    res.json({ permissions: result.rows });
-  } catch (error) {
-    console.error('Fehler beim Abrufen der Modul-Berechtigungen:', error);
     res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
