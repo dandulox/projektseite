@@ -90,7 +90,10 @@ const UserProfile = () => {
     try {
       const token = localStorage.getItem('token');
       const userId = targetUserId || currentUser?.id;
-      const endpoint = isOwnProfile ? '/api/auth/profile/stats' : `/api/auth/user/${userId}/stats`;
+      
+      // Bestimme den korrekten Endpunkt basierend auf der User-ID
+      const isTargetOwnProfile = !targetUserId || targetUserId === currentUser?.id?.toString();
+      const endpoint = isTargetOwnProfile ? '/api/auth/profile/stats' : `/api/auth/user/${userId}/stats`;
       
       const response = await fetch(endpoint, {
         headers: {
@@ -114,8 +117,8 @@ const UserProfile = () => {
 
   const handleCancel = () => {
     setProfileData({
-      username: user?.username || '',
-      email: user?.email || ''
+      username: targetUser?.username || '',
+      email: targetUser?.email || ''
     });
     setIsEditing(false);
   };
