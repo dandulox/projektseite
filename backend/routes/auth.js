@@ -293,7 +293,7 @@ router.get('/profile/stats', authenticateToken, async (req, res) => {
         COUNT(CASE WHEN status = 'active' THEN 1 END) as active_projects,
         COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_projects,
         COUNT(CASE WHEN status = 'on_hold' THEN 1 END) as on_hold_projects,
-        AVG(completion_percentage) as avg_completion
+        COALESCE(AVG(completion_percentage), 0) as avg_completion
       FROM projects 
       WHERE owner_id = $1
     `, [userId]);
@@ -304,8 +304,8 @@ router.get('/profile/stats', authenticateToken, async (req, res) => {
         COUNT(*) as total_modules,
         COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_modules,
         COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress_modules,
-        SUM(actual_hours) as total_hours,
-        SUM(estimated_hours) as estimated_hours
+        COALESCE(SUM(actual_hours), 0) as total_hours,
+        COALESCE(SUM(estimated_hours), 0) as estimated_hours
       FROM project_modules 
       WHERE assigned_to = $1
     `, [userId]);
@@ -320,23 +320,39 @@ router.get('/profile/stats', authenticateToken, async (req, res) => {
       WHERE tm.user_id = $1
     `, [userId]);
 
-    // Aktivitäts-Statistiken (letzte 30 Tage)
+    // Aktivitäts-Statistiken (letzte 30 Tage) - vereinfacht
     const activityStats = await pool.query(`
       SELECT 
         COUNT(*) as recent_activities,
         MAX(created_at) as last_activity
-      FROM (
-        SELECT created_at FROM project_logs WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days'
-        UNION ALL
-        SELECT created_at FROM module_logs WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days'
-      ) activities
+      FROM project_logs 
+      WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days'
     `, [userId]);
 
     res.json({
-      projects: projectStats.rows[0],
-      modules: moduleStats.rows[0],
-      teams: teamStats.rows[0],
-      activity: activityStats.rows[0]
+      projects: projectStats.rows[0] || {
+        total_projects: 0,
+        active_projects: 0,
+        completed_projects: 0,
+        on_hold_projects: 0,
+        avg_completion: 0
+      },
+      modules: moduleStats.rows[0] || {
+        total_modules: 0,
+        completed_modules: 0,
+        in_progress_modules: 0,
+        total_hours: 0,
+        estimated_hours: 0
+      },
+      teams: teamStats.rows[0] || {
+        total_teams: 0,
+        leading_teams: 0,
+        member_teams: 0
+      },
+      activity: activityStats.rows[0] || {
+        recent_activities: 0,
+        last_activity: null
+      }
     });
 
   } catch (error) {
@@ -410,7 +426,7 @@ router.get('/user/:userId/stats', authenticateToken, async (req, res) => {
         COUNT(CASE WHEN status = 'active' THEN 1 END) as active_projects,
         COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_projects,
         COUNT(CASE WHEN status = 'on_hold' THEN 1 END) as on_hold_projects,
-        AVG(completion_percentage) as avg_completion
+        COALESCE(AVG(completion_percentage), 0) as avg_completion
       FROM projects 
       WHERE owner_id = $1
     `, [userId]);
@@ -421,8 +437,8 @@ router.get('/user/:userId/stats', authenticateToken, async (req, res) => {
         COUNT(*) as total_modules,
         COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_modules,
         COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress_modules,
-        SUM(actual_hours) as total_hours,
-        SUM(estimated_hours) as estimated_hours
+        COALESCE(SUM(actual_hours), 0) as total_hours,
+        COALESCE(SUM(estimated_hours), 0) as estimated_hours
       FROM project_modules 
       WHERE assigned_to = $1
     `, [userId]);
@@ -437,23 +453,39 @@ router.get('/user/:userId/stats', authenticateToken, async (req, res) => {
       WHERE tm.user_id = $1
     `, [userId]);
 
-    // Aktivitäts-Statistiken (letzte 30 Tage)
+    // Aktivitäts-Statistiken (letzte 30 Tage) - vereinfacht
     const activityStats = await pool.query(`
       SELECT 
         COUNT(*) as recent_activities,
         MAX(created_at) as last_activity
-      FROM (
-        SELECT created_at FROM project_logs WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days'
-        UNION ALL
-        SELECT created_at FROM module_logs WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days'
-      ) activities
+      FROM project_logs 
+      WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days'
     `, [userId]);
 
     res.json({
-      projects: projectStats.rows[0],
-      modules: moduleStats.rows[0],
-      teams: teamStats.rows[0],
-      activity: activityStats.rows[0]
+      projects: projectStats.rows[0] || {
+        total_projects: 0,
+        active_projects: 0,
+        completed_projects: 0,
+        on_hold_projects: 0,
+        avg_completion: 0
+      },
+      modules: moduleStats.rows[0] || {
+        total_modules: 0,
+        completed_modules: 0,
+        in_progress_modules: 0,
+        total_hours: 0,
+        estimated_hours: 0
+      },
+      teams: teamStats.rows[0] || {
+        total_teams: 0,
+        leading_teams: 0,
+        member_teams: 0
+      },
+      activity: activityStats.rows[0] || {
+        recent_activities: 0,
+        last_activity: null
+      }
     });
 
   } catch (error) {
