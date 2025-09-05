@@ -43,6 +43,7 @@ services:
     restart: unless-stopped
     volumes:
       - ../shared:/app/shared
+      - ../database:/app/database
 
   # Frontend Admin-Interface
   frontend:
