@@ -152,8 +152,47 @@ router.post('/login', async (req, res) => {
 // Benutzerprofil abrufen
 router.get('/profile', authenticateToken, async (req, res) => {
   try {
+    // Erweiterte Benutzerdaten mit Statistiken abrufen
+    const userResult = await pool.query(`
+      SELECT 
+        u.id, u.username, u.email, u.role, u.is_active, u.created_at, u.updated_at,
+        COUNT(DISTINCT p.id) as project_count,
+        COUNT(DISTINCT tm.team_id) as team_count,
+        COUNT(DISTINCT n.id) as notification_count,
+        COUNT(DISTINCT CASE WHEN n.is_read = false THEN n.id END) as unread_notifications
+      FROM users u
+      LEFT JOIN projects p ON p.owner_id = u.id
+      LEFT JOIN team_memberships tm ON tm.user_id = u.id
+      LEFT JOIN notifications n ON n.user_id = u.id
+      WHERE u.id = $1
+      GROUP BY u.id, u.username, u.email, u.role, u.is_active, u.created_at, u.updated_at
+    `, [req.user.id]);
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Benutzer nicht gefunden' });
+    }
+
+    const user = userResult.rows[0];
+
+    // Letzte Aktivität abrufen
+    const activityResult = await pool.query(`
+      SELECT 
+        MAX(created_at) as last_activity
+      FROM (
+        SELECT created_at FROM project_logs WHERE user_id = $1
+        UNION ALL
+        SELECT created_at FROM module_logs WHERE user_id = $1
+        UNION ALL
+        SELECT updated_at FROM projects WHERE owner_id = $1
+        UNION ALL
+        SELECT updated_at FROM project_modules WHERE assigned_to = $1
+      ) activities
+    `, [req.user.id]);
+
+    user.last_activity = activityResult.rows[0]?.last_activity || user.created_at;
+
     res.json({
-      user: req.user
+      user: user
     });
   } catch (error) {
     console.error('Profil-Fehler:', error);
@@ -240,6 +279,70 @@ router.put('/change-password', authenticateToken, async (req, res) => {
 // Token validieren
 router.get('/validate', authenticateToken, (req, res) => {
   res.json({ valid: true, user: req.user });
+});
+
+// Detaillierte Benutzerstatistiken abrufen
+router.get('/profile/stats', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Projekt-Statistiken
+    const projectStats = await pool.query(`
+      SELECT 
+        COUNT(*) as total_projects,
+        COUNT(CASE WHEN status = 'active' THEN 1 END) as active_projects,
+        COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_projects,
+        COUNT(CASE WHEN status = 'on_hold' THEN 1 END) as on_hold_projects,
+        AVG(completion_percentage) as avg_completion
+      FROM projects 
+      WHERE owner_id = $1
+    `, [userId]);
+
+    // Modul-Statistiken
+    const moduleStats = await pool.query(`
+      SELECT 
+        COUNT(*) as total_modules,
+        COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_modules,
+        COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress_modules,
+        SUM(actual_hours) as total_hours,
+        SUM(estimated_hours) as estimated_hours
+      FROM project_modules 
+      WHERE assigned_to = $1
+    `, [userId]);
+
+    // Team-Statistiken
+    const teamStats = await pool.query(`
+      SELECT 
+        COUNT(*) as total_teams,
+        COUNT(CASE WHEN tm.role = 'leader' THEN 1 END) as leading_teams,
+        COUNT(CASE WHEN tm.role = 'member' THEN 1 END) as member_teams
+      FROM team_memberships tm
+      WHERE tm.user_id = $1
+    `, [userId]);
+
+    // Aktivitäts-Statistiken (letzte 30 Tage)
+    const activityStats = await pool.query(`
+      SELECT 
+        COUNT(*) as recent_activities,
+        MAX(created_at) as last_activity
+      FROM (
+        SELECT created_at FROM project_logs WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days'
+        UNION ALL
+        SELECT created_at FROM module_logs WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days'
+      ) activities
+    `, [userId]);
+
+    res.json({
+      projects: projectStats.rows[0],
+      modules: moduleStats.rows[0],
+      teams: teamStats.rows[0],
+      activity: activityStats.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Statistik-Fehler:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
 });
 
 // Logout (Client-seitig - Token wird gelöscht)

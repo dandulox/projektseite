@@ -6,6 +6,7 @@ import { AuthProvider, ProtectedRoute, useAuth } from './contexts/AuthContext';
 import AuthPage from './pages/AuthPage';
 import UserManagement from './components/UserManagement';
 import UserSettings from './components/UserSettings';
+import UserProfile from './components/UserProfile';
 import GreetingManagement from './components/GreetingManagement';
 import TeamManagement from './components/TeamManagement';
 import ProjectManagement from './components/ProjectManagement';
@@ -26,6 +27,7 @@ import {
   ChevronRight,
   BarChart3,
   Users,
+  User,
   Calendar,
   FileText,
   Zap,
@@ -222,6 +224,17 @@ const Header = ({ theme, toggleTheme, isMobileMenuOpen, setIsMobileMenuOpen }) =
                   <div className="py-2">
                     <button
                       onClick={() => {
+                        navigate('/profile');
+                        setIsUserMenuOpen(false);
+                      }}
+                      className="w-full flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
+                    >
+                      <User className="w-4 h-4 mr-3" />
+                      Mein Profil
+                    </button>
+                    
+                    <button
+                      onClick={() => {
                         navigate('/settings');
                         setIsUserMenuOpen(false);
                       }}
@@ -370,6 +383,15 @@ const MobileMenu = ({ isOpen, onClose }) => {
                   </div>
                 </div>
               </div>
+              
+              <NavLink
+                to="/profile"
+                onClick={onClose}
+                className="w-full flex items-center px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
+              >
+                <User className="mr-3 h-5 w-5" />
+                Mein Profil
+              </NavLink>
               
               <NavLink
                 to="/settings"
@@ -841,6 +863,21 @@ const AppContent = () => {
               />
               <main className="flex-1 py-8 page-container">
                 <UserSettings />
+              </main>
+              <Footer />
+              <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <Header 
+                theme={theme} 
+                toggleTheme={toggleTheme}
+                isMobileMenuOpen={isMobileMenuOpen}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+              />
+              <main className="flex-1 py-8 page-container">
+                <UserProfile />
               </main>
               <Footer />
               <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />

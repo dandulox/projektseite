@@ -211,14 +211,23 @@ const UserSettings = () => {
             {/* Profil Tab */}
             {activeTab === 'profile' && (
               <div className="space-y-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                    <User className="w-6 h-6 text-white" />
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                      <User className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Profil-Informationen</h2>
+                      <p className="text-slate-600 dark:text-slate-400">Aktualisieren Sie Ihre persönlichen Daten</p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Profil-Informationen</h2>
-                    <p className="text-slate-600 dark:text-slate-400">Aktualisieren Sie Ihre persönlichen Daten</p>
-                  </div>
+                  <button
+                    onClick={() => window.location.href = '/profile'}
+                    className="btn-secondary"
+                  >
+                    <Eye className="w-4 h-4" />
+                    <span>Profil anzeigen</span>
+                  </button>
                 </div>
 
                 <form onSubmit={handleProfileUpdate} className="space-y-6">
