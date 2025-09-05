@@ -162,12 +162,12 @@ const UserCard = ({
   // Status-Badge
   const getStatusBadge = (isActive) => {
     return isActive ? (
-      <div className="flex items-center space-x-1">
+      <div className="flex items-center" style={{gap: '0.25rem'}}>
         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
         <span className="text-xs text-green-600 dark:text-green-400">Aktiv</span>
       </div>
     ) : (
-      <div className="flex items-center space-x-1">
+      <div className="flex items-center" style={{gap: '0.25rem'}}>
         <div className="w-2 h-2 bg-red-500 rounded-full"></div>
         <span className="text-xs text-red-600 dark:text-red-400">Inaktiv</span>
       </div>
@@ -195,7 +195,7 @@ const UserCard = ({
     <div className="relative">
       {/* Benutzer-Card */}
       <div
-        className={`flex items-center space-x-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200 ${
+        className={`flex items-center p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200 ${
           showClick ? 'cursor-pointer' : ''
         } ${className}`}
         onMouseEnter={handleMouseEnter}
@@ -240,7 +240,7 @@ const UserCard = ({
           className="absolute z-50 w-80 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 p-4 top-full left-0 mt-2"
         >
           {/* Header */}
-          <div className="flex items-center space-x-3 mb-4">
+          <div className="flex items-center mb-4" style={{gap: '0.75rem'}}>
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
               <User className="w-6 h-6 text-white" />
             </div>
@@ -272,7 +272,7 @@ const UserCard = ({
               {/* Neue Benutzer - Willkommensnachricht */}
               {(userStats.projects?.total_projects === 0 && userStats.teams?.total_teams === 0) ? (
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-3 mb-4 border border-blue-200 dark:border-blue-800">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center" style={{gap: '0.5rem'}}>
                     <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                       <Award className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                     </div>
@@ -289,7 +289,7 @@ const UserCard = ({
               ) : (
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="text-center">
-                    <div className="flex items-center justify-center space-x-2 mb-1">
+                    <div className="flex items-center justify-center mb-1" style={{gap: '0.5rem'}}>
                       <FolderOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       <span className="text-sm font-medium text-slate-900 dark:text-white">
                         {userStats.projects?.total_projects || 0}
@@ -299,7 +299,7 @@ const UserCard = ({
                   </div>
                   
                   <div className="text-center">
-                    <div className="flex items-center justify-center space-x-2 mb-1">
+                    <div className="flex items-center justify-center mb-1" style={{gap: '0.5rem'}}>
                       <Users className="w-4 h-4 text-green-600 dark:text-green-400" />
                       <span className="text-sm font-medium text-slate-900 dark:text-white">
                         {userStats.teams?.total_teams || 0}
@@ -313,13 +313,13 @@ const UserCard = ({
           ) : null}
 
           {/* Mitgliedschaftsdauer */}
-          <div className="flex items-center space-x-2 mb-4 text-sm text-slate-600 dark:text-slate-400">
+          <div className="flex items-center mb-4 text-sm text-slate-600 dark:text-slate-400" style={{gap: '0.5rem'}}>
             <Calendar className="w-4 h-4" />
             <span>Mitglied seit {new Date(user.created_at).toLocaleDateString('de-DE')}</span>
           </div>
 
           {/* Aktionen */}
-          <div className="flex space-x-2">
+          <div className="flex" style={{gap: '0.5rem'}}>
             <button
               onClick={(e) => {
                 e.stopPropagation();

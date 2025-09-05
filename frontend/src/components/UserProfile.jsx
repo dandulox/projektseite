@@ -286,7 +286,7 @@ const UserProfile = () => {
                 </div>
 
                 {/* Status */}
-                <div className="flex items-center justify-center space-x-2 mb-6">
+                <div className="flex items-center justify-center mb-6" style={{gap: '0.5rem'}}>
                   <div className={`w-2 h-2 rounded-full ${targetUser?.is_active ? 'bg-green-500' : 'bg-red-500'}`}></div>
                   <span className="text-sm text-slate-600 dark:text-slate-400">
                     {targetUser?.is_active ? 'Aktiv' : 'Inaktiv'}
@@ -332,7 +332,7 @@ const UserProfile = () => {
               </h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center" style={{gap: '0.75rem'}}>
                     <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                       <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                     </div>
@@ -344,7 +344,7 @@ const UserProfile = () => {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center" style={{gap: '0.75rem'}}>
                     <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
                       <Clock className="w-4 h-4 text-green-600 dark:text-green-400" />
                     </div>
@@ -356,7 +356,7 @@ const UserProfile = () => {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center" style={{gap: '0.75rem'}}>
                     <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
                       <Activity className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                     </div>
@@ -370,7 +370,7 @@ const UserProfile = () => {
                 {stats && (
                   <>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center" style={{gap: '0.75rem'}}>
                         <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
                           <Award className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                         </div>
@@ -382,7 +382,7 @@ const UserProfile = () => {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center" style={{gap: '0.75rem'}}>
                         <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
                           <Activity className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                         </div>
@@ -404,7 +404,7 @@ const UserProfile = () => {
             {/* Willkommensnachricht für neue Benutzer - direkt über Profilinformationen */}
             {isOwnProfile && stats && (stats.projects?.total_projects === 0 && stats.teams?.total_teams === 0) && (
               <div className="card mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
-                <div className="flex items-start space-x-4">
+                <div className="flex items-start" style={{gap: '1rem'}}>
                   <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
                     <Award className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                   </div>
@@ -416,15 +416,15 @@ const UserProfile = () => {
                       Du hast dein Konto erfolgreich erstellt. Hier sind die ersten Schritte, um loszulegen:
                     </p>
                     <div className="space-y-2">
-                      <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
+                      <div className="flex items-center text-sm text-blue-600 dark:text-blue-400" style={{gap: '0.5rem'}}>
                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                         <span>Erstelle dein erstes Projekt</span>
                       </div>
-                      <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
+                      <div className="flex items-center text-sm text-blue-600 dark:text-blue-400" style={{gap: '0.5rem'}}>
                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                         <span>Lade Teammitglieder ein</span>
                       </div>
-                      <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
+                      <div className="flex items-center text-sm text-blue-600 dark:text-blue-400" style={{gap: '0.5rem'}}>
                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                         <span>Organisiere deine Aufgaben in Modulen</span>
                       </div>
@@ -499,7 +499,7 @@ const UserProfile = () => {
                     </div>
                   </div>
 
-                  <div className="flex space-x-3">
+                  <div className="flex" style={{gap: '0.75rem'}}>
                     <button
                       type="button"
                       onClick={handleCancel}
@@ -521,7 +521,7 @@ const UserProfile = () => {
               ) : (
                 <div className="space-y-6">
                   {/* Benutzername */}
-                  <div className="flex items-center space-x-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <div className="flex items-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg" style={{gap: '1rem'}}>
                     <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                       <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
@@ -534,7 +534,7 @@ const UserProfile = () => {
                   </div>
 
                   {/* E-Mail */}
-                  <div className="flex items-center space-x-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <div className="flex items-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg" style={{gap: '1rem'}}>
                     <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
                       <Mail className="w-5 h-5 text-green-600 dark:text-green-400" />
                     </div>
@@ -547,7 +547,7 @@ const UserProfile = () => {
                   </div>
 
                   {/* Rolle */}
-                  <div className="flex items-center space-x-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <div className="flex items-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg" style={{gap: '1rem'}}>
                     <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
                       <Shield className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                     </div>
@@ -560,7 +560,7 @@ const UserProfile = () => {
                   </div>
 
                   {/* Erstellungsdatum */}
-                  <div className="flex items-center space-x-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <div className="flex items-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg" style={{gap: '1rem'}}>
                     <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
                       <Calendar className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                     </div>
@@ -588,7 +588,8 @@ const UserProfile = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <button
                     onClick={() => navigate('/settings')}
-                    className="flex items-center space-x-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
+                    className="flex items-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
+                    style={{gap: '0.75rem'}}
                   >
                     <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                       <Settings className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -605,7 +606,8 @@ const UserProfile = () => {
 
                   <button
                     onClick={() => navigate('/settings?tab=security')}
-                    className="flex items-center space-x-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
+                    className="flex items-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
+                    style={{gap: '0.75rem'}}
                   >
                     <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
                       <Shield className="w-5 h-5 text-red-600 dark:text-red-400" />

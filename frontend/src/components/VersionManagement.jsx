@@ -308,7 +308,7 @@ const VersionManagement = () => {
 
             {/* Version Type Indicator */}
             <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center" style={{gap: '0.75rem'}}>
                 {versionType === 'major' && <AlertCircle className="w-5 h-5 text-red-500" />}
                 {versionType === 'minor' && <Info className="w-5 h-5 text-yellow-500" />}
                 {versionType === 'patch' && <CheckCircle className="w-5 h-5 text-green-500" />}
@@ -321,7 +321,7 @@ const VersionManagement = () => {
               </div>
             </div>
 
-            <div className="flex space-x-3">
+            <div className="flex" style={{gap: '0.75rem'}}>
               <button
                 onClick={handleCancel}
                 disabled={loading}
@@ -359,11 +359,11 @@ const VersionManagement = () => {
                     </p>
                   </div>
                   <div className="text-right">
-                    <div className="flex items-center space-x-2 mb-2">
+                    <div className="flex items-center mb-2" style={{gap: '0.5rem'}}>
                       <Tag className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       <span className="text-sm text-blue-600 dark:text-blue-400">Major Release</span>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center" style={{gap: '0.5rem'}}>
                       <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       <span className="text-sm text-blue-600 dark:text-blue-400">
                         {new Date(currentVersion.releaseDate).toLocaleDateString('de-DE')}
@@ -380,15 +380,15 @@ const VersionManagement = () => {
                 Versionsnummerierung
               </h4>
               <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center" style={{gap: '0.5rem'}}>
                   <span className="w-2 h-2 bg-red-500 rounded-full"></span>
                   <span><strong>Major (X.0.0):</strong> Große Änderungen, neue Features, Breaking Changes</span>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center" style={{gap: '0.5rem'}}>
                   <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
                   <span><strong>Minor (X.Y.0):</strong> Große Bugfixes, wenn Server ohne Fix nicht startet</span>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center" style={{gap: '0.5rem'}}>
                   <span className="w-2 h-2 bg-green-500 rounded-full"></span>
                   <span><strong>Patch (X.Y.Z):</strong> Kleine Fixes, UI-Anpassungen, Button-Funktionalität</span>
                 </div>

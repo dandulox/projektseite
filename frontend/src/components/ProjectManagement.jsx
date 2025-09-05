@@ -631,7 +631,7 @@ const ProjectManagement = () => {
                       <div key={log.id} className="p-4">
                         <div className="flex justify-between items-start">
                           <div>
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center" style={{gap: '0.5rem'}}>
                               <UserCard 
                                 user={{
                                   id: log.user_id,

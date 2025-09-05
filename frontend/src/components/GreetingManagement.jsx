@@ -279,7 +279,7 @@ const GreetingManagement = () => {
           const activeCount = groupedGreetings[period]?.filter(g => g.is_active).length || 0;
           return (
             <div key={period} className="card">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center" style={{gap: '0.75rem'}}>
                 <div className={`p-2 rounded-lg bg-slate-100 dark:bg-slate-800 ${timePeriodColors[period]}`}>
                   {timePeriodIcons[period]}
                 </div>
@@ -297,7 +297,7 @@ const GreetingManagement = () => {
 
         {/* Begrüßungen nach Stunden (0-23) */}
         <div className="card">
-        <div className="flex items-center space-x-3 mb-6">
+        <div className="flex items-center mb-6" style={{gap: '0.75rem'}}>
           <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400">
             <Clock className="w-4 h-4" />
           </div>
@@ -330,7 +330,7 @@ const GreetingManagement = () => {
                     rows="3"
                     placeholder="Begrüßungstext eingeben..."
                   />
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center" style={{gap: '0.5rem'}}>
                     <select
                       value={formData.time_period}
                       onChange={(e) => setFormData({...formData, time_period: e.target.value})}
@@ -350,7 +350,7 @@ const GreetingManagement = () => {
                       placeholder="Stunde"
                     />
                   </div>
-                  <div className="flex space-x-2">
+                  <div className="flex" style={{gap: '0.5rem'}}>
                     <button
                       onClick={() => handleUpdate(greeting.id, formData)}
                       disabled={updateMutation.isPending}
@@ -374,7 +374,7 @@ const GreetingManagement = () => {
                     <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
                       {greeting.hour !== null ? `${greeting.hour}:00 Uhr` : 'Keine Stunde'}
                     </span>
-                    <div className="flex space-x-1">
+                    <div className="flex" style={{gap: '0.25rem'}}>
                       <button
                         onClick={() => startEdit(greeting)}
                         className="p-1 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded transition-colors"
@@ -461,7 +461,7 @@ const GreetingManagement = () => {
                   />
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center" style={{gap: '0.5rem'}}>
                 <input
                   type="checkbox"
                   id="is_active"
@@ -473,7 +473,7 @@ const GreetingManagement = () => {
                   Begrüßung ist aktiv
                 </label>
               </div>
-              <div className="flex justify-end space-x-4 pt-4">
+              <div className="flex justify-end pt-4" style={{gap: '1rem'}}>
                 <button
                   type="button"
                   onClick={() => setShowCreateForm(false)}

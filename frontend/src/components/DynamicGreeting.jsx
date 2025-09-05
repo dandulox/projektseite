@@ -212,7 +212,7 @@ const DynamicGreeting = ({
 
   return (
     <div className={`dynamic-greeting ${className}`}>
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center" style={{gap: '0.75rem'}}>
         {/* Emoji */}
         <span className="text-2xl md:text-3xl filter-none" style={{ filter: 'none' }}>
           {getEmoji()}
@@ -236,7 +236,7 @@ const DynamicGreeting = ({
           
           {/* Tageszeit und Stunde-Anzeige */}
           {showTimePeriod && (
-            <div className="flex items-center space-x-2 mt-2">
+            <div className="flex items-center mt-2" style={{gap: '0.5rem'}}>
               <span className="text-sm md:text-base text-slate-600 dark:text-slate-400">
                 {getTimePeriodText()}
               </span>

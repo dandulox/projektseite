@@ -125,7 +125,7 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
             </label>
           </div>
           
-          <div className="flex space-x-3 pt-4">
+          <div className="flex pt-4" style={{gap: '0.75rem'}}>
             <button
               type="button"
               onClick={onCancel}
@@ -206,7 +206,7 @@ const PasswordResetForm = ({ user, onSubmit, onCancel }) => {
             />
           </div>
           
-          <div className="flex space-x-3 pt-4">
+          <div className="flex pt-4" style={{gap: '0.75rem'}}>
             <button
               type="button"
               onClick={onCancel}
@@ -343,12 +343,12 @@ const UserManagement = () => {
   // Status-Badge
   const getStatusBadge = (isActive) => {
     return isActive ? (
-      <span className="badge-success flex items-center space-x-1">
+      <span className="badge-success flex items-center" style={{gap: '0.25rem'}}>
         <UserCheck className="w-3 h-3" />
         <span>Aktiv</span>
       </span>
     ) : (
-      <span className="badge-danger flex items-center space-x-1">
+      <span className="badge-danger flex items-center" style={{gap: '0.25rem'}}>
         <UserX className="w-3 h-3" />
         <span>Inaktiv</span>
       </span>
@@ -383,7 +383,7 @@ const UserManagement = () => {
         {/* Filter */}
         <div className="card">
         <div className="flex flex-wrap gap-6 items-center">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center" style={{gap: '1rem'}}>
             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Suche:</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -397,7 +397,7 @@ const UserManagement = () => {
             </div>
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center" style={{gap: '1rem'}}>
             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Rolle:</label>
             <select
               value={filters.role}
@@ -454,7 +454,7 @@ const UserManagement = () => {
                         {new Date(user.created_at).toLocaleDateString('de-DE')}
                       </td>
                       <td className="py-4 px-6">
-                        <div className="flex items-center justify-end space-x-2">
+                        <div className="flex items-center justify-end" style={{gap: '0.5rem'}}>
                           <button
                             onClick={() => setEditingUser(user)}
                             className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
@@ -492,7 +492,7 @@ const UserManagement = () => {
                 <div className="text-sm text-slate-500 dark:text-slate-400">
                   Zeige {((pagination.page - 1) * pagination.limit) + 1} bis {Math.min(pagination.page * pagination.limit, pagination.total)} von {pagination.total} Benutzern
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex" style={{gap: '0.5rem'}}>
                   <button
                     onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
                     disabled={pagination.page === 1}

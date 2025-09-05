@@ -204,7 +204,7 @@ const DashboardGreeting = ({
 
   return (
     <div className={`dashboard-greeting ${className}`}>
-      <div className="flex items-center justify-center space-x-4">
+      <div className="flex items-center justify-center" style={{gap: '1rem'}}>
         {/* Emoji */}
         <span className="text-3xl md:text-4xl filter-none" style={{ filter: 'none' }}>
           {getEmoji()}
@@ -228,7 +228,7 @@ const DashboardGreeting = ({
           
           {/* Tageszeit-Anzeige */}
           {showTimePeriod && (
-            <div className="flex items-center space-x-2 mt-1">
+            <div className="flex items-center mt-1" style={{gap: '0.5rem'}}>
               <span className="text-sm md:text-base text-slate-600 dark:text-slate-400">
                 {getTimePeriodText()}
               </span>

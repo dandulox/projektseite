@@ -95,7 +95,7 @@ const UserProfileDemo = () => {
                   Ein modernes Redesign der Unternehmenswebsite mit Fokus auf Benutzerfreundlichkeit.
                 </p>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center" style={{gap: '1rem'}}>
                     <span className="text-sm text-slate-500 dark:text-slate-400">Eigentümer:</span>
                     <UserCard 
                       user={demoUsers[0]}
@@ -119,7 +119,7 @@ const UserProfileDemo = () => {
                   Entwicklung der React-Komponenten für das neue Design.
                 </p>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center" style={{gap: '1rem'}}>
                     <span className="text-sm text-slate-500 dark:text-slate-400">Zugewiesen an:</span>
                     <UserCard 
                       user={demoUsers[1]}
@@ -152,7 +152,7 @@ const UserProfileDemo = () => {
                     showStatus={false}
                     className="p-0"
                   />
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center" style={{gap: '0.5rem'}}>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       user.role === 'admin' 
                         ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'

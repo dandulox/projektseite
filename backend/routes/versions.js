@@ -1,16 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const { Pool } = require('pg');
-const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const { authenticateToken } = require('./auth');
+
+// Middleware für Admin-Berechtigung
+const requireAdmin = (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin-Berechtigung erforderlich' });
+  }
+  next();
+};
 
 // Datenbankverbindung
-const pool = new Pool({
-  user: process.env.DB_USER || 'projektseite_user',
-  host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'projektseite',
-  password: process.env.DB_PASSWORD || 'projektseite_password',
-  port: process.env.DB_PORT || 5432,
-});
+const pool = require('../config/database');
 
 // Aktuelle Version abrufen
 router.get('/current', async (req, res) => {

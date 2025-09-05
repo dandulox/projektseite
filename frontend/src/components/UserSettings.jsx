@@ -193,7 +193,7 @@ const UserSettings = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 px-4 py-3 rounded-md text-sm font-medium transition-all duration-200 ${
+                  className={`flex items-center px-4 py-3 rounded-md text-sm font-medium transition-all duration-200 ${
                     activeTab === tab.id
                       ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700'
@@ -212,7 +212,7 @@ const UserSettings = () => {
             {activeTab === 'profile' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center" style={{gap: '0.75rem'}}>
                     <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
                       <User className="w-6 h-6 text-white" />
                     </div>
@@ -268,7 +268,7 @@ const UserSettings = () => {
                   </div>
 
                   <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center" style={{gap: '0.75rem'}}>
                       <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center">
                         <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">
                           {user?.role?.charAt(0).toUpperCase()}
@@ -302,7 +302,7 @@ const UserSettings = () => {
             {/* Sicherheit Tab */}
             {activeTab === 'security' && (
               <div className="space-y-6">
-                <div className="flex items-center space-x-3 mb-6">
+                <div className="flex items-center mb-6" style={{gap: '0.75rem'}}>
                   <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-600 rounded-xl flex items-center justify-center">
                     <Shield className="w-6 h-6 text-white" />
                   </div>
@@ -391,11 +391,11 @@ const UserSettings = () => {
                   <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
                     <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">Passwort-Anforderungen:</h4>
                     <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                      <li className="flex items-center space-x-2">
+                      <li className="flex items-center" style={{gap: '0.5rem'}}>
                         <CheckCircle className="w-4 h-4" />
                         <span>Mindestens 6 Zeichen lang</span>
                       </li>
-                      <li className="flex items-center space-x-2">
+                      <li className="flex items-center" style={{gap: '0.5rem'}}>
                         <CheckCircle className="w-4 h-4" />
                         <span>Kombination aus Buchstaben und Zahlen empfohlen</span>
                       </li>
@@ -419,7 +419,7 @@ const UserSettings = () => {
             {/* Benachrichtigungen Tab */}
             {activeTab === 'notifications' && (
               <div className="space-y-6">
-                <div className="flex items-center space-x-3 mb-6">
+                <div className="flex items-center mb-6" style={{gap: '0.75rem'}}>
                   <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
                     <Bell className="w-6 h-6 text-white" />
                   </div>
@@ -469,7 +469,7 @@ const UserSettings = () => {
             {/* Design Tab */}
             {activeTab === 'design' && (
               <div className="space-y-6">
-                <div className="flex items-center space-x-3 mb-6">
+                <div className="flex items-center mb-6" style={{gap: '0.75rem'}}>
                   <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
                     <Palette className="w-6 h-6 text-white" />
                   </div>
@@ -600,7 +600,7 @@ const UserSettings = () => {
 
                   {/* Kompakter Modus */}
                   <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center" style={{gap: '0.75rem'}}>
                       <div className="w-10 h-10 bg-slate-200 dark:bg-slate-700 rounded-lg flex items-center justify-center">
                         <Smartphone className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                       </div>
@@ -622,7 +622,7 @@ const UserSettings = () => {
 
                   {/* Animationen */}
                   <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center" style={{gap: '0.75rem'}}>
                       <div className="w-10 h-10 bg-slate-200 dark:bg-slate-700 rounded-lg flex items-center justify-center">
                         <Zap className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                       </div>
