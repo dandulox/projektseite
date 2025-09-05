@@ -677,11 +677,7 @@ const WelcomePage = ({ theme, toggleTheme }) => {
         {/* Auth-Formulare als Overlay */}
         {showAuthForms && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className={`${
-              theme === 'dark' 
-                ? 'auth-modal-dark' 
-                : 'auth-modal'
-            }`}>
+            <div className="auth-modal">
               {/* Header */}
               <div className="text-center mb-6">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">

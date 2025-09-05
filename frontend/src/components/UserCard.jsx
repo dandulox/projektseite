@@ -268,27 +268,48 @@ const UserCard = ({
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
             </div>
           ) : userStats ? (
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="text-center">
-                <div className="flex items-center justify-center space-x-2 mb-1">
-                  <FolderOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  <span className="text-sm font-medium text-slate-900 dark:text-white">
-                    {userStats.projects?.total_projects || 0}
-                  </span>
+            <>
+              {/* Neue Benutzer - Willkommensnachricht */}
+              {(userStats.projects?.total_projects === 0 && userStats.teams?.total_teams === 0) ? (
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-3 mb-4 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                      <Award className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-blue-900 dark:text-blue-100">
+                        Neuer Benutzer
+                      </p>
+                      <p className="text-xs text-blue-700 dark:text-blue-300">
+                        Noch keine Aktivitäten
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400">Projekte</p>
-              </div>
-              
-              <div className="text-center">
-                <div className="flex items-center justify-center space-x-2 mb-1">
-                  <Users className="w-4 h-4 text-green-600 dark:text-green-400" />
-                  <span className="text-sm font-medium text-slate-900 dark:text-white">
-                    {userStats.teams?.total_teams || 0}
-                  </span>
+              ) : (
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center space-x-2 mb-1">
+                      <FolderOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      <span className="text-sm font-medium text-slate-900 dark:text-white">
+                        {userStats.projects?.total_projects || 0}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">Projekte</p>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="flex items-center justify-center space-x-2 mb-1">
+                      <Users className="w-4 h-4 text-green-600 dark:text-green-400" />
+                      <span className="text-sm font-medium text-slate-900 dark:text-white">
+                        {userStats.teams?.total_teams || 0}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">Teams</p>
+                  </div>
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400">Teams</p>
-              </div>
-            </div>
+              )}
+            </>
           ) : null}
 
           {/* Mitgliedschaftsdauer */}

@@ -320,11 +320,7 @@
 
   /* Auth Modal Styles für bessere Lesbarkeit */
   .auth-modal {
-    @apply bg-white/90 dark:bg-slate-800/90 backdrop-blur-lg border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto;
-  }
-
-  .auth-modal-dark {
-    @apply bg-white/10 backdrop-blur-lg border-white/20;
+    @apply bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl;
   }
 
   /* Form styles */

@@ -83,9 +83,9 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
 
         {/* Erfolgsmeldung */}
         {success && (
-          <div className="mb-6 p-4 bg-green-500/20 border border-green-400/30 rounded-lg flex items-center space-x-3">
-            <CheckCircle className="w-5 h-5 text-green-300" />
-            <span className="text-green-200 text-sm font-medium">
+          <div className="mb-6 p-4 bg-green-100 dark:bg-green-500/20 border border-green-300 dark:border-green-400/30 rounded-lg flex items-center" style={{gap: '0.75rem'}}>
+            <CheckCircle className="w-5 h-5 text-green-500 dark:text-green-300" />
+            <span className="text-green-600 dark:text-green-200 text-sm font-medium">
               Anmeldung erfolgreich! Sie werden weitergeleitet...
             </span>
           </div>
@@ -93,9 +93,9 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
 
         {/* Allgemeine Fehlermeldung */}
         {errors.general && (
-          <div className="mb-6 p-4 bg-red-500/20 border border-red-400/30 rounded-lg flex items-center space-x-3">
-            <AlertCircle className="w-5 h-5 text-red-300" />
-            <span className="text-red-200 text-sm font-medium">
+          <div className="mb-6 p-4 bg-red-100 dark:bg-red-500/20 border border-red-300 dark:border-red-400/30 rounded-lg flex items-center" style={{gap: '0.75rem'}}>
+            <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-300" />
+            <span className="text-red-600 dark:text-red-200 text-sm font-medium">
               {errors.general}
             </span>
           </div>
@@ -127,7 +127,7 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
               />
             </div>
             {errors.username && (
-              <p className="mt-2 text-sm text-red-300 flex items-center space-x-1">
+              <p className="mt-2 text-sm text-red-600 dark:text-red-300 flex items-center" style={{gap: '0.25rem'}}>
                 <AlertCircle className="w-4 h-4" />
                 <span>{errors.username}</span>
               </p>
@@ -169,7 +169,7 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
               </button>
             </div>
             {errors.password && (
-              <p className="mt-2 text-sm text-red-300 flex items-center space-x-1">
+              <p className="mt-2 text-sm text-red-600 dark:text-red-300 flex items-center" style={{gap: '0.25rem'}}>
                 <AlertCircle className="w-4 h-4" />
                 <span>{errors.password}</span>
               </p>

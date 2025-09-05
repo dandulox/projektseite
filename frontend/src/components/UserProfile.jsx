@@ -350,7 +350,7 @@ const UserProfile = () => {
                     <span className="text-sm text-slate-600 dark:text-slate-400">Mitgliedschaft</span>
                   </div>
                   <span className="text-sm font-medium text-slate-900 dark:text-white">
-                    {getMembershipDuration()}
+{getMembershipDuration()}
                   </span>
                 </div>
 
@@ -395,6 +395,48 @@ const UserProfile = () => {
                 )}
               </div>
             </div>
+
+            {/* Willkommensnachricht für neue Benutzer */}
+            {isOwnProfile && stats && (stats.projects?.total_projects === 0 && stats.teams?.total_teams === 0) && (
+              <div className="card mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Award className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                      Willkommen bei der Projektseite! 🎉
+                    </h4>
+                    <p className="text-blue-700 dark:text-blue-300 mb-4">
+                      Du hast dein Konto erfolgreich erstellt. Hier sind die ersten Schritte, um loszulegen:
+                    </p>
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span>Erstelle dein erstes Projekt</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span>Lade Teammitglieder ein</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span>Organisiere deine Aufgaben in Modulen</span>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <button
+                        onClick={() => navigate('/projects')}
+                        className="btn-primary text-sm"
+                      >
+                        <Award className="w-4 h-4" />
+                        <span>Erstes Projekt erstellen</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Profil-Details */}
