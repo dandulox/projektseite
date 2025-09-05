@@ -1,17 +1,10 @@
 const express = require('express');
-const { Pool } = require('pg');
 const { authenticateToken } = require('./auth');
 const { createNotification, createTeamNotification } = require('./notifications');
 const router = express.Router();
 
 // Datenbankverbindung
-const pool = new Pool({
-  user: process.env.DB_USER || 'admin',
-  host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'projektseite',
-  password: process.env.DB_PASSWORD || 'secure_password_123',
-  port: process.env.DB_PORT || 5432,
-});
+const pool = require('../config/database');
 
 // Hilfsfunktion: Prüft Berechtigung für Ziel (Projekt/Modul)
 const checkTargetPermission = async (userId, targetType, targetId, requiredPermission = 'view') => {
