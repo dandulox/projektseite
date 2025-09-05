@@ -94,7 +94,7 @@ const UserCard = ({
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/auth/user/${user.id}/stats`, {
+      const response = await fetch(`${API_BASE_URL}/auth/user/${user.id}/stats-simple`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

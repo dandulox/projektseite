@@ -376,9 +376,9 @@ router.get('/profile/stats', authenticateToken, async (req, res) => {
       const activityStats = await pool.query(`
         SELECT 
           COUNT(*) as recent_activities,
-          MAX(created_at) as last_activity
+          MAX(timestamp) as last_activity
         FROM project_logs 
-        WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days'
+        WHERE user_id = $1 AND timestamp >= NOW() - INTERVAL '30 days'
       `, [userId]);
       
       if (activityStats.rows.length > 0) {
@@ -555,9 +555,9 @@ router.get('/user/:userId/stats', authenticateToken, async (req, res) => {
       const activityStats = await pool.query(`
         SELECT 
           COUNT(*) as recent_activities,
-          MAX(created_at) as last_activity
+          MAX(timestamp) as last_activity
         FROM project_logs 
-        WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days'
+        WHERE user_id = $1 AND timestamp >= NOW() - INTERVAL '30 days'
       `, [userId]);
       
       if (activityStats.rows.length > 0) {

@@ -125,7 +125,8 @@ const UserProfile = () => {
       
       // Bestimme den korrekten Endpunkt basierend auf der User-ID
       const isTargetOwnProfile = !targetUserId || targetUserId === currentUser?.id?.toString();
-      const endpoint = isTargetOwnProfile ? `${API_BASE_URL}/auth/profile/stats` : `${API_BASE_URL}/auth/user/${userId}/stats`;
+      // Temporär einfache Stats-Route verwenden bis Datenbank vollständig initialisiert ist
+      const endpoint = isTargetOwnProfile ? `${API_BASE_URL}/auth/profile/stats` : `${API_BASE_URL}/auth/user/${userId}/stats-simple`;
       
       const response = await fetch(endpoint, {
         headers: {

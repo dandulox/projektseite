@@ -177,6 +177,46 @@ app.post('/debug/test-module', async (req, res) => {
   }
 });
 
+// Temporäre einfache Stats-Route
+app.get('/api/auth/user/:userId/stats-simple', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Standard-Werte
+    const stats = {
+      projects: {
+        total_projects: 0,
+        active_projects: 0,
+        completed_projects: 0,
+        on_hold_projects: 0,
+        avg_completion: 0
+      },
+      modules: {
+        total_modules: 0,
+        completed_modules: 0,
+        in_progress_modules: 0,
+        total_hours: 0,
+        estimated_hours: 0
+      },
+      teams: {
+        total_teams: 0,
+        leading_teams: 0,
+        member_teams: 0
+      },
+      activity: {
+        recent_activities: 0,
+        last_activity: null
+      }
+    };
+
+    res.json(stats);
+
+  } catch (error) {
+    console.error('Statistik-Fehler:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
 // Error Handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
