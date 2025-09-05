@@ -50,6 +50,7 @@ const VersionManagement = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentVersion, setCurrentVersion] = useState(null);
+  const [versionHistory, setVersionHistory] = useState([]);
   const [newVersion, setNewVersion] = useState({
     major: 2,
     minor: 0,
@@ -59,9 +60,10 @@ const VersionManagement = () => {
     changes: ''
   });
 
-  // Aktuelle Version von der API laden
+  // Aktuelle Version und Versionshistorie von der API laden
   useEffect(() => {
     loadCurrentVersion();
+    loadVersionHistory();
   }, []);
 
   const loadCurrentVersion = async () => {
@@ -94,6 +96,25 @@ const VersionManagement = () => {
       toast.error('Fehler beim Laden der aktuellen Version');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadVersionHistory = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/versions/history`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setVersionHistory(data.versions || []);
+      }
+    } catch (error) {
+      console.error('Fehler beim Laden der Versionshistorie:', error);
     }
   };
 
@@ -149,8 +170,9 @@ const VersionManagement = () => {
         const data = await response.json();
         toast.success(data.message);
         setIsEditing(false);
-        // Lade die aktuelle Version neu
+        // Lade die aktuelle Version und Historie neu
         await loadCurrentVersion();
+        await loadVersionHistory();
       } else {
         const errorData = await response.json();
         toast.error(errorData.message || 'Fehler beim Speichern der Version');
@@ -409,47 +431,86 @@ const VersionManagement = () => {
                 Versionsverlauf
               </h4>
               <div className="space-y-3">
-                <div className="p-3 bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium text-slate-900 dark:text-white">Version 2.0.0</span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400">"Phoenix"</span>
-                    </div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
-                      {new Date('2024-12-19').toLocaleString('de-DE', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
+                {versionHistory.length > 0 ? (
+                  versionHistory.map((version) => {
+                    // Bestimme Versions-Typ und Akzentfarbe
+                    const getVersionTypeAndColor = (major, minor, patch) => {
+                      if (patch > 0) {
+                        return {
+                          type: 'patch',
+                          color: 'green',
+                          bgColor: 'bg-green-50 dark:bg-green-900/20',
+                          borderColor: 'border-green-200 dark:border-green-800',
+                          textColor: 'text-green-700 dark:text-green-300',
+                          badgeColor: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                        };
+                      } else if (minor > 0) {
+                        return {
+                          type: 'minor',
+                          color: 'yellow',
+                          bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
+                          borderColor: 'border-yellow-200 dark:border-yellow-800',
+                          textColor: 'text-yellow-700 dark:text-yellow-300',
+                          badgeColor: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                        };
+                      } else {
+                        return {
+                          type: 'major',
+                          color: 'red',
+                          bgColor: 'bg-red-50 dark:bg-red-900/20',
+                          borderColor: 'border-red-200 dark:border-red-800',
+                          textColor: 'text-red-700 dark:text-red-300',
+                          badgeColor: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                        };
+                      }
+                    };
+
+                    const versionStyle = getVersionTypeAndColor(version.major, version.minor, version.patch);
+
+                    return (
+                      <div key={version.id} className={`p-3 ${versionStyle.bgColor} rounded-lg border ${versionStyle.borderColor}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            <span className={`text-sm font-medium ${versionStyle.textColor}`}>
+                              Version {version.major}.{version.minor || 'null'}.{version.patch || 'null'}
+                            </span>
+                            {version.codename && (
+                              <span className="text-xs text-slate-500 dark:text-slate-400">"{version.codename}"</span>
+                            )}
+                            <span className={`text-xs px-2 py-1 rounded-full ${versionStyle.badgeColor}`}>
+                              {versionStyle.type === 'major' ? 'Major' : versionStyle.type === 'minor' ? 'Minor' : 'Patch'}
+                            </span>
+                            {version.isCurrent && (
+                              <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full">
+                                Aktuell
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-xs text-slate-500 dark:text-slate-400">
+                            {new Date(version.releaseDate).toLocaleString('de-DE', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        </div>
+                        {version.changes && (
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                            {version.changes}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="p-3 bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600">
+                    <p className="text-sm text-slate-600 dark:text-slate-400 text-center">
+                      Keine Versionshistorie verfügbar
+                    </p>
                   </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Major Release mit vollständiger Projektverwaltung, Modulverwaltung, Team-Management, Benachrichtigungssystem, Fortschrittsverfolgung, Design-System und Mobile-Optimierung
-                  </p>
-                </div>
-                
-                <div className="p-3 bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium text-slate-900 dark:text-white">Version 1.0.0</span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400">"Genesis"</span>
-                    </div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
-                      {new Date('2024-12-01').toLocaleString('de-DE', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Initial Release mit Basis-System, Authentifizierung und einfacher Projektverwaltung
-                  </p>
-                </div>
+                )}
               </div>
             </div>
           </div>

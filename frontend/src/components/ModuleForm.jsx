@@ -3,8 +3,10 @@ import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleType = 'project' }) => {
-  const { moduleApi, user } = useAuth();
+  const { moduleApi, teamApi, user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [teams, setTeams] = useState([]);
+  const [teamMembers, setTeamMembers] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -14,9 +16,15 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
     assigned_to: '',
     due_date: '',
     visibility: 'private',
+    team_id: '',
     tags: '',
     dependencies: ''
   });
+
+  // Teams laden beim Komponenten-Mount
+  useEffect(() => {
+    loadTeams();
+  }, []);
 
   // Formular mit bestehenden Modul-Daten füllen, wenn bearbeitet wird
   useEffect(() => {
@@ -30,11 +38,45 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
         assigned_to: editModule.assigned_to || '',
         due_date: editModule.due_date || '',
         visibility: editModule.visibility || 'private',
+        team_id: editModule.team_id || '',
         tags: editModule.tags ? editModule.tags.join(', ') : '',
         dependencies: editModule.dependencies ? editModule.dependencies.join(', ') : ''
       });
+      
+      // Team-Mitglieder laden wenn Team bereits zugewiesen
+      if (editModule.team_id) {
+        loadTeamMembers(editModule.team_id);
+      }
     }
   }, [editModule]);
+
+  // Team-Mitglieder laden wenn Team geändert wird
+  useEffect(() => {
+    if (formData.team_id) {
+      loadTeamMembers(formData.team_id);
+    } else {
+      setTeamMembers([]);
+    }
+  }, [formData.team_id]);
+
+  const loadTeams = async () => {
+    try {
+      const response = await teamApi.getTeams();
+      setTeams(response.teams || []);
+    } catch (error) {
+      console.warn('Teams konnten nicht geladen werden:', error);
+    }
+  };
+
+  const loadTeamMembers = async (teamId) => {
+    try {
+      const response = await teamApi.getTeam(teamId);
+      setTeamMembers(response.team?.members || []);
+    } catch (error) {
+      console.warn('Team-Mitglieder konnten nicht geladen werden:', error);
+      setTeamMembers([]);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -178,6 +220,68 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
                 <option value="public">Öffentlich</option>
               </select>
             </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Team
+              </label>
+              <select
+                name="team_id"
+                value={formData.team_id}
+                onChange={handleChange}
+                className="select w-full"
+              >
+                <option value="">Kein Team</option>
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {formData.team_id && teamMembers.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Zugewiesen an (Team-Mitglied)
+                </label>
+                <select
+                  name="assigned_to"
+                  value={formData.assigned_to}
+                  onChange={handleChange}
+                  className="select w-full"
+                >
+                  <option value="">Nicht zugewiesen</option>
+                  {teamMembers.map((member) => (
+                    <option key={member.user_id} value={member.user_id}>
+                      {member.username} ({member.role === 'leader' ? 'Team-Leader' : 'Mitglied'})
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Nur Team-Mitglieder können ausgewählt werden
+                </p>
+              </div>
+            )}
+            
+            {!formData.team_id && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Zugewiesen an
+                </label>
+                <input
+                  type="text"
+                  name="assigned_to"
+                  value={formData.assigned_to}
+                  onChange={handleChange}
+                  placeholder="Benutzer-ID (optional)"
+                  className="input w-full"
+                />
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Ohne Team-Zuweisung: Manuelle Benutzer-ID eingeben
+                </p>
+              </div>
+            )}
           </div>
           
           <div className="mt-4">

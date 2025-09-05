@@ -358,6 +358,56 @@ router.post('/project', authenticateToken, async (req, res) => {
       // Log-Fehler sollten das Modul-Erstellen nicht blockieren
     }
 
+    // Automatische Team-Mitglieder-Zuordnung für Modul
+    try {
+      if (project.team_id) {
+        // Alle Team-Mitglieder automatisch dem Modul zuweisen
+        const teamMembers = await pool.query(`
+          SELECT tm.user_id, tm.role as team_role
+          FROM team_memberships tm
+          WHERE tm.team_id = $1
+        `, [project.team_id]);
+
+        // Erstelle Modul-Berechtigungen für alle Team-Mitglieder
+        for (const member of teamMembers.rows) {
+          let permissionType = 'view'; // Standard-Berechtigung
+          
+          // Team-Leader bekommt Admin-Rechte, Mitglieder bekommen Edit-Rechte
+          if (member.team_role === 'leader') {
+            permissionType = 'admin';
+          } else if (member.team_role === 'member') {
+            permissionType = 'edit';
+          }
+
+          try {
+            await pool.query(`
+              INSERT INTO module_permissions (module_id, module_type, user_id, permission_type, granted_by)
+              VALUES ($1, 'project', $2, $3, $4)
+              ON CONFLICT (module_id, module_type, user_id) 
+              DO UPDATE SET permission_type = $3, granted_by = $4, granted_at = NOW()
+            `, [module.id, member.user_id, permissionType, req.user.id]);
+          } catch (permissionError) {
+            console.warn(`Konnte Modul-Berechtigung für Benutzer ${member.user_id} nicht erstellen:`, permissionError.message);
+          }
+        }
+      } else {
+        // Wenn kein Team zugewiesen, automatisch dem Ersteller zuweisen
+        try {
+          await pool.query(`
+            INSERT INTO module_permissions (module_id, module_type, user_id, permission_type, granted_by)
+            VALUES ($1, 'project', $2, 'admin', $2)
+            ON CONFLICT (module_id, module_type, user_id) 
+            DO UPDATE SET permission_type = 'admin', granted_by = $2, granted_at = NOW()
+          `, [module.id, req.user.id]);
+        } catch (permissionError) {
+          console.warn('Konnte automatische Ersteller-Modul-Berechtigung nicht erstellen:', permissionError.message);
+        }
+      }
+    } catch (assignmentError) {
+      console.error('Fehler bei der automatischen Modul-Team-Zuordnung:', assignmentError);
+      // Zuordnungsfehler sollten das Modul-Erstellen nicht blockieren
+    }
+
     // Aktualisiere Projektfortschritt
     try {
       await updateProjectProgress(project_id);
@@ -424,6 +474,56 @@ router.post('/standalone', authenticateToken, async (req, res) => {
     `, [name, description, status, priority, start_date, target_date, estimated_hours, assigned_to, team_id, visibility, tags, dependencies, req.user.id]);
 
     const module = result.rows[0];
+
+    // Automatische Team-Mitglieder-Zuordnung für eigenständiges Modul
+    try {
+      if (team_id) {
+        // Alle Team-Mitglieder automatisch dem Modul zuweisen
+        const teamMembers = await pool.query(`
+          SELECT tm.user_id, tm.role as team_role
+          FROM team_memberships tm
+          WHERE tm.team_id = $1
+        `, [team_id]);
+
+        // Erstelle Modul-Berechtigungen für alle Team-Mitglieder
+        for (const member of teamMembers.rows) {
+          let permissionType = 'view'; // Standard-Berechtigung
+          
+          // Team-Leader bekommt Admin-Rechte, Mitglieder bekommen Edit-Rechte
+          if (member.team_role === 'leader') {
+            permissionType = 'admin';
+          } else if (member.team_role === 'member') {
+            permissionType = 'edit';
+          }
+
+          try {
+            await pool.query(`
+              INSERT INTO module_permissions (module_id, module_type, user_id, permission_type, granted_by)
+              VALUES ($1, 'standalone', $2, $3, $4)
+              ON CONFLICT (module_id, module_type, user_id) 
+              DO UPDATE SET permission_type = $3, granted_by = $4, granted_at = NOW()
+            `, [module.id, member.user_id, permissionType, req.user.id]);
+          } catch (permissionError) {
+            console.warn(`Konnte Modul-Berechtigung für Benutzer ${member.user_id} nicht erstellen:`, permissionError.message);
+          }
+        }
+      } else {
+        // Wenn kein Team zugewiesen, automatisch dem Ersteller zuweisen
+        try {
+          await pool.query(`
+            INSERT INTO module_permissions (module_id, module_type, user_id, permission_type, granted_by)
+            VALUES ($1, 'standalone', $2, 'admin', $2)
+            ON CONFLICT (module_id, module_type, user_id) 
+            DO UPDATE SET permission_type = 'admin', granted_by = $2, granted_at = NOW()
+          `, [module.id, req.user.id]);
+        } catch (permissionError) {
+          console.warn('Konnte automatische Ersteller-Modul-Berechtigung nicht erstellen:', permissionError.message);
+        }
+      }
+    } catch (assignmentError) {
+      console.error('Fehler bei der automatischen Modul-Team-Zuordnung:', assignmentError);
+      // Zuordnungsfehler sollten das Modul-Erstellen nicht blockieren
+    }
 
     // Log-Eintrag erstellen
     await pool.query(`

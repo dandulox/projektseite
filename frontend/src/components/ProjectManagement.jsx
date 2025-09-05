@@ -30,6 +30,7 @@ const ProjectManagement = () => {
     team_id: '',
     visibility: 'private'
   });
+  const [teamMembers, setTeamMembers] = useState([]);
 
   useEffect(() => {
     loadProjects();
@@ -54,6 +55,25 @@ const ProjectManagement = () => {
       setTeams(response.teams || []);
     } catch (error) {
       // Teams konnten nicht geladen werden
+    }
+  };
+
+  const loadTeamMembers = async (teamId) => {
+    try {
+      const response = await teamApi.getTeam(teamId);
+      setTeamMembers(response.team?.members || []);
+    } catch (error) {
+      console.warn('Team-Mitglieder konnten nicht geladen werden:', error);
+      setTeamMembers([]);
+    }
+  };
+
+  const handleTeamChange = (teamId) => {
+    setNewProject({ ...newProject, team_id: teamId });
+    if (teamId) {
+      loadTeamMembers(teamId);
+    } else {
+      setTeamMembers([]);
     }
   };
 
@@ -748,7 +768,7 @@ const ProjectManagement = () => {
                     </label>
                     <select
                       value={newProject.team_id}
-                      onChange={(e) => setNewProject({ ...newProject, team_id: e.target.value })}
+                      onChange={(e) => handleTeamChange(e.target.value)}
                       className="select w-full"
                     >
                       <option value="">Kein Team</option>
@@ -758,6 +778,27 @@ const ProjectManagement = () => {
                         </option>
                       ))}
                     </select>
+                    {newProject.team_id && teamMembers.length > 0 && (
+                      <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+                          Team-Mitglieder werden automatisch zugewiesen:
+                        </p>
+                        <div className="space-y-1">
+                          {teamMembers.map((member) => (
+                            <div key={member.user_id} className="text-sm text-blue-800 dark:text-blue-200">
+                              • {member.username} ({member.role === 'leader' ? 'Team-Leader' : 'Mitglied'})
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {!newProject.team_id && (
+                      <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Ohne Team wird das Projekt nur dem Ersteller zugewiesen.
+                        </p>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
