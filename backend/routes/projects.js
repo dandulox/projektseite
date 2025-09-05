@@ -289,6 +289,20 @@ router.post('/', authenticateToken, async (req, res) => {
       // Log-Fehler sollten das Projekt-Erstellen nicht blockieren
     }
 
+    // Erweiterte Aktivitätslog erstellen
+    try {
+      await pool.query(`
+        SELECT log_project_activity($1, $2, 'created', $3, NULL, $4, NULL)
+      `, [
+        project.id, 
+        req.user.id, 
+        JSON.stringify({ project_name: name, description: description }),
+        JSON.stringify(project)
+      ]);
+    } catch (activityLogError) {
+      console.warn('Konnte erweiterten Aktivitätslog nicht erstellen:', activityLogError.message);
+    }
+
     // Nur Ersteller automatisch zuweisen (keine automatische Team-Zuordnung)
     try {
       await pool.query(`
@@ -394,6 +408,21 @@ router.put('/:id', authenticateToken, async (req, res) => {
       INSERT INTO project_logs (project_id, user_id, action, details)
       VALUES ($1, $2, 'updated', 'Projekt aktualisiert')
     `, [projectId, req.user.id]);
+
+    // Erweiterte Aktivitätslog erstellen
+    try {
+      await pool.query(`
+        SELECT log_project_activity($1, $2, 'updated', $3, $4, $5, NULL)
+      `, [
+        projectId, 
+        req.user.id, 
+        JSON.stringify({ project_name: result.rows[0].name }),
+        JSON.stringify(updateData),
+        JSON.stringify(result.rows[0])
+      ]);
+    } catch (activityLogError) {
+      console.warn('Konnte erweiterten Aktivitätslog nicht erstellen:', activityLogError.message);
+    }
 
     // Benachrichtigungen erstellen
     try {
@@ -508,6 +537,24 @@ router.post('/:id/permissions', authenticateToken, async (req, res) => {
       DO UPDATE SET permission_type = $3, granted_by = $4, granted_at = NOW()
       RETURNING *
     `, [projectId, user_id, permission_type, req.user.id]);
+
+    // Aktivitätslog für Berechtigung erstellen
+    try {
+      await pool.query(`
+        SELECT log_project_activity($1, $2, 'permission_granted', $3, NULL, NULL, $4)
+      `, [
+        projectId, 
+        req.user.id, 
+        JSON.stringify({ 
+          permission_type: permission_type, 
+          granted_to: userResult.rows[0].username,
+          project_name: (await pool.query('SELECT name FROM projects WHERE id = $1', [projectId])).rows[0].name
+        }),
+        user_id
+      ]);
+    } catch (activityLogError) {
+      console.warn('Konnte Aktivitätslog für Berechtigung nicht erstellen:', activityLogError.message);
+    }
 
     res.status(201).json({
       message: 'Berechtigung erfolgreich vergeben',

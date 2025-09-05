@@ -262,7 +262,22 @@ const NotificationBell = () => {
     switch (type) {
       case 'project_created':
       case 'project_updated':
+      case 'project_activity':
         return <ExternalLink className="w-4 h-4 text-green-500" />;
+      case 'project_status_change':
+        return <ExternalLink className="w-4 h-4 text-yellow-500" />;
+      case 'project_assignment':
+      case 'project_permission_change':
+        return <User className="w-4 h-4 text-blue-500" />;
+      case 'module_activity':
+      case 'module_created':
+      case 'module_updated':
+        return <ExternalLink className="w-4 h-4 text-purple-500" />;
+      case 'module_status_change':
+        return <ExternalLink className="w-4 h-4 text-orange-500" />;
+      case 'module_assignment':
+      case 'module_permission_change':
+        return <User className="w-4 h-4 text-indigo-500" />;
       case 'team_invite':
         return <Users className="w-4 h-4 text-purple-500" />;
       case 'user_mention':

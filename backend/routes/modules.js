@@ -385,6 +385,21 @@ router.post('/project', authenticateToken, async (req, res) => {
       // Log-Fehler sollten das Modul-Erstellen nicht blockieren
     }
 
+    // Erweiterte Aktivitätslog erstellen
+    try {
+      await pool.query(`
+        SELECT log_module_activity($1, 'project', $2, 'created', $3, NULL, $4, NULL, $5)
+      `, [
+        module.id, 
+        req.user.id, 
+        JSON.stringify({ module_name: name, description: description }),
+        JSON.stringify(module),
+        project_id
+      ]);
+    } catch (activityLogError) {
+      console.warn('Konnte erweiterten Aktivitätslog nicht erstellen:', activityLogError.message);
+    }
+
     // Nur Ersteller automatisch zuweisen (keine automatische Team-Zuordnung)
     try {
       await pool.query(`
@@ -562,6 +577,23 @@ router.put('/:id', authenticateToken, async (req, res) => {
       INSERT INTO module_logs (module_id, module_type, user_id, action, details)
       VALUES ($1, $2, $3, 'updated', 'Modul aktualisiert')
     `, [moduleId, module_type, req.user.id]);
+
+    // Erweiterte Aktivitätslog erstellen
+    try {
+      await pool.query(`
+        SELECT log_module_activity($1, $2, $3, 'updated', $4, $5, $6, NULL, $7)
+      `, [
+        moduleId, 
+        module_type, 
+        req.user.id, 
+        JSON.stringify({ module_name: result.rows[0].name }),
+        JSON.stringify(updateData),
+        JSON.stringify(result.rows[0]),
+        result.rows[0].project_id || null
+      ]);
+    } catch (activityLogError) {
+      console.warn('Konnte erweiterten Aktivitätslog nicht erstellen:', activityLogError.message);
+    }
 
     // Aktualisiere Projektfortschritt, wenn es sich um ein Projekt-Modul handelt
     if (module_type === 'project') {

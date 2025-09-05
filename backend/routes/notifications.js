@@ -303,4 +303,199 @@ const createTeamNotification = async (teamId, notificationData) => {
   }
 };
 
-module.exports = { router, createNotification, createTeamNotification };
+// Benachrichtigungen für Projekt-Aktivitäten erstellen
+const createProjectActivityNotification = async (projectId, userId, actionType, actionDetails, affectedUserId = null) => {
+  try {
+    // Projekt-Details abrufen
+    const projectResult = await db.query(`
+      SELECT p.*, u.username as owner_username, t.name as team_name, t.id as team_id
+      FROM projects p
+      LEFT JOIN users u ON u.id = p.owner_id
+      LEFT JOIN teams t ON t.id = p.team_id
+      WHERE p.id = $1
+    `, [projectId]);
+
+    if (projectResult.rows.length === 0) return [];
+
+    const project = projectResult.rows[0];
+    const notifications = [];
+
+    // Benachrichtigungstyp und -text basierend auf Aktion bestimmen
+    let notificationType, notificationTitle, notificationMessage;
+
+    switch (actionType) {
+      case 'created':
+        notificationType = 'project_created';
+        notificationTitle = 'Neues Projekt erstellt';
+        notificationMessage = `"${project.name}" wurde erstellt.`;
+        break;
+      case 'updated':
+        notificationType = 'project_activity';
+        notificationTitle = 'Projekt aktualisiert';
+        notificationMessage = `"${project.name}" wurde aktualisiert.`;
+        break;
+      case 'status_changed':
+        notificationType = 'project_status_change';
+        notificationTitle = 'Projekt-Status geändert';
+        notificationMessage = `"${project.name}" Status wurde geändert.`;
+        break;
+      case 'assigned':
+        notificationType = 'project_assignment';
+        notificationTitle = 'Projekt zugewiesen';
+        notificationMessage = `Sie wurden dem Projekt "${project.name}" zugewiesen.`;
+        break;
+      case 'permission_granted':
+        notificationType = 'project_permission_change';
+        notificationTitle = 'Projekt-Berechtigung erhalten';
+        notificationMessage = `Sie haben neue Berechtigungen für "${project.name}".`;
+        break;
+      default:
+        notificationType = 'project_activity';
+        notificationTitle = 'Projekt-Aktivität';
+        notificationMessage = `Aktivität in "${project.name}".`;
+    }
+
+    // Benachrichtigungen für Team-Mitglieder erstellen (falls Team-Projekt)
+    if (project.team_id) {
+      const teamNotifications = await createTeamNotification(project.team_id, {
+        type: notificationType,
+        title: notificationTitle,
+        message: notificationMessage,
+        fromUserId: userId,
+        projectId: projectId,
+        actionUrl: `/projects/${projectId}`
+      });
+      notifications.push(...teamNotifications);
+    }
+
+    // Benachrichtigung für betroffenen Benutzer (falls Zuweisung oder Berechtigung)
+    if (affectedUserId && affectedUserId !== userId) {
+      const notificationId = await createNotification({
+        userId: affectedUserId,
+        type: notificationType,
+        title: notificationTitle,
+        message: notificationMessage,
+        fromUserId: userId,
+        teamId: project.team_id,
+        projectId: projectId,
+        actionUrl: `/projects/${projectId}`
+      });
+      notifications.push(notificationId);
+    }
+
+    return notifications;
+  } catch (error) {
+    console.error('Fehler beim Erstellen der Projekt-Aktivitäts-Benachrichtigungen:', error);
+    return [];
+  }
+};
+
+// Benachrichtigungen für Modul-Aktivitäten erstellen
+const createModuleActivityNotification = async (moduleId, moduleType, userId, actionType, actionDetails, affectedUserId = null, projectId = null) => {
+  try {
+    // Modul-Details abrufen
+    let moduleResult;
+    if (moduleType === 'project') {
+      moduleResult = await db.query(`
+        SELECT pm.*, p.name as project_name, p.team_id, u.username as assigned_username
+        FROM project_modules pm
+        JOIN projects p ON p.id = pm.project_id
+        LEFT JOIN users u ON u.id = pm.assigned_to
+        WHERE pm.id = $1
+      `, [moduleId]);
+    } else {
+      moduleResult = await db.query(`
+        SELECT sm.*, u.username as assigned_username, t.name as team_name, t.id as team_id
+        FROM standalone_modules sm
+        LEFT JOIN users u ON u.id = sm.assigned_to
+        LEFT JOIN teams t ON t.id = sm.team_id
+        WHERE sm.id = $1
+      `, [moduleId]);
+    }
+
+    if (moduleResult.rows.length === 0) return [];
+
+    const module = moduleResult.rows[0];
+    const notifications = [];
+
+    // Benachrichtigungstyp und -text basierend auf Aktion bestimmen
+    let notificationType, notificationTitle, notificationMessage;
+
+    switch (actionType) {
+      case 'created':
+        notificationType = 'module_activity';
+        notificationTitle = 'Neues Modul erstellt';
+        notificationMessage = `"${module.name}" wurde erstellt.`;
+        break;
+      case 'updated':
+        notificationType = 'module_activity';
+        notificationTitle = 'Modul aktualisiert';
+        notificationMessage = `"${module.name}" wurde aktualisiert.`;
+        break;
+      case 'status_changed':
+        notificationType = 'module_status_change';
+        notificationTitle = 'Modul-Status geändert';
+        notificationMessage = `"${module.name}" Status wurde geändert.`;
+        break;
+      case 'assigned':
+        notificationType = 'module_assignment';
+        notificationTitle = 'Modul zugewiesen';
+        notificationMessage = `Sie wurden dem Modul "${module.name}" zugewiesen.`;
+        break;
+      case 'permission_granted':
+        notificationType = 'module_permission_change';
+        notificationTitle = 'Modul-Berechtigung erhalten';
+        notificationMessage = `Sie haben neue Berechtigungen für "${module.name}".`;
+        break;
+      default:
+        notificationType = 'module_activity';
+        notificationTitle = 'Modul-Aktivität';
+        notificationMessage = `Aktivität in "${module.name}".`;
+    }
+
+    // Benachrichtigungen für Team-Mitglieder erstellen (falls Team-Modul)
+    if (module.team_id) {
+      const teamNotifications = await createTeamNotification(module.team_id, {
+        type: notificationType,
+        title: notificationTitle,
+        message: notificationMessage,
+        fromUserId: userId,
+        projectId: projectId,
+        actionUrl: moduleType === 'project' 
+          ? `/projects/${projectId}/modules/${moduleId}`
+          : `/modules/${moduleId}`
+      });
+      notifications.push(...teamNotifications);
+    }
+
+    // Benachrichtigung für betroffenen Benutzer (falls Zuweisung oder Berechtigung)
+    if (affectedUserId && affectedUserId !== userId) {
+      const notificationId = await createNotification({
+        userId: affectedUserId,
+        type: notificationType,
+        title: notificationTitle,
+        message: notificationMessage,
+        fromUserId: userId,
+        teamId: module.team_id,
+        projectId: projectId,
+        actionUrl: moduleType === 'project' 
+          ? `/projects/${projectId}/modules/${moduleId}`
+          : `/modules/${moduleId}`
+      });
+      notifications.push(notificationId);
+    }
+
+    return notifications;
+  } catch (error) {
+    console.error('Fehler beim Erstellen der Modul-Aktivitäts-Benachrichtigungen:', error);
+    return [];
+  }
+};
+
+module.exports = { 
+  router, 
+  createNotification, 
+  createTeamNotification, 
+  createProjectActivityNotification, 
+  createModuleActivityNotification 
+};

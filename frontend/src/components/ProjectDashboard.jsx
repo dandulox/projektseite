@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import DashboardGreeting from './DashboardGreeting';
+import ActivityFeed from './ActivityFeed';
 import { 
   BarChart3, 
   Users, 
@@ -900,6 +901,16 @@ const ProjectDashboard = () => {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Aktivitätsfeed */}
+        <div className="mt-8">
+          <ActivityFeed 
+            userId={user?.id}
+            showHeader={true}
+            limit={10}
+            className="mb-6"
+          />
         </div>
       </div>
     </div>
