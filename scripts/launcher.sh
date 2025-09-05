@@ -70,7 +70,8 @@ show_quickstart_menu() {
     echo "3) System-Backup"
     echo "4) System-Wartung"
     echo "5) FastPatch (Patch-Manager)"
-    echo "6) System-Wipe"
+    echo "6) FastUpdate (App-Update)"
+    echo "7) System-Wipe"
     echo "0) Zurück"
     echo ""
 }
@@ -107,6 +108,16 @@ execute_quickstart() {
             fi
             ;;
         6)
+            log_info "Starte FastUpdate (App-Update)..."
+            if [ -f "$SCRIPT_DIR/update-app.sh" ]; then
+                "$SCRIPT_DIR/update-app.sh"
+            else
+                log_error "Update-App Script nicht gefunden: $SCRIPT_DIR/update-app.sh"
+                echo "Verfügbare Update-Scripts:"
+                ls -la "$SCRIPT_DIR/"*update*.sh 2>/dev/null || echo "Keine Update-Scripts gefunden"
+            fi
+            ;;
+        7)
             log_info "Starte System-Wipe..."
             "$SCRIPT_DIR/batch-runner.sh" -p wipe
             ;;
@@ -156,6 +167,7 @@ show_help() {
     echo "  3) Batch Creator   - Batch-Dateien erstellen und verwalten"
     echo "  4) Schnellstart    - Vordefinierte Operationssequenzen"
     echo "     - FastPatch     - Patch-Manager für Systemupdates"
+    echo "     - FastUpdate    - Schnelles App-Update"
     echo "  5) System-Status   - Aktueller Systemzustand"
     echo "  6) Hilfe           - Diese Hilfe anzeigen"
     echo ""
@@ -197,10 +209,10 @@ main() {
             4)
                 while true; do
                     show_quickstart_menu
-                    read -p "Wählen Sie eine Schnellstart-Option (0-6): " quickstart_choice
+                    read -p "Wählen Sie eine Schnellstart-Option (0-7): " quickstart_choice
                     
                     case $quickstart_choice in
-                        1|2|3|4|5|6)
+                        1|2|3|4|5|6|7)
                             execute_quickstart "$quickstart_choice"
                             break
                             ;;
