@@ -71,16 +71,16 @@ log_success "Git-Update erfolgreich - lokale Änderungen überschrieben"
 
 # Setze Ausführungsberechtigungen für alle Skripte
 log_info "Setze Ausführungsberechtigungen für alle Skripte..."
-chmod +x /opt/projektseite/scripts/*.sh
-log_success "Ausführungsberechtigungen für alle Skripte gesetzt"
-
-# Setze Ausführungsberechtigungen für Patch-Scripts
-log_info "Setze Ausführungsberechtigungen für Patch-Scripts..."
-if [ -d "/opt/projektseite/scripts/patches" ]; then
-    chmod +x /opt/projektseite/scripts/patches/*.sh
-    log_success "Ausführungsberechtigungen für Patch-Scripts gesetzt"
+if [ -f "/opt/projektseite/scripts/functions/set-permissions.sh" ]; then
+    source /opt/projektseite/scripts/functions/set-permissions.sh
+    set_all_permissions "/opt/projektseite"
 else
-    log_warning "Patches-Verzeichnis nicht gefunden"
+    # Fallback: Manuelle Berechtigungssetzung
+    chmod +x /opt/projektseite/scripts/*.sh
+    if [ -d "/opt/projektseite/scripts/patches" ]; then
+        chmod +x /opt/projektseite/scripts/patches/*.sh
+    fi
+    log_success "Ausführungsberechtigungen für alle Skripte gesetzt (Fallback)"
 fi
 
 # Stoppe Docker-Container

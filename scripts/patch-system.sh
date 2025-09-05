@@ -121,8 +121,17 @@ fi
 
 # Setze Ausführungsberechtigungen für alle Skripte
 log_info "Setze Ausführungsberechtigungen für alle Skripte..."
-chmod +x /opt/projektseite/scripts/*.sh
-log_success "Ausführungsberechtigungen für alle Skripte gesetzt"
+if [ -f "/opt/projektseite/scripts/functions/set-permissions.sh" ]; then
+    source /opt/projektseite/scripts/functions/set-permissions.sh
+    set_all_permissions "/opt/projektseite"
+else
+    # Fallback: Manuelle Berechtigungssetzung
+    chmod +x /opt/projektseite/scripts/*.sh
+    if [ -d "/opt/projektseite/scripts/patches" ]; then
+        chmod +x /opt/projektseite/scripts/patches/*.sh
+    fi
+    log_success "Ausführungsberechtigungen für alle Skripte gesetzt (Fallback)"
+fi
 
 # 4. Prüfe auf neue Dependencies
 log_info "4️⃣ Prüfe auf neue Dependencies..."

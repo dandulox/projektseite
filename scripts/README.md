@@ -7,8 +7,11 @@ Dieses Verzeichnis enthält alle Verwaltungsscripts für die Projektseite.
 ```
 scripts/
 ├── README.md                    # Diese Datei
+├── functions/                   # Hilfsfunktionen für Scripts
+│   └── set-permissions.sh      # Berechtigungs-Management
 ├── patches/                     # Patch-Scripts für Systemupdates
 │   ├── README.md               # Patch-Scripts Dokumentation
+│   ├── patch-manager.sh        # Patch-Management-Tool
 │   └── install-activity-log.sh # Aktivitätslog-System Installation
 ├── batches/                     # Batch-Dateien für automatisierte Tasks
 ├── [Hauptscripts...]           # Systemverwaltungsscripts
@@ -45,12 +48,36 @@ scripts/
 - `check-logs.sh` - Log-Überprüfung
 - `test-connection.sh` - Verbindungstest
 
+## Hilfsfunktionen
+
+### Berechtigungs-Management
+```bash
+# Setze Berechtigungen für alle Scripts
+./scripts/functions/set-permissions.sh set
+
+# Prüfe und repariere Berechtigungen
+./scripts/functions/set-permissions.sh check
+
+# Zeige Status aller Scripts
+./scripts/functions/set-permissions.sh status
+```
+
 ## Patch-Scripts
 
 **Wichtiger Hinweis**: Patch-Scripts befinden sich im `patches/` Unterverzeichnis.
 
-### Aktivitätslog-System
+### Patch-Manager verwenden (Empfohlen)
 ```bash
+# Alle verfügbaren Patches anzeigen
+./scripts/patches/patch-manager.sh list
+
+# Patch installieren
+./scripts/patches/patch-manager.sh install activity-log
+```
+
+### Direkte Installation
+```bash
+# Aktivitätslog-System direkt installieren
 ./scripts/patches/install-activity-log.sh
 ```
 

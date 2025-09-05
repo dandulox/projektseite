@@ -69,7 +69,8 @@ show_quickstart_menu() {
     echo "2) System-Update"
     echo "3) System-Backup"
     echo "4) System-Wartung"
-    echo "5) System-Wipe"
+    echo "5) FastPatch (Patch-Manager)"
+    echo "6) System-Wipe"
     echo "0) Zurück"
     echo ""
 }
@@ -96,6 +97,16 @@ execute_quickstart() {
             "$SCRIPT_DIR/batch-runner.sh" -p maintenance
             ;;
         5)
+            log_info "Starte FastPatch (Patch-Manager)..."
+            if [ -f "$SCRIPT_DIR/patches/patch-manager.sh" ]; then
+                "$SCRIPT_DIR/patches/patch-manager.sh"
+            else
+                log_error "Patch-Manager nicht gefunden: $SCRIPT_DIR/patches/patch-manager.sh"
+                echo "Verfügbare Patches:"
+                ls -la "$SCRIPT_DIR/patches/"*.sh 2>/dev/null || echo "Keine Patch-Scripts gefunden"
+            fi
+            ;;
+        6)
             log_info "Starte System-Wipe..."
             "$SCRIPT_DIR/batch-runner.sh" -p wipe
             ;;
@@ -144,6 +155,7 @@ show_help() {
     echo "  2) Batch Runner    - Batch-Ausführung von Scripts"
     echo "  3) Batch Creator   - Batch-Dateien erstellen und verwalten"
     echo "  4) Schnellstart    - Vordefinierte Operationssequenzen"
+    echo "     - FastPatch     - Patch-Manager für Systemupdates"
     echo "  5) System-Status   - Aktueller Systemzustand"
     echo "  6) Hilfe           - Diese Hilfe anzeigen"
     echo ""
@@ -185,10 +197,10 @@ main() {
             4)
                 while true; do
                     show_quickstart_menu
-                    read -p "Wählen Sie eine Schnellstart-Option (0-5): " quickstart_choice
+                    read -p "Wählen Sie eine Schnellstart-Option (0-6): " quickstart_choice
                     
                     case $quickstart_choice in
-                        1|2|3|4|5)
+                        1|2|3|4|5|6)
                             execute_quickstart "$quickstart_choice"
                             break
                             ;;
