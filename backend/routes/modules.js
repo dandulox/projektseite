@@ -557,62 +557,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Modul löschen
-router.delete('/:id', authenticateToken, async (req, res) => {
-  try {
-    const moduleId = req.params.id;
-    const { module_type = 'project' } = req.query;
-
-    // Prüfe Berechtigung (nur Eigentümer oder Admin)
-    let moduleResult;
-    if (module_type === 'project') {
-      moduleResult = await pool.query(`
-        SELECT pm.*, p.owner_id
-        FROM project_modules pm
-        JOIN projects p ON p.id = pm.project_id
-        WHERE pm.id = $1
-      `, [moduleId]);
-    } else {
-      moduleResult = await pool.query(`
-        SELECT * FROM standalone_modules WHERE id = $1
-      `, [moduleId]);
-    }
-
-    if (moduleResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Modul nicht gefunden' });
-    }
-
-    const module = moduleResult.rows[0];
-    const ownerId = module_type === 'project' ? module.owner_id : module.owner_id;
-
-    if (ownerId !== req.user.id && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Keine Berechtigung zum Löschen des Moduls' });
-    }
-
-    // Modul löschen (CASCADE löscht auch Logs und Verbindungen)
-    if (module_type === 'project') {
-      await pool.query('DELETE FROM project_modules WHERE id = $1', [moduleId]);
-    } else {
-      await pool.query('DELETE FROM standalone_modules WHERE id = $1', [moduleId]);
-    }
-
-    // Aktualisiere Projektfortschritt, wenn es sich um ein Projekt-Modul handelt
-    if (module_type === 'project') {
-      try {
-        await updateProjectProgress(module.project_id);
-      } catch (progressError) {
-        console.warn('Konnte Projektfortschritt nicht aktualisieren:', progressError.message);
-        // Fortschrittsfehler sollten das Modul-Löschen nicht blockieren
-      }
-    }
-
-    res.json({ message: 'Modul erfolgreich gelöscht' });
-  } catch (error) {
-    console.error('Fehler beim Löschen des Moduls:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
-  }
-});
-
 // Modul-Berechtigungen abrufen
 router.get('/:id/permissions', authenticateToken, async (req, res) => {
   try {
@@ -707,6 +651,62 @@ router.delete('/:id/permissions/:userId', authenticateToken, async (req, res) =>
     res.json({ message: 'Berechtigung erfolgreich entfernt' });
   } catch (error) {
     console.error('Fehler beim Entfernen der Modul-Berechtigung:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
+// Modul löschen
+router.delete('/:id', authenticateToken, async (req, res) => {
+  try {
+    const moduleId = req.params.id;
+    const { module_type = 'project' } = req.query;
+
+    // Prüfe Berechtigung (nur Eigentümer oder Admin)
+    let moduleResult;
+    if (module_type === 'project') {
+      moduleResult = await pool.query(`
+        SELECT pm.*, p.owner_id
+        FROM project_modules pm
+        JOIN projects p ON p.id = pm.project_id
+        WHERE pm.id = $1
+      `, [moduleId]);
+    } else {
+      moduleResult = await pool.query(`
+        SELECT * FROM standalone_modules WHERE id = $1
+      `, [moduleId]);
+    }
+
+    if (moduleResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Modul nicht gefunden' });
+    }
+
+    const module = moduleResult.rows[0];
+    const ownerId = module_type === 'project' ? module.owner_id : module.owner_id;
+
+    if (ownerId !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Keine Berechtigung zum Löschen des Moduls' });
+    }
+
+    // Modul löschen (CASCADE löscht auch Logs und Verbindungen)
+    if (module_type === 'project') {
+      await pool.query('DELETE FROM project_modules WHERE id = $1', [moduleId]);
+    } else {
+      await pool.query('DELETE FROM standalone_modules WHERE id = $1', [moduleId]);
+    }
+
+    // Aktualisiere Projektfortschritt, wenn es sich um ein Projekt-Modul handelt
+    if (module_type === 'project') {
+      try {
+        await updateProjectProgress(module.project_id);
+      } catch (progressError) {
+        console.warn('Konnte Projektfortschritt nicht aktualisieren:', progressError.message);
+        // Fortschrittsfehler sollten das Modul-Löschen nicht blockieren
+      }
+    }
+
+    res.json({ message: 'Modul erfolgreich gelöscht' });
+  } catch (error) {
+    console.error('Fehler beim Löschen des Moduls:', error);
     res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
