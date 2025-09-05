@@ -6,7 +6,7 @@
 echo "🔄 Aktualisiere system_versions Tabelle..."
 
 # Verbinde zur PostgreSQL-Datenbank
-PGPASSWORD=admin123 psql -h localhost -U admin -d projektseite << EOF
+PGPASSWORD=secure_password_123 psql -h localhost -U admin -d projektseite << EOF
 
 -- Füge version_type Spalte hinzu (falls sie nicht existiert)
 ALTER TABLE system_versions 
