@@ -101,7 +101,8 @@ CREATE INDEX IF NOT EXISTS idx_module_team_assignments_module ON module_team_ass
 CREATE INDEX IF NOT EXISTS idx_module_team_assignments_team ON module_team_assignments(team_id);
 
 -- Trigger für updated_at
-CREATE TRIGGER IF NOT EXISTS update_standalone_modules_updated_at BEFORE UPDATE ON standalone_modules
+DROP TRIGGER IF EXISTS update_standalone_modules_updated_at ON standalone_modules;
+CREATE TRIGGER update_standalone_modules_updated_at BEFORE UPDATE ON standalone_modules
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Funktionen für Modul-Berechtigungen

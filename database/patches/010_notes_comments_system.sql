@@ -62,7 +62,8 @@ CREATE INDEX IF NOT EXISTS idx_comment_reactions_user ON comment_reactions(user_
 CREATE INDEX IF NOT EXISTS idx_comment_attachments_comment ON comment_attachments(comment_id);
 
 -- Trigger für updated_at
-CREATE TRIGGER IF NOT EXISTS update_comments_updated_at BEFORE UPDATE ON comments
+DROP TRIGGER IF EXISTS update_comments_updated_at ON comments;
+CREATE TRIGGER update_comments_updated_at BEFORE UPDATE ON comments
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Funktion zum Abrufen von Kommentaren mit Benutzerinformationen
