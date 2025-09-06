@@ -52,7 +52,8 @@ import {
   GripVertical,
   Folder,
   FolderPlus,
-  CheckSquare
+  CheckSquare,
+  Eye
 } from 'lucide-react';
 
 // Erstelle QueryClient
@@ -658,8 +659,27 @@ const Admin = () => {
 // Willkommensseite Component
 const WelcomePage = ({ theme, toggleTheme }) => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [showAuthForms, setShowAuthForms] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' oder 'register'
+
+  // Redirect-Flag für eingeloggte User
+  const shouldRedirectToDashboard = process.env.REACT_APP_REDIRECT_HOME_TO_DASHBOARD === 'true';
+
+  // Redirect eingeloggte User zum Dashboard
+  useEffect(() => {
+    if (isAuthenticated && shouldRedirectToDashboard) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, shouldRedirectToDashboard, navigate]);
+
+  // Scroll zu Features
+  const scrollToFeatures = () => {
+    const featuresSection = document.getElementById('features');
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className={`min-h-screen relative ${
@@ -667,6 +687,14 @@ const WelcomePage = ({ theme, toggleTheme }) => {
         ? 'bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900' 
         : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'
     }`}>
+      {/* Skip to content link für A11y */}
+      <a 
+        href="#main-content" 
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded-lg z-50"
+      >
+        Zum Hauptinhalt springen
+      </a>
+
       {/* Theme Toggle für Willkommensseite */}
       <div className="absolute top-4 right-4 z-20">
         <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
@@ -683,7 +711,7 @@ const WelcomePage = ({ theme, toggleTheme }) => {
       </div>
 
       {/* Hauptinhalt */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 text-center">
+      <main id="main-content" className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 text-center">
         {/* Logo */}
         <div className="mb-8">
           <div className="w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-500 rounded-3xl flex items-center justify-center shadow-2xl mb-6 mx-auto">
@@ -705,22 +733,32 @@ const WelcomePage = ({ theme, toggleTheme }) => {
               ? 'from-blue-400 via-purple-400 to-indigo-400' 
               : 'from-blue-600 via-purple-600 to-indigo-600'
           } bg-clip-text text-transparent mb-4`}>
-            Projektseite
+            Tracke deinen Lern- & Projektfortschritt
           </h1>
           <p className={`text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed ${
             theme === 'dark' ? 'text-blue-200' : 'text-slate-700'
           }`}>
-            Die moderne Plattform für effiziente Projektverwaltung und Teamzusammenarbeit
+            Aufgaben, Deadlines, Kanban & mehr – alles an einem Ort. Alleine oder im kleinen Team.
           </p>
         </div>
 
         {/* Kernfunktionen */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 max-w-6xl w-full">
-          <div className={`${
+        <section id="features" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 max-w-6xl w-full" aria-label="Hauptfunktionen">
+          <article className={`${
             theme === 'dark' 
               ? 'bg-white/10 backdrop-blur-lg border-white/20 hover:bg-white/20' 
               : 'bg-white/80 backdrop-blur-lg border-slate-200/50 hover:bg-white/90'
-          } rounded-2xl p-6 border transition-all duration-300 hover:scale-105`}>
+          } rounded-2xl p-6 border transition-all duration-300 hover:scale-105 cursor-pointer`}
+          onClick={() => navigate('/projects')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              navigate('/projects');
+            }
+          }}
+          aria-label="Zu Projektverwaltung navigieren">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <FolderOpen className="w-8 h-8 text-white" />
             </div>
@@ -729,81 +767,134 @@ const WelcomePage = ({ theme, toggleTheme }) => {
             }`}>Projektverwaltung</h3>
             <p className={`text-sm ${
               theme === 'dark' ? 'text-blue-200' : 'text-slate-600'
-            }`}>Organisieren Sie Ihre Projekte effizient und übersichtlich</p>
-          </div>
+            }`}>Organisiere deine Projekte effizient und behalte den Überblick über alle Arbeitspakete.</p>
+          </article>
 
-          <div className={`${
+          <article className={`${
             theme === 'dark' 
               ? 'bg-white/10 backdrop-blur-lg border-white/20 hover:bg-white/20' 
               : 'bg-white/80 backdrop-blur-lg border-slate-200/50 hover:bg-white/90'
-          } rounded-2xl p-6 border transition-all duration-300 hover:scale-105`}>
+          } rounded-2xl p-6 border transition-all duration-300 hover:scale-105 cursor-pointer`}
+          onClick={() => navigate('/my-tasks')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              navigate('/my-tasks');
+            }
+          }}
+          aria-label="Zu Meine Aufgaben navigieren">
             <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Users className="w-8 h-8 text-white" />
+              <CheckSquare className="w-8 h-8 text-white" />
             </div>
             <h3 className={`text-lg font-semibold mb-2 ${
               theme === 'dark' ? 'text-white' : 'text-slate-900'
-            }`}>Teamzusammenarbeit</h3>
+            }`}>Meine Aufgaben</h3>
             <p className={`text-sm ${
               theme === 'dark' ? 'text-blue-200' : 'text-slate-600'
-            }`}>Arbeiten Sie nahtlos mit Ihrem Team zusammen</p>
-          </div>
+            }`}>Verwalte deine persönlichen Tasks und behalte Fälligkeiten immer im Blick.</p>
+          </article>
 
-          <div className={`${
+          <article className={`${
             theme === 'dark' 
               ? 'bg-white/10 backdrop-blur-lg border-white/20 hover:bg-white/20' 
               : 'bg-white/80 backdrop-blur-lg border-slate-200/50 hover:bg-white/90'
-          } rounded-2xl p-6 border transition-all duration-300 hover:scale-105`}>
+          } rounded-2xl p-6 border transition-all duration-300 hover:scale-105 cursor-pointer`}
+          onClick={() => navigate('/dashboard')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              navigate('/dashboard');
+            }
+          }}
+          aria-label="Zu Dashboard mit Deadlines navigieren">
             <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Calendar className="w-8 h-8 text-white" />
+            </div>
+            <h3 className={`text-lg font-semibold mb-2 ${
+              theme === 'dark' ? 'text-white' : 'text-slate-900'
+            }`}>Deadlines-Kalender</h3>
+            <p className={`text-sm ${
+              theme === 'dark' ? 'text-blue-200' : 'text-slate-600'
+            }`}>Verfolge alle Fälligkeiten und behalte deine Termine im Überblick.</p>
+          </article>
+
+          <article className={`${
+            theme === 'dark' 
+              ? 'bg-white/10 backdrop-blur-lg border-white/20 hover:bg-white/20' 
+              : 'bg-white/80 backdrop-blur-lg border-slate-200/50 hover:bg-white/90'
+          } rounded-2xl p-6 border transition-all duration-300 hover:scale-105 cursor-pointer`}
+          onClick={() => navigate('/projects/1/board')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              navigate('/projects/1/board');
+            }
+          }}
+          aria-label="Zu Kanban Board navigieren">
+            <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <BarChart className="w-8 h-8 text-white" />
             </div>
             <h3 className={`text-lg font-semibold mb-2 ${
               theme === 'dark' ? 'text-white' : 'text-slate-900'
-            }`}>Fortschrittsverfolgung</h3>
+            }`}>Kanban Boards</h3>
             <p className={`text-sm ${
               theme === 'dark' ? 'text-blue-200' : 'text-slate-600'
-            }`}>Behalten Sie den Überblick über alle Projekte</p>
-          </div>
-
-          <div className={`${
-            theme === 'dark' 
-              ? 'bg-white/10 backdrop-blur-lg border-white/20 hover:bg-white/20' 
-              : 'bg-white/80 backdrop-blur-lg border-slate-200/50 hover:bg-white/90'
-          } rounded-2xl p-6 border transition-all duration-300 hover:scale-105`}>
-            <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Shield className="w-8 h-8 text-white" />
-            </div>
-            <h3 className={`text-lg font-semibold mb-2 ${
-              theme === 'dark' ? 'text-white' : 'text-slate-900'
-            }`}>Sicherheit</h3>
-            <p className={`text-sm ${
-              theme === 'dark' ? 'text-blue-200' : 'text-slate-600'
-            }`}>Ihre Daten sind bei uns sicher und geschützt</p>
-          </div>
-        </div>
+            }`}>Organisiere deine Tasks visuell mit Drag & Drop in Kanban-Boards.</p>
+          </article>
+        </section>
 
         {/* Call-to-Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8 justify-center">
-          <button 
-            onClick={() => {
-              setAuthMode('login');
-              setShowAuthForms(true);
-            }}
-            className="btn-welcome-primary group"
-          >
-            <LogIn className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
-            <span>Anmelden</span>
-          </button>
-          
-          <button 
-            onClick={() => {
-              setAuthMode('register');
-              setShowAuthForms(true);
-            }}
-            className="btn-welcome-secondary group"
-          >
-            <UserPlus className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
-            <span>Registrieren</span>
-          </button>
+          {isAuthenticated ? (
+            <>
+              <button 
+                onClick={() => navigate('/dashboard')}
+                className="btn-welcome-primary group"
+                aria-label="Zum Dashboard navigieren"
+              >
+                <BarChart3 className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+                <span>Zum Dashboard</span>
+              </button>
+              
+              <button 
+                onClick={scrollToFeatures}
+                className="btn-welcome-secondary group"
+                aria-label="Features ansehen"
+              >
+                <Eye className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+                <span>Features ansehen</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <button 
+                onClick={() => {
+                  setAuthMode('login');
+                  setShowAuthForms(true);
+                }}
+                className="btn-welcome-primary group"
+                aria-label="Jetzt anmelden"
+              >
+                <LogIn className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+                <span>Jetzt starten</span>
+              </button>
+              
+              <button 
+                onClick={scrollToFeatures}
+                className="btn-welcome-secondary group"
+                aria-label="Features ansehen"
+              >
+                <Eye className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+                <span>Features ansehen</span>
+              </button>
+            </>
+          )}
         </div>
 
         {/* Zusätzliche Informationen */}
@@ -874,7 +965,7 @@ const WelcomePage = ({ theme, toggleTheme }) => {
             </div>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 };
