@@ -70,7 +70,7 @@ export const errorHandler = (
   next: NextFunction
 ) => {
   let statusCode = 500;
-  let errorResponse = {
+  let errorResponse: { code: string; message: string } = {
     code: ERROR_CODES.UNKNOWN_ERROR,
     message: 'An unexpected error occurred',
   };

@@ -136,7 +136,7 @@ export class ModuleRepository extends BaseRepository<Module> {
         count: modules.length,
       });
 
-      return modules;
+      return modules as Module[];
     } catch (error) {
       logger.error('Module findByAssignee error', { assignedTo, options, error });
       throw error;
@@ -215,7 +215,7 @@ export class ModuleRepository extends BaseRepository<Module> {
         completedTasks,
       });
 
-      return module;
+      return module as Module;
     } catch (error) {
       logger.error('Module updateCompletionPercentage error', { id, error });
       throw error;
@@ -235,7 +235,7 @@ export class ModuleRepository extends BaseRepository<Module> {
         assignedTo,
       });
 
-      return module;
+      return module as Module;
     } catch (error) {
       logger.error('Module assign error', { id, assignedTo, error });
       throw error;
@@ -247,7 +247,7 @@ export class ModuleRepository extends BaseRepository<Module> {
     try {
       const module = await prisma.module.update({
         where: { id },
-        data: { status },
+        data: { status: status as any },
       });
 
       logger.info('Module updateStatus', {
@@ -255,7 +255,7 @@ export class ModuleRepository extends BaseRepository<Module> {
         status,
       });
 
-      return module;
+      return module as Module;
     } catch (error) {
       logger.error('Module updateStatus error', { id, status, error });
       throw error;

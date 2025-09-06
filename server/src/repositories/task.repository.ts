@@ -155,7 +155,7 @@ export class TaskRepository extends BaseRepository<Task> {
         count: tasks.length,
       });
 
-      return tasks as Task[];
+      return tasks as unknown as Task[];
     } catch (error) {
       logger.error('Task findByProject error', { projectId, options, error });
       throw error;
@@ -192,7 +192,7 @@ export class TaskRepository extends BaseRepository<Task> {
         count: tasks.length,
       });
 
-      return tasks as Task[];
+      return tasks as unknown as Task[];
     } catch (error) {
       logger.error('Task findOverdue error', { assigneeId, error });
       throw error;
@@ -236,7 +236,7 @@ export class TaskRepository extends BaseRepository<Task> {
         count: tasks.length,
       });
 
-      return tasks as Task[];
+      return tasks as unknown as Task[];
     } catch (error) {
       logger.error('Task findDueSoon error', { days, assigneeId, error });
       throw error;
@@ -336,7 +336,7 @@ export class TaskRepository extends BaseRepository<Task> {
         userId,
       });
 
-      return task as Task;
+      return task as unknown as Task;
     } catch (error) {
       logger.error('Task updateStatus error', { id, status, userId, error });
       throw error;
@@ -368,7 +368,7 @@ export class TaskRepository extends BaseRepository<Task> {
         userId,
       });
 
-      return task as Task;
+      return task as unknown as Task;
     } catch (error) {
       logger.error('Task assign error', { id, assigneeId, userId, error });
       throw error;
@@ -394,11 +394,11 @@ export class TaskRepository extends BaseRepository<Task> {
       });
 
       const kanbanTasks = {
-        todo: tasks.filter(t => t.status === 'TODO'),
-        in_progress: tasks.filter(t => t.status === 'IN_PROGRESS'),
-        review: tasks.filter(t => t.status === 'REVIEW'),
-        completed: tasks.filter(t => t.status === 'COMPLETED'),
-        cancelled: tasks.filter(t => t.status === 'CANCELLED'),
+        TODO: tasks.filter(t => t.status === 'TODO'),
+        IN_PROGRESS: tasks.filter(t => t.status === 'IN_PROGRESS'),
+        REVIEW: tasks.filter(t => t.status === 'REVIEW'),
+        COMPLETED: tasks.filter(t => t.status === 'COMPLETED'),
+        CANCELLED: tasks.filter(t => t.status === 'CANCELLED'),
       };
 
       logger.debug('Task getKanbanTasks', {
