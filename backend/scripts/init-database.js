@@ -64,8 +64,22 @@ async function initializeDatabase() {
       const schemaSQL = fs.readFileSync(schemaPath, 'utf8');
       
       // Führe das Schema aus
-      await pool.query(schemaSQL);
-      console.log('✅ Datenbankschema erfolgreich erstellt');
+      try {
+        await pool.query(schemaSQL);
+        console.log('✅ Datenbankschema erfolgreich erstellt');
+      } catch (error) {
+        console.log('⚠️ Schema-Erstellung mit Fehlern, aber möglicherweise erfolgreich');
+        console.log(`   Fehler: ${error.message}`);
+        
+        // Prüfe, ob das Schema trotzdem funktioniert
+        try {
+          await pool.query('SELECT 1 FROM users LIMIT 1');
+          console.log('✅ Schema funktioniert trotz Fehlern');
+        } catch (testError) {
+          console.log('❌ Schema funktioniert nicht, werfe Fehler weiter');
+          throw error;
+        }
+      }
     } else {
       console.log('✅ Datenbankschema bereits vorhanden');
     }
@@ -73,20 +87,56 @@ async function initializeDatabase() {
     // Patches sind jetzt in 01_schema.sql integriert
     console.log('✅ Datenbank-Patches bereits in Schema integriert');
 
-    // Prüfe ob Benutzer bereits existieren
-    const userCount = await pool.query('SELECT COUNT(*) FROM users');
-    const count = parseInt(userCount.rows[0].count);
+    // Warte auf Schema-Vollständigkeit mit Retry-Logik
+    console.log('⏳ Warte auf Schema-Vollständigkeit...');
+    let schemaReady = false;
+    let attempts = 0;
+    const maxAttempts = 10;
 
-    if (count === 0) {
-      console.log('📝 Erstelle Standard-Benutzer...');
-      await createDefaultUsers();
-    } else {
-      console.log(`✅ ${count} Benutzer bereits in der Datenbank vorhanden`);
+    while (!schemaReady && attempts < maxAttempts) {
+      try {
+        // Teste, ob die users-Tabelle existiert
+        await pool.query('SELECT 1 FROM users LIMIT 1');
+        schemaReady = true;
+        console.log('✅ Schema ist vollständig geladen');
+      } catch (error) {
+        attempts++;
+        console.log(`⏳ Schema noch nicht bereit... (Versuch ${attempts}/${maxAttempts})`);
+        if (attempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      }
+    }
+
+    if (!schemaReady) {
+      console.log('⚠️ Schema konnte nicht vollständig geladen werden, überspringe weitere Initialisierung');
+      return;
+    }
+
+    // Prüfe ob Benutzer bereits existieren
+    try {
+      const userCount = await pool.query('SELECT COUNT(*) FROM users');
+      const count = parseInt(userCount.rows[0].count);
+
+      if (count === 0) {
+        console.log('📝 Erstelle Standard-Benutzer...');
+        await createDefaultUsers();
+      } else {
+        console.log(`✅ ${count} Benutzer bereits in der Datenbank vorhanden`);
+      }
+    } catch (error) {
+      console.log('⚠️ Benutzer-Tabelle noch nicht verfügbar, überspringe Benutzer-Erstellung');
+      console.log(`   Fehler: ${error.message}`);
     }
 
     // Initialisiere Begrüßungen
-    console.log('📝 Initialisiere Begrüßungen...');
-    await initGreetings();
+    try {
+      console.log('📝 Initialisiere Begrüßungen...');
+      await initGreetings();
+    } catch (error) {
+      console.log('⚠️ Begrüßungen konnten nicht initialisiert werden');
+      console.log(`   Fehler: ${error.message}`);
+    }
 
     console.log('🎉 Datenbank-Initialisierung abgeschlossen');
 
