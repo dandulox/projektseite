@@ -27,8 +27,121 @@ router.get('/me', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const userId = req.user.id;
     
-    // Verwende Fallback-System für Dashboard-Daten
-    const dashboardData = await getDashboardSimple(userId);
+    // Echte DB-Abfrage für Dashboard-Statistiken
+    const statsQuery = `
+      WITH user_projects AS (
+        SELECT p.id, p.name, p.status, p.priority, p.target_date
+        FROM projects p
+        WHERE p.owner_id = $1 OR p.visibility = 'public'
+        OR EXISTS (
+          SELECT 1 FROM team_memberships tm 
+          WHERE tm.team_id = p.team_id AND tm.user_id = $1
+        )
+      ),
+      user_tasks AS (
+        SELECT t.id, t.status, t.priority, t.due_date, t.project_id
+        FROM tasks t
+        WHERE t.assignee_id = $1
+      ),
+      user_teams AS (
+        SELECT t.id, t.name, tm.role
+        FROM teams t
+        INNER JOIN team_memberships tm ON tm.team_id = t.id
+        WHERE tm.user_id = $1 AND t.is_active = true
+      )
+      SELECT 
+        (SELECT COUNT(*) FROM user_projects) as total_projects,
+        (SELECT COUNT(*) FROM user_projects WHERE status = 'active') as active_projects,
+        (SELECT COUNT(*) FROM user_projects WHERE status = 'completed') as completed_projects,
+        (SELECT COUNT(*) FROM user_tasks) as total_tasks,
+        (SELECT COUNT(*) FROM user_tasks WHERE status = 'todo') as todo_tasks,
+        (SELECT COUNT(*) FROM user_tasks WHERE status = 'in_progress') as in_progress_tasks,
+        (SELECT COUNT(*) FROM user_tasks WHERE status = 'completed') as completed_tasks,
+        (SELECT COUNT(*) FROM user_tasks WHERE due_date < CURRENT_DATE AND status NOT IN ('completed', 'cancelled')) as overdue_tasks,
+        (SELECT COUNT(*) FROM user_tasks WHERE due_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days' AND status NOT IN ('completed', 'cancelled')) as upcoming_deadlines,
+        (SELECT COUNT(*) FROM user_teams) as team_count,
+        (SELECT COUNT(*) FROM user_teams WHERE role = 'leader') as leading_teams,
+        CASE 
+          WHEN (SELECT COUNT(*) FROM user_tasks) > 0 THEN
+            ROUND((SELECT COUNT(*) FROM user_tasks WHERE status = 'completed')::DECIMAL / (SELECT COUNT(*) FROM user_tasks) * 100, 2)
+          ELSE 0
+        END as task_completion_rate,
+        CASE 
+          WHEN (SELECT COUNT(*) FROM user_projects) > 0 THEN
+            ROUND((SELECT COUNT(*) FROM user_projects WHERE status = 'completed')::DECIMAL / (SELECT COUNT(*) FROM user_projects) * 100, 2)
+          ELSE 0
+        END as project_completion_rate
+    `;
+
+    const statsResult = await pool.query(statsQuery, [userId]);
+    const stats = statsResult.rows[0];
+
+    // Zusätzliche Daten für Dashboard
+    const recentActivityQuery = `
+      SELECT 
+        al.activity_type,
+        al.description,
+        al.created_at,
+        p.name as project_name,
+        t.title as task_title
+      FROM activity_logs al
+      LEFT JOIN projects p ON p.id = al.project_id
+      LEFT JOIN tasks t ON t.id = al.task_id
+      WHERE al.user_id = $1
+      ORDER BY al.created_at DESC
+      LIMIT 10
+    `;
+
+    const upcomingDeadlinesQuery = `
+      SELECT 
+        t.id,
+        t.title,
+        t.due_date,
+        t.priority,
+        p.name as project_name
+      FROM tasks t
+      LEFT JOIN projects p ON p.id = t.project_id
+      WHERE t.assignee_id = $1
+        AND t.due_date IS NOT NULL
+        AND t.due_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days'
+        AND t.status NOT IN ('completed', 'cancelled')
+      ORDER BY t.due_date ASC
+      LIMIT 5
+    `;
+
+    const [recentActivityResult, upcomingDeadlinesResult] = await Promise.all([
+      pool.query(recentActivityQuery, [userId]).catch(() => ({ rows: [] })),
+      pool.query(upcomingDeadlinesQuery, [userId])
+    ]);
+
+    const dashboardData = {
+      stats: {
+        projects: {
+          total: parseInt(stats.total_projects) || 0,
+          active: parseInt(stats.active_projects) || 0,
+          completed: parseInt(stats.completed_projects) || 0,
+          completion_rate: parseFloat(stats.project_completion_rate) || 0
+        },
+        tasks: {
+          total: parseInt(stats.total_tasks) || 0,
+          todo: parseInt(stats.todo_tasks) || 0,
+          in_progress: parseInt(stats.in_progress_tasks) || 0,
+          completed: parseInt(stats.completed_tasks) || 0,
+          overdue: parseInt(stats.overdue_tasks) || 0,
+          completion_rate: parseFloat(stats.task_completion_rate) || 0
+        },
+        deadlines: {
+          upcoming: parseInt(stats.upcoming_deadlines) || 0
+        },
+        teams: {
+          total: parseInt(stats.team_count) || 0,
+          leading: parseInt(stats.leading_teams) || 0
+        }
+      },
+      recent_activity: recentActivityResult.rows,
+      upcoming_deadlines: upcomingDeadlinesResult.rows,
+      generated_at: new Date().toISOString()
+    };
     
     res.json(dashboardData);
 

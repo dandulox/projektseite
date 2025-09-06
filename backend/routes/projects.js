@@ -84,33 +84,142 @@ const checkProjectPermission = async (userId, projectId, requiredPermission = 'v
 // Alle Projekte abrufen (basierend auf Berechtigung)
 router.get('/', authenticateToken, asyncHandler(async (req, res) => {
   try {
-    const { team_id, status, visibility } = req.query;
+    const { team_id, status, visibility, search, page = 1, limit = 20 } = req.query;
     
-    // Verwende Fallback-System für einfache Abfrage
-    const projects = await getProjectsSimple(req.user.id, 100);
+    // Echte DB-Abfrage mit Joins
+    let query = `
+      SELECT 
+        p.id,
+        p.name,
+        p.description,
+        p.status,
+        p.priority,
+        p.start_date,
+        p.target_date,
+        p.created_at,
+        p.updated_at,
+        p.visibility,
+        p.owner_id,
+        p.team_id,
+        u.username as owner_username,
+        u.email as owner_email,
+        t.name as team_name,
+        COUNT(pm.id) as module_count,
+        COUNT(tasks.id) as task_count,
+        COUNT(CASE WHEN tasks.status = 'completed' THEN 1 END) as completed_tasks,
+        CASE 
+          WHEN COUNT(tasks.id) > 0 THEN 
+            ROUND((COUNT(CASE WHEN tasks.status = 'completed' THEN 1 END)::DECIMAL / COUNT(tasks.id)) * 100, 2)
+          ELSE 0 
+        END as progress_percentage
+      FROM projects p
+      LEFT JOIN users u ON u.id = p.owner_id
+      LEFT JOIN teams t ON t.id = p.team_id
+      LEFT JOIN project_modules pm ON pm.project_id = p.id
+      LEFT JOIN tasks ON tasks.project_id = p.id
+      WHERE 1=1
+    `;
     
-    // Filtere Projekte basierend auf Parametern
-    let filteredProjects = projects;
-    
+    const params = [];
+    let paramCount = 0;
+
+    // Berechtigungs-Filter
+    if (req.user.role !== 'admin') {
+      query += ` AND (p.owner_id = $${++paramCount} OR p.visibility = 'public'`;
+      params.push(req.user.id);
+      
+      // Team-Berechtigung prüfen
+      query += ` OR EXISTS (
+        SELECT 1 FROM team_memberships tm 
+        WHERE tm.team_id = p.team_id AND tm.user_id = $${++paramCount}
+      )`;
+      params.push(req.user.id);
+      query += `)`;
+    }
+
+    // Filter hinzufügen
     if (status) {
-      filteredProjects = filteredProjects.filter(project => project.status === status);
+      query += ` AND p.status = $${++paramCount}`;
+      params.push(status);
     }
     if (visibility) {
-      filteredProjects = filteredProjects.filter(project => project.visibility === visibility);
+      query += ` AND p.visibility = $${++paramCount}`;
+      params.push(visibility);
     }
     if (team_id) {
-      filteredProjects = filteredProjects.filter(project => project.team_id === parseInt(team_id));
+      query += ` AND p.team_id = $${++paramCount}`;
+      params.push(parseInt(team_id));
+    }
+    if (search) {
+      query += ` AND (LOWER(p.name) LIKE LOWER($${++paramCount}) OR LOWER(p.description) LIKE LOWER($${++paramCount}))`;
+      const searchPattern = `%${search}%`;
+      params.push(searchPattern, searchPattern);
     }
 
-    // Erweitere Projekte mit zusätzlichen Informationen
-    const projectsWithDetails = filteredProjects.map(project => ({
-      ...project,
-      owner_username: 'Unbekannt',
-      team_name: null,
-      module_count: 0
-    }));
+    query += ` GROUP BY p.id, u.username, u.email, t.name`;
+    query += ` ORDER BY p.created_at DESC`;
 
-    res.json({ projects: projectsWithDetails });
+    // Pagination
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+    query += ` LIMIT $${++paramCount} OFFSET $${++paramCount}`;
+    params.push(parseInt(limit), offset);
+
+    // Gesamtanzahl für Pagination
+    let countQuery = `
+      SELECT COUNT(DISTINCT p.id) as total
+      FROM projects p
+      WHERE 1=1
+    `;
+    const countParams = [];
+    let countParamCount = 0;
+
+    if (req.user.role !== 'admin') {
+      countQuery += ` AND (p.owner_id = $${++countParamCount} OR p.visibility = 'public'`;
+      countParams.push(req.user.id);
+      countQuery += ` OR EXISTS (
+        SELECT 1 FROM team_memberships tm 
+        WHERE tm.team_id = p.team_id AND tm.user_id = $${++countParamCount}
+      )`;
+      countParams.push(req.user.id);
+      countQuery += `)`;
+    }
+
+    if (status) {
+      countQuery += ` AND p.status = $${++countParamCount}`;
+      countParams.push(status);
+    }
+    if (visibility) {
+      countQuery += ` AND p.visibility = $${++countParamCount}`;
+      countParams.push(visibility);
+    }
+    if (team_id) {
+      countQuery += ` AND p.team_id = $${++countParamCount}`;
+      countParams.push(parseInt(team_id));
+    }
+    if (search) {
+      countQuery += ` AND (LOWER(p.name) LIKE LOWER($${++countParamCount}) OR LOWER(p.description) LIKE LOWER($${++countParamCount}))`;
+      const searchPattern = `%${search}%`;
+      countParams.push(searchPattern, searchPattern);
+    }
+
+    // Queries ausführen
+    const [projectsResult, countResult] = await Promise.all([
+      pool.query(query, params),
+      pool.query(countQuery, countParams)
+    ]);
+
+    const projects = projectsResult.rows;
+    const total = parseInt(countResult.rows[0].total);
+
+    res.json({
+      projects,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
   } catch (error) {
     console.error('Fehler beim Abrufen der Projekte:', error);
     console.error('Fehler-Details:', error.message);
