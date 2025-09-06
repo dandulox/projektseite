@@ -64,29 +64,29 @@ router.get('/me', authenticateToken, async (req, res) => {
       LIMIT 5
     `;
 
-    // 2. Nächste Deadlines (7 Tage)
+    // 2. Nächste Deadlines (7 Tage) - Tasks statt project_modules
     const upcomingDeadlinesQuery = `
       SELECT 
-        pm.id,
-        pm.name,
-        pm.description,
-        pm.status,
-        pm.priority,
-        pm.due_date,
-        pm.completion_percentage,
+        t.id,
+        t.title as name,
+        t.description,
+        t.status,
+        t.priority,
+        t.due_date,
+        t.completion_percentage,
         p.name as project_name,
         p.id as project_id,
         u.username as assigned_username
-      FROM project_modules pm
-      JOIN projects p ON p.id = pm.project_id
-      LEFT JOIN users u ON u.id = pm.assigned_to
-      WHERE pm.assigned_to = $1 
-        AND pm.due_date IS NOT NULL
-        AND pm.due_date >= $2
-        AND pm.due_date <= $3
-        AND pm.status != 'completed'
-        AND (pm.visibility = 'public' OR p.owner_id = $1 OR p.visibility = 'public')
-      ORDER BY pm.due_date ASC
+      FROM tasks t
+      JOIN projects p ON p.id = t.project_id
+      LEFT JOIN users u ON u.id = t.assignee_id
+      WHERE t.assignee_id = $1 
+        AND t.due_date IS NOT NULL
+        AND t.due_date >= $2
+        AND t.due_date <= $3
+        AND t.status NOT IN ('completed', 'cancelled')
+        AND (p.visibility = 'public' OR p.owner_id = $1 OR p.visibility = 'public')
+      ORDER BY t.due_date ASC
       LIMIT 10
     `;
 
@@ -282,7 +282,7 @@ router.get('/me/stats', authenticateToken, async (req, res) => {
         (SELECT COALESCE(AVG(completion_percentage), 0) FROM user_projects) as avg_project_progress,
         (SELECT COUNT(*) FROM user_modules WHERE status IN ('not_started', 'in_progress', 'testing')) as open_tasks,
         (SELECT COUNT(*) FROM user_modules WHERE status = 'completed') as completed_tasks,
-        (SELECT COUNT(*) FROM user_modules WHERE due_date BETWEEN NOW() AND NOW() + INTERVAL '7 days') as upcoming_deadlines,
+        (SELECT COUNT(*) FROM tasks WHERE assignee_id = $1 AND due_date BETWEEN NOW() AND NOW() + INTERVAL '7 days' AND status NOT IN ('completed', 'cancelled')) as upcoming_deadlines,
         (SELECT COALESCE(AVG(completion_percentage), 0) FROM user_modules) as avg_task_progress
     `;
 

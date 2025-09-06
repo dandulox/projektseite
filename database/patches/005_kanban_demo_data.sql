@@ -108,3 +108,4 @@ COMMENT ON TABLE task_activities IS 'Aktivitäten-Log für Tasks - erweitert mit
 -- - Abgebrochenen Tasks
 -- - Realistischen Kommentaren und Aktivitäten
 -- - Verschiedenen Assignees für Team-Demo
+

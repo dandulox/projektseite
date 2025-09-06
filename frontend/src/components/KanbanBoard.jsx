@@ -407,3 +407,4 @@ const KanbanBoard = ({ projectId }) => {
 };
 
 export default KanbanBoard;
+
