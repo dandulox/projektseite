@@ -65,30 +65,29 @@ projektseite/
 # Windows PowerShell
 .\scripts\quick-start.ps1
 
-# Mit Repository-Update
-.\scripts\quick-start.ps1 -Update
-
 # Linux/macOS
 ./scripts/quick-start.sh
-
-# Mit Repository-Update
-./scripts/quick-start.sh --update
 ```
+
+**Automatische Schritte:**
+1. 🔄 **Repository-Update** (git pull)
+2. 🔐 **Berechtigungen setzen** (chmod/execution policy)
+3. ⚡ **Schneller Start** der Development-Umgebung
 
 #### Option 2: Vollständige Installation
 ```powershell
 # Windows PowerShell
 .\scripts\install-v3.ps1
 
-# Mit Repository-Update
-.\scripts\install-v3.ps1 -Update
-
 # Linux/macOS
 ./scripts/install-v3.sh
-
-# Mit Repository-Update
-./scripts/install-v3.sh --update
 ```
+
+**Automatische Schritte:**
+1. 🔄 **Repository-Update** (git pull)
+2. 🔐 **Berechtigungen setzen** (chmod/execution policy)
+3. ✅ **Prerequisites prüfen**
+4. 🏗️ **Vollständige Installation** und Validierung
 
 #### Option 3: Manuelles Setup
 ```bash
@@ -178,21 +177,19 @@ npm run dev
 # Windows PowerShell
 .\scripts\validate-v3.ps1
 
-# Mit Repository-Update
-.\scripts\validate-v3.ps1 -Update
-
 # Linux/macOS
 ./scripts/validate-v3.sh
-
-# Mit Repository-Update
-./scripts/validate-v3.sh --update
 ```
+
+**Automatische Schritte:**
+1. 🔄 **Repository-Update** (git pull)
+2. 🔐 **Berechtigungen setzen** (chmod/execution policy)
+3. 🔍 **Vollständige Architektur-Validierung**
 
 ### Validierungsoptionen
 
 - `--quick` / `-Quick`: Schnelle Validierung ohne Build-Tests
 - `--verbose` / `-Verbose`: Detaillierte Ausgabe
-- `--update` / `-Update`: Repository vor Validierung aktualisieren
 
 ## 🔄 Update
 
@@ -211,6 +208,14 @@ npm run dev
 # Mit Optionen
 ./scripts/update-v3.sh --skip-tests --force
 ```
+
+**Automatische Schritte:**
+1. 🔄 **Repository-Update** (git pull)
+2. 🔐 **Berechtigungen setzen** (chmod/execution policy)
+3. 📦 **Dependencies aktualisieren**
+4. 🏗️ **Applications neu bauen**
+5. 🗄️ **Database-Migrationen**
+6. ✅ **Validierung und Tests**
 
 ### Update-Optionen
 

@@ -6,8 +6,7 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
 param(
     [switch]$Quick = $false,
-    [switch]$Verbose = $false,
-    [switch]$Update = $false
+    [switch]$Verbose = $false
 )
 
 # Colors for output
@@ -55,23 +54,36 @@ function Write-Warning {
 
 # Update repository
 function Update-Repository {
-    if ($Update) {
-        Write-Step "Updating repository..."
+    Write-Step "Updating repository..."
+    
+    if (Test-Path ".git") {
+        Write-Info "Pulling latest changes..."
+        git pull origin main
         
-        if (Test-Path ".git") {
-            Write-Info "Pulling latest changes..."
-            git pull origin main
-            
-            Write-Info "Checking for submodules..."
-            if (Test-Path ".gitmodules") {
-                git submodule update --init --recursive
-            }
-            
-            Write-Success "Repository updated"
-        } else {
-            Write-Warning "Not a git repository, skipping update"
+        Write-Info "Checking for submodules..."
+        if (Test-Path ".gitmodules") {
+            git submodule update --init --recursive
         }
+        
+        Write-Success "Repository updated"
+    } else {
+        Write-Warning "Not a git repository, skipping update"
     }
+}
+
+# Set script permissions
+function Set-ScriptPermissions {
+    Write-Step "Setting script permissions..."
+    
+    Write-Info "Setting PowerShell execution policy..."
+    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+    
+    Write-Info "Unblocking PowerShell scripts..."
+    Get-ChildItem -Path "scripts\*.ps1" -ErrorAction SilentlyContinue | ForEach-Object { 
+        Unblock-File $_.FullName -ErrorAction SilentlyContinue
+    }
+    
+    Write-Success "Script permissions set"
 }
 
 # Test results tracking
@@ -453,13 +465,15 @@ function Main {
     
     Write-Info "Quick Mode: $Quick"
     Write-Info "Verbose Mode: $Verbose"
-    Write-Info "Update Repository: $Update"
     Write-Host ""
     
-    # Update repository
+    # Step 1: Update repository
     Update-Repository
     
-    # Run all validation tests
+    # Step 2: Set script permissions
+    Set-ScriptPermissions
+    
+    # Step 3: Run all validation tests
     Test-ProjectStructure
     Test-PackageJson
     Test-TypeScriptConfig

@@ -107,6 +107,21 @@ function Update-Repository {
     }
 }
 
+# Set script permissions
+function Set-ScriptPermissions {
+    Write-Step "Setting script permissions..."
+    
+    Write-Info "Setting PowerShell execution policy..."
+    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+    
+    Write-Info "Unblocking PowerShell scripts..."
+    Get-ChildItem -Path "scripts\*.ps1" -ErrorAction SilentlyContinue | ForEach-Object { 
+        Unblock-File $_.FullName -ErrorAction SilentlyContinue
+    }
+    
+    Write-Success "Script permissions set"
+}
+
 # Update dependencies
 function Update-Dependencies {
     Write-Step "Updating dependencies..."
@@ -287,10 +302,13 @@ function Main {
     Write-Info "Force Mode: $Force"
     Write-Host ""
     
-    # Update repository
+    # Step 1: Update repository
     Update-Repository
     
-    # Update dependencies
+    # Step 2: Set script permissions
+    Set-ScriptPermissions
+    
+    # Step 3: Update dependencies
     Update-Dependencies
     
     # Rebuild applications

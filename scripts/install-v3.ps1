@@ -8,8 +8,7 @@ param(
     [string]$Environment = "development",
     [switch]$SkipTests = $false,
     [switch]$SkipDocker = $false,
-    [switch]$Force = $false,
-    [switch]$Update = $false
+    [switch]$Force = $false
 )
 
 # Colors for output
@@ -69,23 +68,36 @@ function Test-Command {
 
 # Update repository
 function Update-Repository {
-    if ($Update) {
-        Write-Step "Updating repository..."
+    Write-Step "Updating repository..."
+    
+    if (Test-Path ".git") {
+        Write-Info "Pulling latest changes..."
+        git pull origin main
         
-        if (Test-Path ".git") {
-            Write-Info "Pulling latest changes..."
-            git pull origin main
-            
-            Write-Info "Checking for submodules..."
-            if (Test-Path ".gitmodules") {
-                git submodule update --init --recursive
-            }
-            
-            Write-Success "Repository updated"
-        } else {
-            Write-Warning "Not a git repository, skipping update"
+        Write-Info "Checking for submodules..."
+        if (Test-Path ".gitmodules") {
+            git submodule update --init --recursive
         }
+        
+        Write-Success "Repository updated"
+    } else {
+        Write-Warning "Not a git repository, skipping update"
     }
+}
+
+# Set script permissions
+function Set-ScriptPermissions {
+    Write-Step "Setting script permissions..."
+    
+    Write-Info "Setting PowerShell execution policy..."
+    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+    
+    Write-Info "Unblocking PowerShell scripts..."
+    Get-ChildItem -Path "scripts\*.ps1" -ErrorAction SilentlyContinue | ForEach-Object { 
+        Unblock-File $_.FullName -ErrorAction SilentlyContinue
+    }
+    
+    Write-Success "Script permissions set"
 }
 
 # Check prerequisites
@@ -437,40 +449,42 @@ function Main {
     Write-Info "Skip Tests: $SkipTests"
     Write-Info "Skip Docker: $SkipDocker"
     Write-Info "Force Mode: $Force"
-    Write-Info "Update Repository: $Update"
     Write-Host ""
     
     # Step 1: Update repository
     Update-Repository
     
-    # Step 2: Check prerequisites
+    # Step 2: Set script permissions
+    Set-ScriptPermissions
+    
+    # Step 3: Check prerequisites
     Test-Prerequisites
     
-    # Step 3: Validate project structure
+    # Step 4: Validate project structure
     Test-ProjectStructure
     
-    # Step 4: Install shared module
+    # Step 5: Install shared module
     Install-Shared
     
-    # Step 5: Install backend
+    # Step 6: Install backend
     Install-Backend
     
-    # Step 6: Install frontend
+    # Step 7: Install frontend
     Install-Frontend
     
-    # Step 7: Setup database
+    # Step 8: Setup database
     Setup-Database
     
-    # Step 8: Build applications
+    # Step 9: Build applications
     Build-Applications
     
-    # Step 9: Run tests
+    # Step 10: Run tests
     Invoke-Tests
     
-    # Step 10: Validate installation
+    # Step 11: Validate installation
     Test-Installation
     
-    # Step 11: Start development environment
+    # Step 12: Start development environment
     Start-Development
     
     Write-Header "Installation Complete!"

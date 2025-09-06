@@ -17,7 +17,6 @@ NC='\033[0m' # No Color
 # Parse command line arguments
 QUICK=false
 VERBOSE=false
-UPDATE_REPO=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -27,10 +26,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         --verbose)
             VERBOSE=true
-            shift
-            ;;
-        --update)
-            UPDATE_REPO=true
             shift
             ;;
         *)
@@ -70,23 +65,31 @@ print_warning() {
 
 # Update repository
 update_repository() {
-    if [ "$UPDATE_REPO" = true ]; then
-        print_step "Updating repository..."
+    print_step "Updating repository..."
+    
+    if [ -d ".git" ]; then
+        print_info "Pulling latest changes..."
+        git pull origin main
         
-        if [ -d ".git" ]; then
-            print_info "Pulling latest changes..."
-            git pull origin main
-            
-            print_info "Checking for submodules..."
-            if [ -f ".gitmodules" ]; then
-                git submodule update --init --recursive
-            fi
-            
-            print_success "Repository updated"
-        else
-            print_warning "Not a git repository, skipping update"
+        print_info "Checking for submodules..."
+        if [ -f ".gitmodules" ]; then
+            git submodule update --init --recursive
         fi
+        
+        print_success "Repository updated"
+    else
+        print_warning "Not a git repository, skipping update"
     fi
+}
+
+# Set script permissions
+set_script_permissions() {
+    print_step "Setting script permissions..."
+    
+    print_info "Making shell scripts executable..."
+    chmod +x scripts/*.sh 2>/dev/null || true
+    
+    print_success "Script permissions set"
 }
 
 # Test results tracking
@@ -457,13 +460,15 @@ main() {
     
     print_info "Quick Mode: $QUICK"
     print_info "Verbose Mode: $VERBOSE"
-    print_info "Update Repository: $UPDATE_REPO"
     echo ""
     
-    # Update repository
+    # Step 1: Update repository
     update_repository
     
-    # Run all validation tests
+    # Step 2: Set script permissions
+    set_script_permissions
+    
+    # Step 3: Run all validation tests
     test_project_structure
     test_package_json
     test_typescript_config

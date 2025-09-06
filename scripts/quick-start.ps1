@@ -6,8 +6,7 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
 param(
     [switch]$SkipValidation = $false,
-    [switch]$SkipDocker = $false,
-    [switch]$Update = $false
+    [switch]$SkipDocker = $false
 )
 
 # Colors for output
@@ -50,23 +49,36 @@ function Write-Info {
 
 # Update repository
 function Update-Repository {
-    if ($Update) {
-        Write-Step "Updating repository..."
+    Write-Step "Updating repository..."
+    
+    if (Test-Path ".git") {
+        Write-Info "Pulling latest changes..."
+        git pull origin main
         
-        if (Test-Path ".git") {
-            Write-Info "Pulling latest changes..."
-            git pull origin main
-            
-            Write-Info "Checking for submodules..."
-            if (Test-Path ".gitmodules") {
-                git submodule update --init --recursive
-            }
-            
-            Write-Success "Repository updated"
-        } else {
-            Write-Warning "Not a git repository, skipping update"
+        Write-Info "Checking for submodules..."
+        if (Test-Path ".gitmodules") {
+            git submodule update --init --recursive
         }
+        
+        Write-Success "Repository updated"
+    } else {
+        Write-Warning "Not a git repository, skipping update"
     }
+}
+
+# Set script permissions
+function Set-ScriptPermissions {
+    Write-Step "Setting script permissions..."
+    
+    Write-Info "Setting PowerShell execution policy..."
+    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+    
+    Write-Info "Unblocking PowerShell scripts..."
+    Get-ChildItem -Path "scripts\*.ps1" -ErrorAction SilentlyContinue | ForEach-Object { 
+        Unblock-File $_.FullName -ErrorAction SilentlyContinue
+    }
+    
+    Write-Success "Script permissions set"
 }
 
 # Quick validation
@@ -251,13 +263,15 @@ function Main {
     
     Write-Info "Skip Validation: $SkipValidation"
     Write-Info "Skip Docker: $SkipDocker"
-    Write-Info "Update Repository: $Update"
     Write-Host ""
     
-    # Update repository
+    # Step 1: Update repository
     Update-Repository
     
-    # Quick validation
+    # Step 2: Set script permissions
+    Set-ScriptPermissions
+    
+    # Step 3: Quick validation
     if (-not $SkipValidation) {
         Test-QuickValidation
     }

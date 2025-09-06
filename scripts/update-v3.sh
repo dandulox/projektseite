@@ -115,6 +115,16 @@ update_repository() {
     git log --oneline -5
 }
 
+# Set script permissions
+set_script_permissions() {
+    print_step "Setting script permissions..."
+    
+    print_info "Making shell scripts executable..."
+    chmod +x scripts/*.sh 2>/dev/null || true
+    
+    print_success "Script permissions set"
+}
+
 # Update dependencies
 update_dependencies() {
     print_step "Updating dependencies..."
@@ -286,10 +296,13 @@ main() {
     print_info "Force Mode: $FORCE"
     echo ""
     
-    # Update repository
+    # Step 1: Update repository
     update_repository
     
-    # Update dependencies
+    # Step 2: Set script permissions
+    set_script_permissions
+    
+    # Step 3: Update dependencies
     update_dependencies
     
     # Rebuild applications

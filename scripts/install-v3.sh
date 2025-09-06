@@ -19,7 +19,6 @@ ENVIRONMENT="development"
 SKIP_TESTS=false
 SKIP_DOCKER=false
 FORCE=false
-UPDATE_REPO=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -37,10 +36,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         --force)
             FORCE=true
-            shift
-            ;;
-        --update)
-            UPDATE_REPO=true
             shift
             ;;
         *)
@@ -85,23 +80,31 @@ command_exists() {
 
 # Update repository
 update_repository() {
-    if [ "$UPDATE_REPO" = true ]; then
-        print_step "Updating repository..."
+    print_step "Updating repository..."
+    
+    if [ -d ".git" ]; then
+        print_info "Pulling latest changes..."
+        git pull origin main
         
-        if [ -d ".git" ]; then
-            print_info "Pulling latest changes..."
-            git pull origin main
-            
-            print_info "Checking for submodules..."
-            if [ -f ".gitmodules" ]; then
-                git submodule update --init --recursive
-            fi
-            
-            print_success "Repository updated"
-        else
-            print_warning "Not a git repository, skipping update"
+        print_info "Checking for submodules..."
+        if [ -f ".gitmodules" ]; then
+            git submodule update --init --recursive
         fi
+        
+        print_success "Repository updated"
+    else
+        print_warning "Not a git repository, skipping update"
     fi
+}
+
+# Set script permissions
+set_script_permissions() {
+    print_step "Setting script permissions..."
+    
+    print_info "Making shell scripts executable..."
+    chmod +x scripts/*.sh 2>/dev/null || true
+    
+    print_success "Script permissions set"
 }
 
 # Check prerequisites
@@ -405,43 +408,45 @@ main() {
     print_info "Skip Tests: $SKIP_TESTS"
     print_info "Skip Docker: $SKIP_DOCKER"
     print_info "Force Mode: $FORCE"
-    print_info "Update Repository: $UPDATE_REPO"
     echo ""
     
     # Step 1: Update repository
     update_repository
     
-    # Step 2: Check prerequisites
+    # Step 2: Set script permissions
+    set_script_permissions
+    
+    # Step 3: Check prerequisites
     test_prerequisites
     
-    # Step 3: Validate project structure
+    # Step 4: Validate project structure
     test_project_structure
     
-    # Step 4: Install shared module
+    # Step 5: Install shared module
     install_shared
     
-    # Step 5: Install backend
+    # Step 6: Install backend
     install_backend
     
-    # Step 6: Install frontend
+    # Step 7: Install frontend
     install_frontend
     
-    # Step 7: Setup database
+    # Step 8: Setup database
     setup_database
     
-    # Step 8: Setup Docker
+    # Step 9: Setup Docker
     setup_docker
     
-    # Step 9: Build applications
+    # Step 10: Build applications
     build_applications
     
-    # Step 10: Run tests
+    # Step 11: Run tests
     run_tests
     
-    # Step 11: Validate installation
+    # Step 12: Validate installation
     test_installation
     
-    # Step 12: Start development environment
+    # Step 13: Start development environment
     start_development
     
     print_header "Installation Complete!"
