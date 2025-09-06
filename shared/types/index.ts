@@ -5,7 +5,18 @@ export interface User {
   id: string;
   username: string;
   email: string;
-  password?: string; // Optional für API-Responses
+  password: string; // Required für interne Verwendung
+  role: UserRole;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// User ohne Passwort für API-Responses
+export interface UserWithoutPassword {
+  id: string;
+  username: string;
+  email: string;
   role: UserRole;
   isActive: boolean;
   createdAt: Date;
@@ -292,6 +303,7 @@ export interface UpdateUserInput {
 export interface LoginInput {
   email: string;
   password: string;
+  username?: string; // Optional für Kompatibilität
 }
 
 export interface CreateProjectInput {

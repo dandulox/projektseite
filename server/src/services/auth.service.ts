@@ -1,6 +1,7 @@
 // Auth Service - Business Logic für Authentication
 import { 
   User, 
+  UserWithoutPassword,
   LoginInput, 
   CreateUserInput 
 } from '@shared/types';
@@ -26,16 +27,15 @@ export class AuthService {
 
   // Login user
   async login(input: LoginInput): Promise<{
-    user: Omit<User, 'password'>;
+    user: UserWithoutPassword;
     accessToken: string;
     refreshToken: string;
   }> {
     try {
-      const { username, password } = input;
+      const { email, password } = input;
 
-      // Find user by username or email
-      const user = await this.userRepository.findByUsername(username) ||
-                   await this.userRepository.findByEmail(username);
+      // Find user by email
+      const user = await this.userRepository.findByEmail(email);
 
       if (!user) {
         throw new UnauthorizedError('Ungültige Anmeldedaten');
@@ -68,12 +68,12 @@ export class AuthService {
       });
 
       return {
-        user: userWithoutPassword,
+        user: userWithoutPassword as UserWithoutPassword,
         accessToken,
         refreshToken,
       };
     } catch (error) {
-      logger.error('Auth login error', { username: input.username, error });
+      logger.error('Auth login error', { email: input.email, error });
       throw error;
     }
   }
@@ -128,7 +128,7 @@ export class AuthService {
       });
 
       return {
-        user: userWithoutPassword,
+        user: userWithoutPassword as UserWithoutPassword,
         accessToken,
         refreshToken,
       };

@@ -1,6 +1,7 @@
 // User Service - Business Logic für Benutzer
 import { 
   User, 
+  UserWithoutPassword,
   CreateUserInput, 
   UpdateUserInput, 
   UserRole 
@@ -58,7 +59,7 @@ export class UserService {
         createdBy,
       });
 
-      return userWithoutPassword as User;
+      return userWithoutPassword as UserWithoutPassword;
     } catch (error) {
       logger.error('User create error', { input, createdBy, error });
       throw error;
@@ -79,7 +80,7 @@ export class UserService {
       // Remove password from response
       const { password, ...userWithoutPassword } = user;
 
-      return userWithoutPassword as User;
+      return userWithoutPassword as UserWithoutPassword;
     } catch (error) {
       logger.error('User getById error', { id, requestingUserId, error });
       throw error;
@@ -97,7 +98,7 @@ export class UserService {
       // Remove password from response
       const { password, ...userWithoutPassword } = user;
 
-      return userWithoutPassword as User;
+      return userWithoutPassword as UserWithoutPassword;
     } catch (error) {
       logger.error('User getByUsername error', { username, error });
       throw error;
@@ -142,7 +143,7 @@ export class UserService {
         changes: Object.keys(input),
       });
 
-      return userWithoutPassword as User;
+      return userWithoutPassword as UserWithoutPassword;
     } catch (error) {
       logger.error('User update error', { id, input, requestingUserId, error });
       throw error;
@@ -220,7 +221,7 @@ export class UserService {
       // Remove passwords from response
       const usersWithoutPasswords = result.data.map(user => {
         const { password, ...userWithoutPassword } = user;
-        return userWithoutPassword as User;
+        return userWithoutPassword as UserWithoutPassword;
       });
 
       logger.debug('User getUsersWithFilters', {
@@ -269,7 +270,7 @@ export class UserService {
       // Remove passwords from response
       const usersWithoutPasswords = users.map(user => {
         const { password, ...userWithoutPassword } = user;
-        return userWithoutPassword as User;
+        return userWithoutPassword as UserWithoutPassword;
       });
 
       logger.debug('User searchUsers', { query, count: usersWithoutPasswords.length });
