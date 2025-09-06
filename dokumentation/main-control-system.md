@@ -60,7 +60,7 @@ sudo ./scripts/launcher.sh
 
 ### FastPatch-Funktionalität
 ```bash
-# Automatischer Start des Patch-Managers
+# Interaktives Menü starten (Standard)
 ./scripts/patches/patch-manager.sh
 
 # Verfügbare Patches anzeigen
@@ -68,6 +68,26 @@ sudo ./scripts/launcher.sh
 
 # Patch installieren
 ./scripts/patches/patch-manager.sh install activity-log
+
+# Aktivitätslog-Tabellen reparieren
+./scripts/patches/patch-manager.sh install fix-tables
+```
+
+#### Interaktives Menü
+Der Patch-Manager bietet ein benutzerfreundliches interaktives Menü:
+```
+🔧 PROJEKTSEITE PATCH-MANAGER
+==================================
+
+Verfügbare Patches:
+
+1) activity-log - Aktivitätslog-System mit automatischen Benachrichtigungen
+2) fix-db - Datenbankverbindung reparieren
+3) fix-tables - Aktivitätslog-Tabellen reparieren
+
+0) Beenden
+
+Wählen Sie eine Option (0-3): 
 ```
 
 ### FastUpdate-Funktionalität

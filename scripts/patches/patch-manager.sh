@@ -148,18 +148,88 @@ show_help() {
     echo "  $0 [BEFEHL] [PATCH-NAME]"
     echo ""
     echo "Befehle:"
+    echo "  (ohne Parameter)        - Interaktives Menü starten"
+    echo "  menu                    - Interaktives Menü starten"
     echo "  list                    - Zeige alle verfügbaren Patches"
     echo "  status [PATCH-NAME]     - Zeige Status eines Patches"
     echo "  install PATCH-NAME      - Installiere einen Patch"
     echo "  help                    - Zeige diese Hilfe"
     echo ""
     echo "Beispiele:"
+    echo "  $0                                     # Interaktives Menü starten"
+    echo "  $0 menu                               # Interaktives Menü starten"
     echo "  $0 list                              # Alle Patches anzeigen"
     echo "  $0 status activity-log               # Status des Aktivitätslog-Patches"
     echo "  $0 install activity-log              # Aktivitätslog-System installieren"
     echo ""
     echo "Verfügbare Patches:"
     show_patches
+}
+
+# Interaktives Menü anzeigen
+show_interactive_menu() {
+    echo ""
+    echo -e "${BLUE}🔧 PROJEKTSEITE PATCH-MANAGER${NC}"
+    echo "=================================="
+    echo ""
+    echo "Verfügbare Patches:"
+    echo ""
+    
+    local i=1
+    local patch_keys=()
+    for patch_key in "${!PATCHES[@]}"; do
+        IFS=':' read -r script description <<< "${PATCHES[$patch_key]}"
+        echo -e "${GREEN}$i)${NC} $patch_key - $description"
+        patch_keys+=("$patch_key")
+        ((i++))
+    done
+    
+    echo ""
+    echo -e "${YELLOW}0)${NC} Beenden"
+    echo ""
+}
+
+# Interaktives Menü verarbeiten
+handle_interactive_menu() {
+    while true; do
+        show_interactive_menu
+        read -p "Wählen Sie eine Option (0-${#PATCHES[@]}): " choice
+        
+        case $choice in
+            0)
+                log "Patch-Manager beendet"
+                break
+                ;;
+            [1-9]*)
+                if [ "$choice" -ge 1 ] && [ "$choice" -le "${#PATCHES[@]}" ]; then
+                    local patch_index=$((choice - 1))
+                    local selected_patch="${patch_keys[$patch_index]}"
+                    
+                    echo ""
+                    log "Ausgewählter Patch: $selected_patch"
+                    
+                    # Zeige Patch-Status
+                    show_patch_status "$selected_patch"
+                    
+                    echo ""
+                    read -p "Möchten Sie diesen Patch installieren? (j/N): " -r
+                    if [[ $REPLY =~ ^[Jj]$ ]]; then
+                        execute_patch "$selected_patch"
+                    else
+                        log "Patch-Installation abgebrochen"
+                    fi
+                    
+                    echo ""
+                    read -p "Drücken Sie Enter, um fortzufahren..."
+                else
+                    error "Ungültige Auswahl: $choice"
+                fi
+                ;;
+            *)
+                error "Ungültige Eingabe: $choice"
+                ;;
+        esac
+    done
 }
 
 # Hauptfunktion
@@ -195,7 +265,10 @@ main() {
             
             execute_patch "$patch_name"
             ;;
-        "help"|"--help"|"-h"|"")
+        "menu"|"interactive"|"")
+            handle_interactive_menu
+            ;;
+        "help"|"--help"|"-h")
             show_help
             ;;
         *)
