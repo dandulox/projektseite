@@ -27,7 +27,40 @@ async function initializeDatabase() {
       console.log('📋 Erstelle Datenbankschema...');
       
       // Lade und führe das Schema aus
-      const schemaPath = path.join(__dirname, '../../database/init/01_schema.sql');
+      const possibleSchemaPaths = [
+        '/app/database/init/01_schema.sql',                          // Absoluter Pfad im Container (Volume-Mount)
+        path.join(__dirname, '../../database/init/01_schema.sql'),  // Volume-Mount
+        path.join(__dirname, '../database/init/01_schema.sql'),     // Im Backend-Verzeichnis
+        path.join(process.cwd(), 'database/init/01_schema.sql'),    // Arbeitsverzeichnis
+      ];
+      
+      let schemaPath = null;
+      let attempts = 0;
+      const maxAttempts = 10;
+      
+      // Warte auf das Volume-Mount mit Retry-Logik
+      while (!schemaPath && attempts < maxAttempts) {
+        for (const schemaFilePath of possibleSchemaPaths) {
+          if (fs.existsSync(schemaFilePath)) {
+            schemaPath = schemaFilePath;
+            console.log(`📁 Schema-Datei gefunden: ${schemaPath}`);
+            break;
+          }
+        }
+        
+        if (!schemaPath) {
+          attempts++;
+          console.log(`⏳ Warte auf Schema-Datei... (Versuch ${attempts}/${maxAttempts})`);
+          await new Promise(resolve => setTimeout(resolve, 2000)); // 2 Sekunden warten
+        }
+      }
+      
+      if (!schemaPath) {
+        console.log('📁 Schema-Datei nicht gefunden in folgenden Pfaden:');
+        possibleSchemaPaths.forEach(p => console.log(`   - ${p}`));
+        throw new Error('Schema-Datei 01_schema.sql nicht gefunden - Volume-Mount möglicherweise nicht verfügbar');
+      }
+      
       const schemaSQL = fs.readFileSync(schemaPath, 'utf8');
       
       // Führe das Schema aus
@@ -37,9 +70,8 @@ async function initializeDatabase() {
       console.log('✅ Datenbankschema bereits vorhanden');
     }
 
-    // Wende alle verfügbaren Patches an
-    console.log('🔧 Wende Datenbank-Patches an...');
-    await applyDatabasePatches();
+    // Patches sind jetzt in 01_schema.sql integriert
+    console.log('✅ Datenbank-Patches bereits in Schema integriert');
 
     // Prüfe ob Benutzer bereits existieren
     const userCount = await pool.query('SELECT COUNT(*) FROM users');
@@ -64,60 +96,10 @@ async function initializeDatabase() {
   }
 }
 
-// Funktion zum Anwenden aller Datenbank-Patches
+// Funktion zum Anwenden aller Datenbank-Patches (DEPRECATED - Patches sind jetzt in 01_schema.sql integriert)
 async function applyDatabasePatches() {
-  try {
-    // Prüfe verschiedene mögliche Pfade für Patches
-    const possiblePaths = [
-      path.join(__dirname, '../../database/patches'),  // Volume-Mount
-      path.join(__dirname, '../database/patches'),     // Im Backend-Verzeichnis
-      path.join(process.cwd(), 'database/patches'),    // Arbeitsverzeichnis
-      '/app/database/patches'                          // Absoluter Pfad
-    ];
-    
-    let patchesDir = null;
-    for (const patchPath of possiblePaths) {
-      if (fs.existsSync(patchPath)) {
-        patchesDir = patchPath;
-        console.log(`📁 Patches-Verzeichnis gefunden: ${patchPath}`);
-        break;
-      }
-    }
-    
-    if (!patchesDir) {
-      console.log('📁 Kein Patches-Verzeichnis gefunden in folgenden Pfaden:');
-      possiblePaths.forEach(p => console.log(`   - ${p}`));
-      return;
-    }
-
-    // Lade alle Patch-Dateien
-    const patchFiles = fs.readdirSync(patchesDir)
-      .filter(file => file.endsWith('.sql') && !file.includes('README'))
-      .sort(); // Sortiere alphabetisch für korrekte Reihenfolge
-
-    console.log(`📋 Gefundene Patches: ${patchFiles.length}`);
-
-    for (const patchFile of patchFiles) {
-      try {
-        console.log(`🔧 Wende Patch an: ${patchFile}`);
-        const patchPath = path.join(patchesDir, patchFile);
-        const patchSQL = fs.readFileSync(patchPath, 'utf8');
-        
-        // Führe den Patch aus
-        await pool.query(patchSQL);
-        console.log(`✅ Patch ${patchFile} erfolgreich angewendet`);
-      } catch (patchError) {
-        // Einige Patches können Fehler werfen, wenn sie bereits angewendet wurden
-        // Das ist normal und sollte nicht die Initialisierung stoppen
-        console.log(`⚠️ Patch ${patchFile} konnte nicht angewendet werden (möglicherweise bereits vorhanden): ${patchError.message}`);
-      }
-    }
-
-    console.log('✅ Alle Patches verarbeitet');
-  } catch (error) {
-    console.error('❌ Fehler beim Anwenden der Patches:', error);
-    throw error;
-  }
+  console.log('ℹ️ Patch-System ist deprecated - alle Patches sind jetzt in 01_schema.sql integriert');
+  return;
 }
 
 // Skript ausführen
@@ -133,4 +115,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { initializeDatabase, applyDatabasePatches };
+module.exports = { initializeDatabase };
