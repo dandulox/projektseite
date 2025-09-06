@@ -194,6 +194,8 @@ jest.mock('winston', () => ({
     printf: jest.fn(),
     simple: jest.fn(),
     json: jest.fn(),
+    errors: jest.fn(),
+    splat: jest.fn(),
   },
   transports: {
     Console: jest.fn(),
