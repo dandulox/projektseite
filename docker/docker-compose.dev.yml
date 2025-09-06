@@ -72,11 +72,7 @@ services:
         condition: service_healthy
     networks:
       - projektseite-dev-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    # Healthcheck is now handled in Dockerfile
     command: npm run dev
 
   # Frontend App (Development)
@@ -90,6 +86,7 @@ services:
       REACT_APP_API_URL: http://localhost:3001/api
       REACT_APP_ENVIRONMENT: development
       CHOKIDAR_USEPOLLING: true
+      WATCHPACK_POLLING: true
     ports:
       - "3000:3000"
     volumes:
@@ -99,11 +96,7 @@ services:
       - backend-dev
     networks:
       - projektseite-dev-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    # Healthcheck is now handled in Dockerfile
     command: npm run dev
 
   # Database Admin - pgAdmin

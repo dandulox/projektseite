@@ -376,20 +376,35 @@ function Create-Dockerfiles {
 # Development Dockerfile for Backend
 FROM node:18-alpine
 
+# Install curl for healthchecks
+RUN apk add --no-cache curl
+
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files first for better caching
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install --include=dev
+# Install dependencies with clean cache
+RUN npm ci --include=dev && npm cache clean --force
 
 # Copy source code
 COPY . .
 
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Change ownership of the app directory
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
 # Expose port
 EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3001/health || exit 1
 
 # Start development server
 CMD ["npm", "run", "dev"]
@@ -404,20 +419,35 @@ CMD ["npm", "run", "dev"]
 # Development Dockerfile for Frontend
 FROM node:18-alpine
 
+# Install curl for healthchecks
+RUN apk add --no-cache curl
+
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files first for better caching
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install --include=dev
+# Install dependencies with clean cache
+RUN npm ci --include=dev && npm cache clean --force
 
 # Copy source code
 COPY . .
 
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Change ownership of the app directory
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
 # Expose port
 EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000 || exit 1
 
 # Start development server
 CMD ["npm", "run", "dev"]

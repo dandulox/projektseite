@@ -251,3 +251,124 @@ export interface ProjectFilters {
   visibility?: Visibility[];
   search?: string;
 }
+
+// Missing types that are referenced in the code
+export interface Module {
+  id: string;
+  name: string;
+  description?: string;
+  status: ModuleStatus;
+  priority: Priority;
+  projectId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export enum ModuleStatus {
+  PLANNING = 'planning',
+  ACTIVE = 'active',
+  ON_HOLD = 'on_hold',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled'
+}
+
+// Input types for validation
+export interface CreateUserInput {
+  username: string;
+  email: string;
+  password: string;
+  role?: UserRole;
+}
+
+export interface UpdateUserInput {
+  username?: string;
+  email?: string;
+  role?: UserRole;
+  isActive?: boolean;
+}
+
+export interface LoginInput {
+  email: string;
+  password: string;
+}
+
+export interface CreateProjectInput {
+  name: string;
+  description?: string;
+  priority?: Priority;
+  teamId?: string;
+  visibility?: Visibility;
+  startDate?: Date;
+  targetDate?: Date;
+}
+
+export interface UpdateProjectInput {
+  name?: string;
+  description?: string;
+  status?: ProjectStatus;
+  priority?: Priority;
+  teamId?: string;
+  visibility?: Visibility;
+  startDate?: Date;
+  targetDate?: Date;
+}
+
+export interface CreateTaskInput {
+  title: string;
+  description?: string;
+  priority?: Priority;
+  assigneeId?: string;
+  projectId?: string;
+  moduleId?: string;
+  dueDate?: Date;
+  estimatedHours?: number;
+  tags?: string[];
+}
+
+export interface UpdateTaskInput {
+  title?: string;
+  description?: string;
+  status?: TaskStatus;
+  priority?: Priority;
+  assigneeId?: string;
+  dueDate?: Date;
+  estimatedHours?: number;
+  actualHours?: number;
+  tags?: string[];
+}
+
+export interface CreateTeamInput {
+  name: string;
+  description?: string;
+  leaderId: string;
+}
+
+export interface UpdateTeamInput {
+  name?: string;
+  description?: string;
+  leaderId?: string;
+  isActive?: boolean;
+}
+
+export interface TaskQueryInput {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  filters?: TaskFilters;
+}
+
+export interface ProjectQueryInput {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  filters?: ProjectFilters;
+}
+
+export interface DeadlineQueryInput {
+  from?: Date;
+  to?: Date;
+  projectId?: string;
+  assigneeId?: string;
+}
