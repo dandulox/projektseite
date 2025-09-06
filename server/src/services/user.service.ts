@@ -191,7 +191,7 @@ export class UserService {
     },
     requestingUserId: string
   ): Promise<{
-    data: User[];
+    data: UserWithoutPassword[];
     pagination: {
       page: number;
       limit: number;
@@ -263,7 +263,7 @@ export class UserService {
   }
 
   // Search users
-  async searchUsers(query: string, limit: number = 20): Promise<User[]> {
+  async searchUsers(query: string, limit: number = 20): Promise<UserWithoutPassword[]> {
     try {
       const users = await this.userRepository.search(query, limit);
 
