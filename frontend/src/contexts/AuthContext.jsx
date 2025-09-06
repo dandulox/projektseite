@@ -54,11 +54,26 @@ const apiRequest = async (endpoint, options = {}) => {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Ein Fehler ist aufgetreten');
+      // Erweiterte Fehlermeldung mit Details
+      let errorMessage = data.error || 'Ein Fehler ist aufgetreten';
+      if (data.details) {
+        errorMessage += `: ${data.details}`;
+      }
+      if (data.suggestion) {
+        errorMessage += ` ${data.suggestion}`;
+      }
+      throw new Error(errorMessage);
     }
 
     return data;
   } catch (error) {
+    // Log für Debugging
+    console.error('API Request Error:', {
+      endpoint,
+      status: error.status,
+      message: error.message,
+      data: error.data
+    });
     throw error;
   }
 };

@@ -317,7 +317,11 @@ router.post('/project', authenticateToken, async (req, res) => {
     `, [project_id]);
 
     if (projectResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Projekt nicht gefunden' });
+      return res.status(404).json({ 
+        error: 'Projekt nicht gefunden', 
+        details: `Projekt mit ID ${project_id} existiert nicht in der Datenbank`,
+        suggestion: 'Bitte wählen Sie ein gültiges Projekt aus oder erstellen Sie zuerst ein Projekt'
+      });
     }
 
     const project = projectResult.rows[0];

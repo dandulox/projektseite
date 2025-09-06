@@ -108,7 +108,20 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
       onSuccess();
       onClose();
     } catch (error) {
-      toast.error(error.message || `Fehler beim ${editModule ? 'Aktualisieren' : 'Erstellen'} des Moduls`);
+      console.error('Modul-Fehler:', error);
+      
+      // Bessere Fehlermeldungen basierend auf dem Fehlertyp
+      let errorMessage = error.message || `Fehler beim ${editModule ? 'Aktualisieren' : 'Erstellen'} des Moduls`;
+      
+      if (error.message && error.message.includes('Projekt nicht gefunden')) {
+        errorMessage = 'Das ausgewählte Projekt existiert nicht. Bitte wählen Sie ein gültiges Projekt aus.';
+      } else if (error.message && error.message.includes('Keine Berechtigung')) {
+        errorMessage = 'Sie haben keine Berechtigung, Module in diesem Projekt zu erstellen.';
+      } else if (error.message && error.message.includes('foreign key constraint')) {
+        errorMessage = 'Das ausgewählte Projekt existiert nicht. Bitte erstellen Sie zuerst ein Projekt.';
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
