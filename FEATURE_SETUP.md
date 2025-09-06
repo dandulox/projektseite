@@ -3,6 +3,10 @@
 
 Dieses Dokument beschreibt, wie die drei Hauptfeatures eingerichtet und getestet werden.
 
+> **Status:** ✅ Vollständig implementiert und getestet (v2.1.0)
+> 
+> **Letzte Aktualisierung:** September 2025
+
 ## 🚀 Schnellstart
 
 ### 1. System starten
@@ -12,6 +16,9 @@ Dieses Dokument beschreibt, wie die drei Hauptfeatures eingerichtet und getestet
 
 # Warten bis alle Container laufen (ca. 30 Sekunden)
 docker ps
+
+# Container-Status prüfen
+./scripts/check-logs.sh
 ```
 
 ### 2. Enhanced Task Seeds anwenden
@@ -218,7 +225,7 @@ open http://localhost:3000/projects/1/board
 ./scripts/seed-enhanced-tasks.sh
 
 # User-Tasks prüfen
-docker exec projektseite-db psql -U postgres -d projektseite -c \
+docker exec projektseite-postgres psql -U postgres -d projektseite -c \
   "SELECT COUNT(*) FROM tasks WHERE assignee_id = 1;"
 ```
 
@@ -232,12 +239,47 @@ docker exec projektseite-db psql -U postgres -d projektseite -c \
 **Lösung:**
 ```bash
 # Deadlines-Daten prüfen
-docker exec projektseite-db psql -U postgres -d projektseite -c \
+docker exec projektseite-postgres psql -U postgres -d projektseite -c \
   "SELECT COUNT(*) FROM tasks WHERE due_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days';"
 
 # Dashboard-API testen
 curl -H "Authorization: Bearer YOUR_TOKEN" \
-  http://localhost:3001/api/dashboard/me | jq '.widgets.upcomingDeadlines'
+  http://91.98.135.242:3001/api/dashboard/me | jq '.widgets.upcomingDeadlines'
+```
+
+### Problem: 429 (Too Many Requests)
+
+**Ursachen:**
+- Rate-Limiting zu restriktiv
+- Zu viele API-Requests in kurzer Zeit
+- React Query Retries
+
+**Lösung:**
+```bash
+# Rate-Limiting wurde bereits angepasst (1000 requests/15min)
+# Für lokale Entwicklung wird Rate-Limiting übersprungen
+
+# Backend neu starten
+docker-compose restart backend
+
+# Logs prüfen
+docker logs projektseite-backend
+```
+
+### Problem: Datumsformat-Fehler
+
+**Ursachen:**
+- ISO-Datumsstrings in HTML Date-Inputs
+- Falsche Datumsformatierung
+
+**Lösung:**
+```bash
+# Datumsformatierung wurde bereits implementiert
+# Frontend neu starten
+docker-compose restart frontend
+
+# Logs prüfen
+docker logs projektseite-frontend
 ```
 
 ### Problem: Kanban-Board zeigt keine Spalten
@@ -250,16 +292,16 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 **Lösung:**
 ```bash
 # Projekt prüfen
-docker exec projektseite-db psql -U postgres -d projektseite -c \
+docker exec projektseite-postgres psql -U postgres -d projektseite -c \
   "SELECT id, name FROM projects WHERE id = 1;"
 
 # Tasks im Projekt prüfen
-docker exec projektseite-db psql -U postgres -d projektseite -c \
+docker exec projektseite-postgres psql -U postgres -d projektseite -c \
   "SELECT COUNT(*) FROM tasks WHERE project_id = 1;"
 
 # Kanban-API testen
 curl -H "Authorization: Bearer YOUR_TOKEN" \
-  http://localhost:3001/api/projects/1/board | jq '.columns'
+  http://91.98.135.242:3001/api/projects/1/board | jq '.columns'
 ```
 
 ### Problem: Drag & Drop funktioniert nicht
@@ -281,7 +323,7 @@ docker logs projektseite-backend
 curl -X PATCH -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"status": "in_progress"}' \
-  http://localhost:3001/api/tasks/1
+  http://91.98.135.242:3001/api/tasks/1
 ```
 
 ## 📊 Monitoring & Logs
@@ -294,7 +336,7 @@ docker-compose logs -f
 # Spezifische Container-Logs
 docker logs -f projektseite-backend
 docker logs -f projektseite-frontend
-docker logs -f projektseite-db
+docker logs -f projektseite-postgres
 ```
 
 ### Performance-Monitoring
@@ -303,7 +345,7 @@ docker logs -f projektseite-db
 docker stats
 
 # Datenbank-Performance
-docker exec projektseite-db psql -U postgres -d projektseite -c \
+docker exec projektseite-postgres psql -U postgres -d projektseite -c \
   "SELECT * FROM pg_stat_activity WHERE state = 'active';"
 ```
 

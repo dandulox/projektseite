@@ -1,6 +1,10 @@
 # Risiken & Follow-Ups
 ## My-Tasks, Deadlines und Kanban-Board Features
 
+> **Status:** ✅ Alle kritischen Risiken behoben (v2.1.0)
+> 
+> **Letzte Aktualisierung:** September 2025
+
 ## 🚨 Mögliche Breaking Changes
 
 ### 1. Dashboard-Deadlines Tabelle-Änderung
@@ -18,12 +22,14 @@
 -- Diese müssen auf tasks-Tabelle umgestellt werden
 ```
 
-**Risiko-Level:** 🔴 **HOCH** - Kann Dashboard komplett brechen
+**Risiko-Level:** ✅ **BEHOBEN** - Dashboard funktioniert stabil
 
 **Mitigation:**
 - ✅ Backup vor Änderung erstellt
 - ✅ Tests implementiert
 - ✅ Rollback-Plan vorhanden
+- ✅ Dashboard-API korrigiert (tasks statt project_modules)
+- ✅ completion_percentage-Fehler behoben
 
 ### 2. Status-Konstanten Einführung
 
@@ -34,12 +40,14 @@
 - Kanban-Board Spalten-Definition
 - Frontend Status-Mappings
 
-**Risiko-Level:** 🟡 **MITTEL** - Inkonsistenzen möglich
+**Risiko-Level:** ✅ **BEHOBEN** - Status-Konsistenz gewährleistet
 
 **Mitigation:**
 - ✅ Backward-kompatible Konstanten
 - ✅ Validierung erweitert
 - ✅ Tests für alle Status-Szenarien
+- ✅ Zentrale Status-Definitionen implementiert
+- ✅ Frontend/Backend Synchronisation
 
 ### 3. API-Endpunkt Änderungen
 
@@ -50,7 +58,13 @@
 - Kanban-Board Spalten-Generierung
 - Task-Status-Validierung
 
-**Risiko-Level:** 🟢 **NIEDRIG** - Nur interne Logik-Änderungen
+**Risiko-Level:** ✅ **BEHOBEN** - API-Stabilität gewährleistet
+
+**Neue Risiken behoben:**
+- ✅ Rate-Limiting angepasst (1000 requests/15min)
+- ✅ API-URL-Erkennung korrigiert (IP-Adressen)
+- ✅ Datumsformatierung implementiert
+- ✅ Error-Handling verbessert
 
 ## 📊 Empfohlene Indizes
 
@@ -238,7 +252,7 @@ const DebugPanel = () => {
 docker-compose down
 
 # 2. Datenbank-Backup wiederherstellen
-docker exec projektseite-db psql -U postgres -d projektseite < backup_before_seeds_YYYYMMDD_HHMMSS.sql
+docker exec projektseite-postgres psql -U postgres -d projektseite < backup_before_seeds_YYYYMMDD_HHMMSS.sql
 
 # 3. Container neu starten
 docker-compose up -d
@@ -254,7 +268,7 @@ docker-compose up -d
 git checkout HEAD~1 -- backend/routes/dashboard.js
 
 # 2. Container neu starten
-docker-compose restart projektseite-backend
+docker-compose restart backend
 
 # 3. Tests ausführen
 ./scripts/test-features.sh
@@ -349,8 +363,17 @@ const rateLimit = require('express-rate-limit');
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 Minuten
-  max: 100, // Max 100 Requests pro IP
-  message: 'Zu viele Anfragen, bitte versuchen Sie es später erneut.'
+  max: 1000, // Max 1000 Requests pro IP (erhöht für Entwicklung)
+  message: {
+    error: 'Zu viele Anfragen. Bitte warten Sie einen Moment.',
+    retryAfter: '15 Minuten'
+  },
+  // Skip rate limiting für lokale Entwicklung
+  skip: (req) => {
+    const isLocalhost = req.ip === '127.0.0.1' || req.ip === '::1' || req.ip === '::ffff:127.0.0.1';
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    return isLocalhost || isDevelopment;
+  }
 });
 
 app.use('/api/', apiLimiter);

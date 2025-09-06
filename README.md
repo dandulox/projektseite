@@ -14,11 +14,14 @@ Die vollständige Dokumentation ist in den folgenden Dateien aufgeteilt:
 
 ### 🛠️ Installation & Setup
 - **[Setup-Anweisungen](dokumentation/setup-anweisungen.md)** - Komplette Installationsanleitung
+- **[Feature Setup](FEATURE_SETUP.md)** - Task-Management Features einrichten
 - **[Wartung & Verwaltung](dokumentation/wartung-verwaltung.md)** - Wartung, Updates und Backups
 - **[Main Control System](dokumentation/main-control-system.md)** - Script-Verwaltung und Batch-Operationen
 
 ### 🔧 Technische Details
 - **[API-Endpunkte](dokumentation/api-endpunkte.md)** - Vollständige API-Dokumentation
+- **[API-Features](dokumentation/api-features.md)** - Task-Management API-Dokumentation
+- **[Frontend-Komponenten](dokumentation/frontend-components.md)** - React-Komponenten-Dokumentation
 - **[Datenbank-Schema](dokumentation/datenbank-schema.md)** - Datenbankstruktur und Tabellen
 - **[Benutzerverwaltung](dokumentation/benutzerverwaltung.md)** - Rollen, Berechtigungen und Benutzer-API
 
@@ -29,6 +32,7 @@ Die vollständige Dokumentation ist in den folgenden Dateien aufgeteilt:
 ### 🐛 Spezielle Systeme
 - **[Kommentar-System](dokumentation/kommentar-system.md)** - Installation und Troubleshooting
 - **[Entwicklung & Erweiterung](dokumentation/entwicklung-erweiterung.md)** - Entwicklungsumgebung und Erweiterungen
+- **[Risiken & Follow-Ups](RISKS_AND_FOLLOWUP.md)** - Risikobewertung und zukünftige Verbesserungen
 
 ## 🚀 Schnellstart
 
@@ -87,20 +91,45 @@ Dies bietet ein interaktives Menü für:
 
 ## 📊 Hauptfeatures
 
-- **🔐 Vollständiges Authentifizierungssystem** mit JWT und bcrypt
-- **👥 Benutzerverwaltung** mit Rollen (Admin, User, Viewer)
-- **📁 Projektverwaltung** mit CRUD-Operationen und Filterung
-- **🧩 Modulverwaltung** für Projekte mit eigenständigen Modulen
-- **👥 Team-Management** mit Rollen und Berechtigungen
-- **🔔 Benachrichtigungssystem** mit Echtzeit-Updates
-- **📊 Fortschrittsverfolgung** mit visuellen Indikatoren
-- **🎨 Design-System** mit Theme-Management und konsistenten CSS-Klassen
-- **📱 Responsive Design** mit Mobile-First-Ansatz
-- **🔧 Flexible API-Konfiguration** für verschiedene Deployment-Umgebungen
+### 🔐 Authentifizierung & Benutzerverwaltung
+- **Vollständiges Authentifizierungssystem** mit JWT und bcrypt
+- **Benutzerverwaltung** mit Rollen (Admin, User, Viewer)
+- **Team-Management** mit Rollen und Berechtigungen
+- **Sichere API-Endpunkte** mit Rate-Limiting und Validierung
+
+### 📁 Projekt- & Task-Management
+- **Projektverwaltung** mit CRUD-Operationen und Filterung
+- **Modulverwaltung** für Projekte mit eigenständigen Modulen
+- **Task-Management** mit Status-Tracking und Deadlines
+- **Kanban-Board** mit Drag & Drop-Funktionalität
+- **Meine Aufgaben** - Personalisierte Task-Übersicht
+- **Deadlines-Widget** - Übersicht kommender Fälligkeiten
+
+### 🎨 Frontend & UX
+- **Design-System** mit Theme-Management und konsistenten CSS-Klassen
+- **Responsive Design** mit Mobile-First-Ansatz
+- **Flexible API-Konfiguration** für verschiedene Deployment-Umgebungen
+- **Datumsformatierung** - Automatische Konvertierung zwischen ISO und HTML-Formaten
+- **Error-Handling** mit benutzerfreundlichen Fehlermeldungen
+
+### 🔔 System-Features
+- **Benachrichtigungssystem** mit Echtzeit-Updates
+- **Fortschrittsverfolgung** mit visuellen Indikatoren
+- **Live-Edit-Funktionalität** für Dokumentation
+- **Monitoring & Logging** mit Grafana und Prometheus
 
 ## 📋 Aktuelle Version
 
-**Version 2.0.0 "Phoenix"** - Siehe [Versionsverlauf](dokumentation/versionsverlauf.md) für detaillierte Changelog-Informationen.
+**Version 2.1.0 "Stabilisator"** - Siehe [Versionsverlauf](dokumentation/versionsverlauf.md) für detaillierte Changelog-Informationen.
+
+### 🆕 Neueste Updates (v2.1.0)
+- **Task-Management-System** vollständig implementiert
+- **Kanban-Board** mit Drag & Drop-Funktionalität
+- **Meine Aufgaben** - Personalisierte Task-Übersicht
+- **Deadlines-Widget** - Dashboard-Integration
+- **API-Stabilität** - Rate-Limiting und Error-Handling verbessert
+- **Datumsformatierung** - Automatische Konvertierung für Formulare
+- **Enhanced Seed-Daten** - Realistische Test-Daten für alle Features
 
 ## 🛠️ Technologie-Stack
 
