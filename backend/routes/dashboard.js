@@ -1,6 +1,7 @@
 const express = require('express');
 const pool = require('../config/database');
 const { authenticateToken } = require('./auth');
+const { asyncHandler } = require('../middleware/errorHandler');
 const router = express.Router();
 
 // Hilfsfunktion: Timezone-spezifische Datumsberechnung
@@ -21,7 +22,7 @@ const getNext7Days = (timezone = 'Europe/Berlin') => {
 };
 
 // Dashboard-Daten für eingeloggten Benutzer abrufen
-router.get('/me', authenticateToken, async (req, res) => {
+router.get('/me', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const userId = req.user.id;
     const timezone = 'Europe/Berlin';
@@ -248,10 +249,10 @@ router.get('/me', authenticateToken, async (req, res) => {
     
     res.status(500).json(errorResponse);
   }
-});
+}));
 
 // Dashboard-Statistiken für erweiterte Ansicht
-router.get('/me/stats', authenticateToken, async (req, res) => {
+router.get('/me/stats', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const userId = req.user.id;
     const timezone = 'Europe/Berlin';
@@ -314,6 +315,6 @@ router.get('/me/stats', authenticateToken, async (req, res) => {
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
-});
+}));
 
 module.exports = router;

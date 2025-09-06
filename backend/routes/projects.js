@@ -3,6 +3,7 @@ const pool = require('../config/database');
 const { authenticateToken } = require('./auth');
 const { createNotification, createTeamNotification } = require('./notifications');
 const { calculateProjectProgress, updateProjectProgress, calculateModuleProgress } = require('../utils/progressCalculator');
+const { asyncHandler } = require('../middleware/errorHandler');
 const router = express.Router();
 
 // Hilfsfunktion: Prüft Projekt-Berechtigung
@@ -80,7 +81,7 @@ const checkProjectPermission = async (userId, projectId, requiredPermission = 'v
 };
 
 // Alle Projekte abrufen (basierend auf Berechtigung)
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const { team_id, status, visibility } = req.query;
     
@@ -152,7 +153,7 @@ router.get('/', authenticateToken, async (req, res) => {
     console.error('Fehler-Details:', error.message);
     res.status(500).json({ error: 'Interner Serverfehler', details: process.env.NODE_ENV === 'development' ? error.message : undefined });
   }
-});
+}));
 
 // Einzelnes Projekt abrufen
 router.get('/:id', authenticateToken, async (req, res) => {

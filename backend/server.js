@@ -74,7 +74,7 @@ app.use('/api/activity-logs', activityLogsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/tasks', tasksRoutes);
 // Admin-Route wird nach Datenbank-Initialisierung geladen
-// app.use('/api/admin', require('./routes/admin'));
+app.use('/api/admin', require('./routes/admin'));
 
 // Health Check
 app.get('/health', (req, res) => {
@@ -259,13 +259,8 @@ async function startServer() {
     // Datenbank initialisieren
     await initializeDatabase();
     
-    // Admin-Route nach Datenbank-Initialisierung laden
-    try {
-      app.use('/api/admin', require('./routes/admin'));
-      console.log('✅ Admin-Route erfolgreich geladen');
-    } catch (error) {
-      console.log('⚠️ Admin-Route konnte nicht geladen werden:', error.message);
-    }
+    // Admin-Route ist bereits geladen
+    console.log('✅ Admin-Route erfolgreich geladen');
 
     // Server starten
     app.listen(PORT, () => {

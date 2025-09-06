@@ -230,4 +230,68 @@ router.post('/api-debug', authenticateToken, requireAdmin, apiDebugRateLimit, as
   }
 });
 
+// Benutzer-Management-Route hinzufügen
+router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { page = 1, limit = 100, search = '', role = '' } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+    const searchTerm = search ? `%${search}%` : null;
+
+    let query = `
+      SELECT id, username, email, role, is_active, created_at, updated_at
+      FROM users
+      WHERE 1=1
+    `;
+    
+    const params = [];
+    let paramCount = 0;
+
+    if (searchTerm) {
+      query += ` AND (username ILIKE $${++paramCount} OR email ILIKE $${++paramCount})`;
+      params.push(searchTerm, searchTerm);
+    }
+    
+    if (role) {
+      query += ` AND role = $${++paramCount}`;
+      params.push(role);
+    }
+
+    query += ` ORDER BY created_at DESC LIMIT $${++paramCount} OFFSET $${++paramCount}`;
+    params.push(parseInt(limit), offset);
+
+    const result = await pool.query(query, params);
+
+    // Gesamtanzahl für Pagination
+    let countQuery = `SELECT COUNT(*) as total FROM users WHERE 1=1`;
+    const countParams = [];
+    paramCount = 0;
+
+    if (searchTerm) {
+      countQuery += ` AND (username ILIKE $${++paramCount} OR email ILIKE $${++paramCount})`;
+      countParams.push(searchTerm, searchTerm);
+    }
+    
+    if (role) {
+      countQuery += ` AND role = $${++paramCount}`;
+      countParams.push(role);
+    }
+
+    const countResult = await pool.query(countQuery, countParams);
+    const total = parseInt(countResult.rows[0].total);
+
+    res.json({
+      users: result.rows,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
+  } catch (error) {
+    console.error('Fehler beim Abrufen der Benutzer:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
 module.exports = router;

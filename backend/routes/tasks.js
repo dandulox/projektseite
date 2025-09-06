@@ -2,6 +2,7 @@ const express = require('express');
 const pool = require('../config/database');
 const { authenticateToken } = require('./auth');
 const { VALID_TASK_STATUSES, VALID_TASK_PRIORITIES } = require('../utils/statusConstants');
+const { asyncHandler } = require('../middleware/errorHandler');
 const router = express.Router();
 
 // Hilfsfunktion: Prüft Task-Berechtigung
@@ -85,7 +86,7 @@ const logTaskActivity = async (taskId, userId, action, details, oldValues = null
 // ==============================================
 
 // Meine Aufgaben abrufen
-router.get('/my-tasks', authenticateToken, async (req, res) => {
+router.get('/my-tasks', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const {
       status,
@@ -200,10 +201,10 @@ router.get('/my-tasks', authenticateToken, async (req, res) => {
     console.error('Error stack:', error.stack);
     res.status(500).json({ error: 'Interner Serverfehler', details: error.message });
   }
-});
+}));
 
 // Task-Statistiken für Benutzer
-router.get('/my-tasks/stats', authenticateToken, async (req, res) => {
+router.get('/my-tasks/stats', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT 
@@ -248,7 +249,7 @@ router.get('/my-tasks/stats', authenticateToken, async (req, res) => {
     console.error('Error details:', error.message);
     res.status(500).json({ error: 'Interner Serverfehler', details: error.message });
   }
-});
+}));
 
 // Einzelnen Task abrufen
 router.get('/:taskId', authenticateToken, async (req, res) => {
