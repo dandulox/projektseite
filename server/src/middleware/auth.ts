@@ -1,6 +1,6 @@
 // Auth Middleware - JWT Authentication und Authorization
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import { UnauthorizedError, ForbiddenError } from '@/middleware/errorHandler';
 import { logger } from '@/utils/logger';
 import { UserRole } from '@shared/types';
@@ -23,8 +23,9 @@ declare global {
 
 // Generate JWT token
 export function generateToken(userId: string, expiresIn: string = '24h'): string {
-  // @ts-ignore - JWT library type issue with expiresIn
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn });
+  const payload = { userId };
+  const options: jwt.SignOptions = { expiresIn };
+  return jwt.sign(payload, JWT_SECRET, options);
 }
 
 // Verify JWT token
