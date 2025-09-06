@@ -69,6 +69,11 @@ const OpenTasksWidget: React.FC<OpenTasksWidgetProps> = ({
   };
 
   const handleTaskClick = (task: DashboardTask) => {
+    // Demo-Tasks nicht anklickbar machen
+    if (task.id.startsWith('demo-')) {
+      return;
+    }
+    
     navigate(`/projects?selected=${task.projectId}&module=${task.id}`);
   };
 
@@ -132,13 +137,22 @@ const OpenTasksWidget: React.FC<OpenTasksWidgetProps> = ({
             <div
               key={task.id}
               onClick={() => handleTaskClick(task)}
-              className="p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors group"
+              className={`p-3 rounded-lg border transition-colors group ${
+                task.id.startsWith('demo-') 
+                  ? 'border-amber-200 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-900/20 cursor-default' 
+                  : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer'
+              }`}
             >
               {/* Task Header */}
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0">
                   <h4 className="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     {task.name}
+                    {task.id.startsWith('demo-') && (
+                      <span className="ml-2 text-xs text-amber-600 dark:text-amber-400 font-normal">
+                        (Demo)
+                      </span>
+                    )}
                   </h4>
                   <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                     {task.projectName}

@@ -68,6 +68,11 @@ const DeadlinesWidget: React.FC<DeadlinesWidgetProps> = ({
   };
 
   const handleDeadlineClick = (deadline: DashboardDeadline) => {
+    // Demo-Deadlines nicht anklickbar machen
+    if (deadline.id.startsWith('demo-')) {
+      return;
+    }
+    
     navigate(`/projects?selected=${deadline.projectId}&module=${deadline.id}`);
   };
 

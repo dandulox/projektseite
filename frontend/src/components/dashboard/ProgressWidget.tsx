@@ -62,6 +62,11 @@ const ProgressWidget: React.FC<ProgressWidgetProps> = ({
   };
 
   const handleProjectClick = (project: DashboardProjectProgress) => {
+    // Demo-Projekte nicht anklickbar machen
+    if (project.id.startsWith('demo-')) {
+      return;
+    }
+    
     navigate(`/projects?selected=${project.id}`);
   };
 

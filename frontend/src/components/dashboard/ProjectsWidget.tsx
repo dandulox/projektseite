@@ -75,6 +75,11 @@ const ProjectsWidget: React.FC<ProjectsWidgetProps> = ({
   };
 
   const handleProjectClick = (project: DashboardProject) => {
+    // Demo-Projekte nicht anklickbar machen
+    if (project.id.startsWith('demo-')) {
+      return;
+    }
+    
     navigate(`/projects?selected=${project.id}`);
   };
 

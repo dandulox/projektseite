@@ -185,6 +185,92 @@ app.post('/debug/test-module', async (req, res) => {
   }
 });
 
+// Debug Route - Demo-Daten einfügen
+app.post('/debug/insert-demo-data', async (req, res) => {
+  try {
+    const pool = require('./config/database');
+    
+    // 1. Demo-Projekt erstellen
+    const projectResult = await pool.query(`
+      INSERT INTO projects (name, description, status, priority, start_date, target_date, completion_percentage, owner_id, visibility)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING *
+    `, [
+      'Demo-Projekt',
+      'Ein Demo-Projekt für Dashboard-Tests',
+      'active',
+      'high',
+      new Date(),
+      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // +7 Tage
+      50,
+      1, // Admin User
+      'public'
+    ]);
+    
+    const project = projectResult.rows[0];
+    
+    // 2. Demo-Module erstellen
+    const modules = [
+      {
+        name: 'Frontend-Entwicklung',
+        description: 'React-Komponenten entwickeln',
+        status: 'in_progress',
+        priority: 'high',
+        due_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // +2 Tage
+        assigned_to: 1
+      },
+      {
+        name: 'Backend-API',
+        description: 'REST-API implementieren',
+        status: 'not_started',
+        priority: 'medium',
+        due_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // +5 Tage
+        assigned_to: 1
+      },
+      {
+        name: 'Datenbank-Design',
+        description: 'Schema optimieren',
+        status: 'testing',
+        priority: 'critical',
+        due_date: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // +1 Tag
+        assigned_to: 1
+      }
+    ];
+    
+    const moduleResults = [];
+    for (const module of modules) {
+      const moduleResult = await pool.query(`
+        INSERT INTO project_modules (project_id, name, description, status, priority, due_date, assigned_to, completion_percentage)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        RETURNING *
+      `, [
+        project.id,
+        module.name,
+        module.description,
+        module.status,
+        module.priority,
+        module.due_date,
+        module.assigned_to,
+        module.status === 'completed' ? 100 : module.status === 'testing' ? 90 : module.status === 'in_progress' ? 60 : 0
+      ]);
+      moduleResults.push(moduleResult.rows[0]);
+    }
+    
+    res.json({ 
+      success: true,
+      project: project,
+      modules: moduleResults,
+      message: 'Demo-Daten erfolgreich eingefügt'
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      error: 'Fehler beim Einfügen der Demo-Daten',
+      message: error.message,
+      stack: error.stack
+    });
+  }
+});
+
 // Temporäre einfache Stats-Route
 app.get('/api/auth/user/:userId/stats-simple', async (req, res) => {
   try {
