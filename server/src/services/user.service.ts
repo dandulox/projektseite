@@ -59,7 +59,7 @@ export class UserService {
         createdBy,
       });
 
-      return userWithoutPassword;
+      return userWithoutPassword as UserWithoutPassword;
     } catch (error) {
       logger.error('User create error', { input, createdBy, error });
       throw error;
@@ -80,7 +80,7 @@ export class UserService {
       // Remove password from response
       const { password, ...userWithoutPassword } = user;
 
-      return userWithoutPassword;
+      return userWithoutPassword as UserWithoutPassword;
     } catch (error) {
       logger.error('User getById error', { id, requestingUserId, error });
       throw error;
@@ -98,7 +98,7 @@ export class UserService {
       // Remove password from response
       const { password, ...userWithoutPassword } = user;
 
-      return userWithoutPassword;
+      return userWithoutPassword as UserWithoutPassword;
     } catch (error) {
       logger.error('User getByUsername error', { username, error });
       throw error;
