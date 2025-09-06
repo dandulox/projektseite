@@ -1,6 +1,6 @@
 // API Tests für Tasks
 import request from 'supertest';
-import { app } from '../../src/server';
+import app from '../../src/server';
 import { prisma } from '../../src/config/database';
 import { generateToken } from '../utils/auth';
 import { createTestUser, createTestProject, createTestTask } from '../utils/fixtures';
