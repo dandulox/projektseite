@@ -2,6 +2,62 @@
 
 Eine modulare Website zur Dokumentation und Verfolgung von Projektstatus mit Live-Edit-Funktionalität, Docker-Containerisierung und umfassendem Monitoring.
 
+## 🚀 Quick Start
+
+```bash
+# 1. Repository klonen
+git clone https://github.com/dandulox/projektseite.git
+cd projektseite
+
+# 2. Docker starten
+cd docker
+docker-compose up -d
+
+# 3. Demo-Daten laden
+cd ../backend
+node scripts/seed-demo-data.js
+
+# 4. Anwendung öffnen
+# Frontend: http://localhost:3000
+# Backend: http://localhost:3001
+# Grafana: http://localhost:3002 (admin/admin123)
+```
+
+## 📋 Demo-Zugangsdaten
+
+- **Admin**: `admin` / `demo123`
+- **User**: `demo_user` / `demo123`
+
+## 🛠️ Entwicklung
+
+### Backend starten
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+### Frontend starten
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Tests ausführen
+```bash
+# Backend Tests
+cd backend
+npm test
+
+# Frontend Tests
+cd frontend
+npm test
+
+# E2E Tests
+npx playwright test
+```
+
 ## 📚 Dokumentation
 
 Die vollständige Dokumentation ist in den folgenden Dateien aufgeteilt:

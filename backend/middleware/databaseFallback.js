@@ -111,12 +111,12 @@ const getTaskStatsSimple = async (userId) => {
     const stats = await safeQuery(`
       SELECT 
         COUNT(*) as total_tasks,
-        COUNT(CASE WHEN status = 'not_started' THEN 1 END) as todo_count,
+        COUNT(CASE WHEN status = 'todo' THEN 1 END) as todo_count,
         COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress_count,
-        COUNT(CASE WHEN status = 'testing' THEN 1 END) as review_count,
+        COUNT(CASE WHEN status = 'review' THEN 1 END) as review_count,
         COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_count,
-        COUNT(CASE WHEN due_date < CURRENT_DATE AND status NOT IN ('completed') THEN 1 END) as overdue_count,
-        COUNT(CASE WHEN due_date <= CURRENT_DATE + INTERVAL '3 days' AND status NOT IN ('completed') THEN 1 END) as due_soon_count,
+        COUNT(CASE WHEN due_date < CURRENT_DATE AND status NOT IN ('completed', 'cancelled') THEN 1 END) as overdue_count,
+        COUNT(CASE WHEN due_date <= CURRENT_DATE + INTERVAL '3 days' AND status NOT IN ('completed', 'cancelled') THEN 1 END) as due_soon_count,
         AVG(CASE WHEN status = 'completed' AND actual_hours IS NOT NULL THEN actual_hours END) as avg_completion_hours
       FROM tasks
       WHERE assignee_id = $1
@@ -152,7 +152,16 @@ const getDashboardSimple = async (userId) => {
   ]);
   
   // Offene Tasks (verwende die Status-Werte, die das Frontend erwartet)
-  const openTasks = tasks.filter(t => ['not_started', 'in_progress', 'testing'].includes(t.status));
+  // Mapping: DB -> Frontend
+  const statusMapping = {
+    'todo': 'not_started',
+    'in_progress': 'in_progress', 
+    'review': 'testing',
+    'completed': 'completed',
+    'cancelled': 'cancelled'
+  };
+  
+  const openTasks = tasks.filter(t => ['todo', 'in_progress', 'review'].includes(t.status));
   
   // Nächste Deadlines (Tasks mit due_date in den nächsten 7 Tagen)
   const now = new Date();
@@ -175,7 +184,7 @@ const getDashboardSimple = async (userId) => {
           id: task.id,
           name: task.title,
           description: task.description,
-          status: task.status,
+          status: statusMapping[task.status] || task.status,
           priority: task.priority,
           dueDate: task.due_date,
           estimatedHours: task.estimated_hours,
@@ -193,7 +202,7 @@ const getDashboardSimple = async (userId) => {
           id: task.id,
           name: task.title,
           description: task.description,
-          status: task.status,
+          status: statusMapping[task.status] || task.status,
           priority: task.priority,
           dueDate: task.due_date,
           completionPercentage: 0,

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Play, Copy, Check, Settings, Globe } from 'lucide-react';
 import HttpStatusBadge from '../ui/HttpStatusBadge';
 import JsonPreview from '../ui/JsonPreview';
+import { StatusCodeBadge } from '../ui/StatusCodeTooltip';
 import { adminPresetChecks } from '../../constants/adminPresetChecks';
 
 const ApiDebugPanel = () => {
@@ -69,7 +70,11 @@ const ApiDebugPanel = () => {
         throw new Error(data.message || 'API-Debug fehlgeschlagen');
       }
 
-      setResult(data);
+      setResult({
+        ...data,
+        status: response.status,
+        headers: Object.fromEntries(response.headers.entries())
+      });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -247,7 +252,7 @@ const ApiDebugPanel = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <HttpStatusBadge status={result.status} />
+                    <StatusCodeBadge statusCode={result.status} />
                     <span className="text-sm text-slate-600 dark:text-slate-400">
                       Laufzeit: {result.ms}ms
                     </span>

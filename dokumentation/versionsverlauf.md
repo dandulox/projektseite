@@ -1,5 +1,16 @@
 # Versionsverlauf - Projektseite
 
+## Version 2.2.0 "Bugfixer" - 2024-12-19
+
+### 🐛 Bugfixes und Verbesserungen
+- **Tasks/Deadlines Fix**: Status-Mapping zwischen DB und Frontend korrigiert
+- **Kanban Board**: Drag&Drop Status-Updates funktionieren korrekt
+- **Admin-Diagnose**: Statuscode-Tooltips mit detaillierten Erklärungen hinzugefügt
+- **Demo-Daten**: Umfassende Seeds für bessere UX implementiert
+- **Testsuite**: API-, UI- und E2E-Tests erweitert
+- **Performance**: DB-Indizes für Tasks optimiert
+- **Dokumentation**: README mit Quick Start und Demo-Zugangsdaten aktualisiert
+
 ## Version 2.1.0 "Script-Enhancement" - 2024-12-19
 
 ### 🚀 Script-System & Verwaltung
