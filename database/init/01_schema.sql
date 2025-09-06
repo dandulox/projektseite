@@ -517,6 +517,160 @@ CREATE TRIGGER user_notification_settings_updated_at_trigger
     EXECUTE FUNCTION update_user_notification_settings_updated_at();
 
 -- ==============================================
+-- ACTIVITY-LOG-FUNKTIONEN
+-- ==============================================
+
+-- Funktion zum Erstellen von Projekt-Aktivitätslogs
+CREATE OR REPLACE FUNCTION log_project_activity(
+    p_project_id INTEGER,
+    p_user_id INTEGER,
+    p_action_type VARCHAR(50),
+    p_action_details JSONB DEFAULT NULL,
+    p_old_values JSONB DEFAULT NULL,
+    p_new_values JSONB DEFAULT NULL,
+    p_affected_user_id INTEGER DEFAULT NULL
+) RETURNS INTEGER AS $$
+DECLARE
+    log_id INTEGER;
+BEGIN
+    INSERT INTO project_activity_logs (
+        project_id, user_id, action_type, action_details,
+        old_values, new_values, affected_user_id
+    ) VALUES (
+        p_project_id, p_user_id, p_action_type, p_action_details,
+        p_old_values, p_new_values, p_affected_user_id
+    ) RETURNING id INTO log_id;
+    
+    RETURN log_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Funktion zum Erstellen von Modul-Aktivitätslogs
+CREATE OR REPLACE FUNCTION log_module_activity(
+    p_module_id INTEGER,
+    p_module_type VARCHAR(20),
+    p_user_id INTEGER,
+    p_action_type VARCHAR(50),
+    p_action_details JSONB DEFAULT NULL,
+    p_old_values JSONB DEFAULT NULL,
+    p_new_values JSONB DEFAULT NULL,
+    p_affected_user_id INTEGER DEFAULT NULL,
+    p_project_id INTEGER DEFAULT NULL
+) RETURNS INTEGER AS $$
+DECLARE
+    log_id INTEGER;
+BEGIN
+    INSERT INTO module_activity_logs (
+        module_id, module_type, user_id, action_type, action_details,
+        old_values, new_values, affected_user_id, project_id
+    ) VALUES (
+        p_module_id, p_module_type, p_user_id, p_action_type, p_action_details,
+        p_old_values, p_new_values, p_affected_user_id, p_project_id
+    ) RETURNING id INTO log_id;
+    
+    RETURN log_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger-Funktion für Projekt-Änderungen
+CREATE OR REPLACE FUNCTION trigger_project_activity_log()
+RETURNS TRIGGER AS $$
+DECLARE
+    action_type VARCHAR(50);
+    old_values JSONB;
+    new_values JSONB;
+    action_details JSONB;
+BEGIN
+    -- Bestimme Aktionstyp
+    IF TG_OP = 'INSERT' THEN
+        action_type := 'created';
+        new_values := to_jsonb(NEW);
+        old_values := NULL;
+        action_details := jsonb_build_object('project_name', NEW.name);
+    ELSIF TG_OP = 'UPDATE' THEN
+        action_type := 'updated';
+        old_values := to_jsonb(OLD);
+        new_values := to_jsonb(NEW);
+        
+        -- Spezifische Änderungen erkennen
+        IF OLD.status IS DISTINCT FROM NEW.status THEN
+            action_type := 'status_changed';
+            action_details := jsonb_build_object(
+                'old_status', OLD.status,
+                'new_status', NEW.status,
+                'project_name', NEW.name
+            );
+        ELSIF OLD.priority IS DISTINCT FROM NEW.priority THEN
+            action_type := 'priority_changed';
+            action_details := jsonb_build_object(
+                'old_priority', OLD.priority,
+                'new_priority', NEW.priority,
+                'project_name', NEW.name
+            );
+        ELSE
+            action_details := jsonb_build_object('project_name', NEW.name);
+        END IF;
+    ELSIF TG_OP = 'DELETE' THEN
+        action_type := 'deleted';
+        old_values := to_jsonb(OLD);
+        new_values := NULL;
+        action_details := jsonb_build_object('project_name', OLD.name);
+    END IF;
+    
+    -- Aktivitätslog erstellen
+    PERFORM log_project_activity(
+        COALESCE(NEW.id, OLD.id),
+        COALESCE(NEW.owner_id, OLD.owner_id),
+        action_type,
+        action_details,
+        old_values,
+        new_values
+    );
+    
+    RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger für Projekte
+DROP TRIGGER IF EXISTS trigger_project_activity_log_trigger ON projects;
+CREATE TRIGGER trigger_project_activity_log_trigger
+    AFTER INSERT OR UPDATE OR DELETE ON projects
+    FOR EACH ROW
+    EXECUTE FUNCTION trigger_project_activity_log();
+
+-- ==============================================
+-- TASK-FUNKTIONEN
+-- ==============================================
+
+-- Funktion: Task-Statistiken für Benutzer abrufen
+CREATE OR REPLACE FUNCTION get_user_task_stats(user_id_param INTEGER)
+RETURNS TABLE (
+    total_tasks BIGINT,
+    todo_count BIGINT,
+    in_progress_count BIGINT,
+    review_count BIGINT,
+    completed_count BIGINT,
+    overdue_count BIGINT,
+    due_soon_count BIGINT,
+    avg_completion_hours NUMERIC
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        COUNT(*) as total_tasks,
+        COUNT(CASE WHEN status = 'todo' THEN 1 END) as todo_count,
+        COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress_count,
+        COUNT(CASE WHEN status = 'review' THEN 1 END) as review_count,
+        COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_count,
+        COUNT(CASE WHEN due_date < CURRENT_DATE AND status NOT IN ('completed', 'cancelled') THEN 1 END) as overdue_count,
+        COUNT(CASE WHEN due_date <= CURRENT_DATE + INTERVAL '3 days' AND status NOT IN ('completed', 'cancelled') THEN 1 END) as due_soon_count,
+        AVG(CASE WHEN status = 'completed' AND actual_hours IS NOT NULL THEN actual_hours END) as avg_completion_hours
+    FROM tasks
+    WHERE assignee_id = user_id_param;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ==============================================
 -- FORTSCHRITTS-TRACKING-FUNKTIONEN
 -- ==============================================
 
@@ -717,6 +871,95 @@ $$ LANGUAGE plpgsql;
 -- VIEWS
 -- ==============================================
 
+-- View für "Meine Aufgaben" mit allen relevanten Informationen
+CREATE OR REPLACE VIEW my_tasks_view AS
+SELECT 
+    t.*,
+    p.name as project_name,
+    pm.name as module_name,
+    u.username as assignee_username,
+    u.email as assignee_email,
+    creator.username as created_by_username,
+    CASE 
+        WHEN t.due_date < CURRENT_DATE AND t.status NOT IN ('completed', 'cancelled') THEN true
+        ELSE false
+    END as is_overdue,
+    CASE 
+        WHEN t.due_date <= CURRENT_DATE + INTERVAL '3 days' AND t.status NOT IN ('completed', 'cancelled') THEN true
+        ELSE false
+    END as is_due_soon
+FROM tasks t
+LEFT JOIN projects p ON p.id = t.project_id
+LEFT JOIN project_modules pm ON pm.id = t.module_id
+LEFT JOIN users u ON u.id = t.assignee_id
+LEFT JOIN users creator ON creator.id = t.created_by;
+
+-- View für Task-Statistiken
+CREATE OR REPLACE VIEW task_stats_view AS
+SELECT 
+    assignee_id,
+    COUNT(*) as total_tasks,
+    COUNT(CASE WHEN status = 'todo' THEN 1 END) as todo_count,
+    COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress_count,
+    COUNT(CASE WHEN status = 'review' THEN 1 END) as review_count,
+    COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_count,
+    COUNT(CASE WHEN due_date < CURRENT_DATE AND status NOT IN ('completed', 'cancelled') THEN 1 END) as overdue_count,
+    COUNT(CASE WHEN due_date <= CURRENT_DATE + INTERVAL '3 days' AND status NOT IN ('completed', 'cancelled') THEN 1 END) as due_soon_count,
+    AVG(CASE WHEN status = 'completed' AND actual_hours IS NOT NULL THEN actual_hours END) as avg_completion_hours
+FROM tasks
+WHERE assignee_id IS NOT NULL
+GROUP BY assignee_id;
+
+-- View für Projekt-Aktivitätslogs mit Benutzerdetails
+CREATE OR REPLACE VIEW project_activity_logs_view AS
+SELECT 
+    pal.id,
+    pal.project_id,
+    p.name as project_name,
+    pal.user_id,
+    u.username,
+    pal.action_type,
+    pal.action_details,
+    pal.old_values,
+    pal.new_values,
+    pal.affected_user_id,
+    au.username as affected_username,
+    pal.created_at
+FROM project_activity_logs pal
+JOIN projects p ON p.id = pal.project_id
+LEFT JOIN users u ON u.id = pal.user_id
+LEFT JOIN users au ON au.id = pal.affected_user_id
+ORDER BY pal.created_at DESC;
+
+-- View für Modul-Aktivitätslogs mit Benutzerdetails
+CREATE OR REPLACE VIEW module_activity_logs_view AS
+SELECT 
+    mal.id,
+    mal.module_id,
+    mal.module_type,
+    CASE 
+        WHEN mal.module_type = 'project' THEN pm.name
+        ELSE sm.name
+    END as module_name,
+    mal.user_id,
+    u.username,
+    mal.action_type,
+    mal.action_details,
+    mal.old_values,
+    mal.new_values,
+    mal.affected_user_id,
+    au.username as affected_username,
+    mal.project_id,
+    p.name as project_name,
+    mal.created_at
+FROM module_activity_logs mal
+LEFT JOIN project_modules pm ON pm.id = mal.module_id AND mal.module_type = 'project'
+LEFT JOIN standalone_modules sm ON sm.id = mal.module_id AND mal.module_type = 'standalone'
+LEFT JOIN projects p ON p.id = mal.project_id
+LEFT JOIN users u ON u.id = mal.user_id
+LEFT JOIN users au ON au.id = mal.affected_user_id
+ORDER BY mal.created_at DESC;
+
 -- View für Benachrichtigungsstatistiken
 CREATE OR REPLACE VIEW notification_stats AS
 SELECT 
@@ -746,7 +989,18 @@ INSERT INTO notification_types (name, description) VALUES
 ('user_mention', 'Benutzer wurde erwähnt'),
 ('system_alert', 'System-Benachrichtigung'),
 ('project_comment', 'Kommentar zu einem Projekt'),
-('team_update', 'Team wurde aktualisiert')
+('team_update', 'Team wurde aktualisiert'),
+-- Erweiterte Activity-Log Benachrichtigungstypen
+('project_activity', 'Aktivität in einem Projekt'),
+('module_activity', 'Aktivität in einem Modul'),
+('project_assignment', 'Zuweisung zu einem Projekt'),
+('module_assignment', 'Zuweisung zu einem Modul'),
+('project_permission_change', 'Berechtigung für Projekt geändert'),
+('module_permission_change', 'Berechtigung für Modul geändert'),
+('project_status_change', 'Projekt-Status geändert'),
+('module_status_change', 'Modul-Status geändert'),
+('project_progress_update', 'Projekt-Fortschritt aktualisiert'),
+('module_progress_update', 'Modul-Fortschritt aktualisiert')
 ON CONFLICT (name) DO NOTHING;
 
 -- Humorvolle Begrüßungen
@@ -802,6 +1056,15 @@ COMMENT ON TABLE module_connections IS 'Kreuzverbindungen zwischen Modulen (Abh�
 COMMENT ON TABLE module_permissions IS 'Explizite Berechtigungen für Module';
 COMMENT ON TABLE module_logs IS 'Aktivitäts-Logs für Module';
 COMMENT ON TABLE module_team_assignments IS 'Team-Zuweisungen für Module';
+-- Task-System Kommentare
+COMMENT ON TABLE tasks IS 'Haupttabelle für Tasks/Aufgaben';
+COMMENT ON TABLE task_comments IS 'Kommentare zu Tasks';
+COMMENT ON TABLE task_attachments IS 'Datei-Anhänge zu Tasks';
+COMMENT ON TABLE task_activities IS 'Aktivitäts-Logs für Tasks';
+COMMENT ON TABLE task_permissions IS 'Berechtigungen für Tasks';
+-- Activity-Log Kommentare
+COMMENT ON TABLE project_activity_logs IS 'Detaillierte Aktivitätslogs für Projekte mit JSON-Details';
+COMMENT ON TABLE module_activity_logs IS 'Detaillierte Aktivitätslogs für Module mit JSON-Details';
 
 -- Spalten-Kommentare
 COMMENT ON COLUMN greetings.text IS 'Der humorvolle Begrüßungstext';
@@ -819,11 +1082,27 @@ COMMENT ON FUNCTION calculate_project_progress(INTEGER) IS 'Berechnet den Fortsc
 COMMENT ON FUNCTION update_project_progress() IS 'Trigger-Funktion zur automatischen Fortschrittsaktualisierung';
 COMMENT ON FUNCTION check_module_permission(INTEGER, INTEGER, VARCHAR(20), VARCHAR(20)) IS 'Prüft Berechtigungen für Module basierend auf Benutzer, Team und expliziten Berechtigungen';
 COMMENT ON FUNCTION cleanup_old_notifications() IS 'Bereinigt alte gelesene Benachrichtigungen (älter als 30 Tage)';
+-- Activity-Log Funktions-Kommentare
+COMMENT ON FUNCTION log_project_activity(INTEGER, INTEGER, VARCHAR(50), JSONB, JSONB, JSONB, INTEGER) IS 'Erstellt einen Projekt-Aktivitätslog-Eintrag';
+COMMENT ON FUNCTION log_module_activity(INTEGER, VARCHAR(20), INTEGER, VARCHAR(50), JSONB, JSONB, JSONB, INTEGER, INTEGER) IS 'Erstellt einen Modul-Aktivitätslog-Eintrag';
+COMMENT ON FUNCTION trigger_project_activity_log() IS 'Trigger-Funktion für automatische Projekt-Aktivitätslogs';
+-- Task-Funktions-Kommentare
+COMMENT ON FUNCTION get_user_task_stats(INTEGER) IS 'Gibt Task-Statistiken für einen Benutzer zurück';
+COMMENT ON FUNCTION update_tasks_completed_at() IS 'Trigger-Funktion zur automatischen completed_at-Aktualisierung';
+
+-- View-Kommentare
+COMMENT ON VIEW my_tasks_view IS 'View für "Meine Aufgaben" mit allen relevanten Informationen';
+COMMENT ON VIEW task_stats_view IS 'View für Task-Statistiken pro Benutzer';
+COMMENT ON VIEW project_activity_logs_view IS 'View für Projekt-Aktivitätslogs mit Benutzerdetails';
+COMMENT ON VIEW module_activity_logs_view IS 'View für Modul-Aktivitätslogs mit Benutzerdetails';
 
 -- Trigger-Kommentare
 COMMENT ON TRIGGER trigger_update_progress_on_module_insert ON project_modules IS 'Aktualisiert Projektfortschritt beim Hinzufügen neuer Module';
 COMMENT ON TRIGGER trigger_update_progress_on_module_update ON project_modules IS 'Aktualisiert Projektfortschritt bei Statusänderungen von Modulen';
 COMMENT ON TRIGGER trigger_update_progress_on_module_delete ON project_modules IS 'Aktualisiert Projektfortschritt beim Löschen von Modulen';
+COMMENT ON TRIGGER trigger_project_activity_log_trigger ON projects IS 'Erstellt automatisch Activity-Logs für Projekt-Änderungen';
+COMMENT ON TRIGGER trigger_update_tasks_updated_at ON tasks IS 'Aktualisiert updated_at bei Task-Änderungen';
+COMMENT ON TRIGGER trigger_update_tasks_completed_at ON tasks IS 'Aktualisiert completed_at bei Status-Änderungen';
 
 -- ==============================================
 -- HINWEISE
@@ -877,7 +1156,7 @@ CREATE TRIGGER trigger_update_system_versions_updated_at
 
 -- Initiale Version einfügen
 INSERT INTO system_versions (major_version, minor_version, patch_version, version_type, codename, release_date, changes, is_current)
-VALUES (2, 0, 0, 'major', 'Phoenix', '2024-12-19', 'Major Release mit vollständiger Projektverwaltung, Modulverwaltung, Team-Management, Benachrichtigungssystem, Fortschrittsverfolgung, Design-System und Mobile-Optimierung', true)
+VALUES (2, 1, 0, 'major', 'Stabilisator', '2024-12-19', 'Major Release mit vollständiger Projektverwaltung, Modulverwaltung, Team-Management, Benachrichtigungssystem, Fortschrittsverfolgung, Design-System, Mobile-Optimierung, Task-Management, Kanban-Board, Deadlines und Activity-Logs', true)
 ON CONFLICT DO NOTHING;
 
 -- Alle Features sind vollständig integriert:
@@ -888,3 +1167,9 @@ ON CONFLICT DO NOTHING;
 -- ✅ Humorvolle Begrüßungen
 -- ✅ Umfassende Berechtigungsprüfung
 -- ✅ Versionsverwaltung mit Datenbank-Integration
+-- ✅ Task-Management-System
+-- ✅ Kanban-Board-Funktionalität
+-- ✅ Deadlines und Fälligkeitsverfolgung
+-- ✅ Activity-Logs für Projekte und Module
+-- ✅ Erweiterte Benachrichtigungstypen
+-- ✅ Task-Statistiken und Views
