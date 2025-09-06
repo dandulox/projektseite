@@ -20,7 +20,7 @@
       "@/*": ["./src/*"],
       "@shared/*": ["../shared/*"]
     },
-    "types": ["vite/client", "node"]
+    "types": ["vite/client"]
   },
   "include": [
     "src/**/*",
