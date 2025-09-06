@@ -223,6 +223,22 @@ router.get('/user/:userId', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Keine Berechtigung für diese Aktivitäten' });
     }
 
+    // Prüfe ob Aktivitätslog-Tabellen existieren
+    const tableCheck = await pool.query(`
+      SELECT COUNT(*) as count FROM information_schema.tables 
+      WHERE table_name IN ('project_activity_logs', 'module_activity_logs')
+      AND table_schema = 'public'
+    `);
+
+    if (tableCheck.rows[0].count === '0') {
+      // Aktivitätslog-Tabellen existieren nicht, gebe leere Liste zurück
+      return res.json({
+        activities: [],
+        total: 0,
+        message: 'Aktivitätslog-System ist noch nicht installiert'
+      });
+    }
+
     let query = `
       (
         SELECT 

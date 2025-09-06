@@ -289,16 +289,28 @@ router.post('/', authenticateToken, async (req, res) => {
       // Log-Fehler sollten das Projekt-Erstellen nicht blockieren
     }
 
-    // Erweiterte Aktivitätslog erstellen
+    // Erweiterte Aktivitätslog erstellen (falls Funktion existiert)
     try {
-      await pool.query(`
-        SELECT log_project_activity($1, $2, 'created', $3, NULL, $4, NULL)
-      `, [
-        project.id, 
-        req.user.id, 
-        JSON.stringify({ project_name: name, description: description }),
-        JSON.stringify(project)
-      ]);
+      // Prüfe ob Aktivitätslog-Funktion existiert
+      const functionCheck = await pool.query(`
+        SELECT COUNT(*) as count FROM information_schema.routines 
+        WHERE routine_name = 'log_project_activity'
+        AND routine_schema = 'public'
+      `);
+      
+      if (functionCheck.rows[0].count > 0) {
+        await pool.query(`
+          SELECT log_project_activity($1, $2, 'created', $3, NULL, $4, NULL)
+        `, [
+          project.id, 
+          req.user.id, 
+          JSON.stringify({ project_name: name, description: description }),
+          JSON.stringify(project)
+        ]);
+        console.log('Aktivitätslog für Projekt-Erstellung erstellt');
+      } else {
+        console.log('Aktivitätslog-Funktion existiert nicht, überspringe Log-Erstellung');
+      }
     } catch (activityLogError) {
       console.warn('Konnte erweiterten Aktivitätslog nicht erstellen:', activityLogError.message);
     }
@@ -318,14 +330,25 @@ router.post('/', authenticateToken, async (req, res) => {
     // Team-Benachrichtigung (ohne automatische Zuordnung)
     try {
       if (team_id) {
-        await createTeamNotification(team_id, {
-          type: 'project_created',
-          title: 'Neues Projekt erstellt',
-          message: `"${name}" wurde in Ihrem Team erstellt.`,
-          fromUserId: req.user.id,
-          projectId: project.id,
-          actionUrl: `/projects/${project.id}`
-        });
+        // Prüfe ob Benachrichtigungstyp existiert
+        const notificationTypeCheck = await pool.query(`
+          SELECT COUNT(*) as count FROM notification_types 
+          WHERE name = 'project_created'
+        `);
+        
+        if (notificationTypeCheck.rows[0].count > 0) {
+          await createTeamNotification(team_id, {
+            type: 'project_created',
+            title: 'Neues Projekt erstellt',
+            message: `"${name}" wurde in Ihrem Team erstellt.`,
+            fromUserId: req.user.id,
+            projectId: project.id,
+            actionUrl: `/projects/${project.id}`
+          });
+          console.log('Team-Benachrichtigung für Projekt-Erstellung gesendet');
+        } else {
+          console.log('Benachrichtigungstyp "project_created" existiert nicht, überspringe Benachrichtigung');
+        }
       }
     } catch (notificationError) {
       console.error('Fehler beim Erstellen der Benachrichtigungen:', notificationError);
