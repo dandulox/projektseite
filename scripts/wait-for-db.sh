@@ -43,7 +43,7 @@ wait_for_database() {
     local host=${1:-"localhost"}
     local port=${2:-5433}
     local max_attempts=${3:-30}
-    local delay_seconds=${4:-2}
+    local delay_seconds=${4:-10}
     
     print_step "Waiting for PostgreSQL database to be ready..."
     print_info "Host: $host, Port: $port"

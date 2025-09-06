@@ -273,6 +273,8 @@ Falls die Datenbank nicht bereit ist:
 ./scripts/wait-for-db.sh
 ```
 
+**Hinweis:** Die Scripts warten automatisch bis zu 5 Minuten (30 Versuche × 10 Sekunden) auf die Datenbankbereitschaft.
+
 Diese Scripts beheben die häufigsten Installationsprobleme.
 
 ## 🎨 Features

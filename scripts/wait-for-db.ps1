@@ -46,7 +46,7 @@ function Wait-ForDatabase {
         [string]$Host = "localhost",
         [int]$Port = 5433,
         [int]$MaxAttempts = 30,
-        [int]$DelaySeconds = 2
+        [int]$DelaySeconds = 10
     )
     
     Write-Step "Waiting for PostgreSQL database to be ready..."
