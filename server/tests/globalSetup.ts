@@ -14,7 +14,7 @@ export default async function globalSetup() {
   try {
     // Set test environment
     process.env.NODE_ENV = 'test';
-    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || 'postgresql://test:test@localhost:5432/projektseite_test';
+    process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/projektseite_test';
 
     // Generate Prisma client for test database
     console.log('📦 Generating Prisma client...');

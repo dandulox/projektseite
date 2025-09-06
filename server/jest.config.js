@@ -35,7 +35,7 @@ module.exports = {
   },
   
   // Module Resolution
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@shared/(.*)$': '<rootDir>/../shared/$1',
   },
