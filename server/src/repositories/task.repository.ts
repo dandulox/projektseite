@@ -408,11 +408,11 @@ export class TaskRepository extends BaseRepository<Task> {
       }));
 
       const kanbanTasks = {
-        TODO: transformedTasks.filter(t => t.status === 'TODO'),
-        IN_PROGRESS: transformedTasks.filter(t => t.status === 'IN_PROGRESS'),
-        REVIEW: transformedTasks.filter(t => t.status === 'REVIEW'),
-        COMPLETED: transformedTasks.filter(t => t.status === 'COMPLETED'),
-        CANCELLED: transformedTasks.filter(t => t.status === 'CANCELLED'),
+        TODO: transformedTasks.filter(t => t.status === 'TODO') as Task[],
+        IN_PROGRESS: transformedTasks.filter(t => t.status === 'IN_PROGRESS') as Task[],
+        REVIEW: transformedTasks.filter(t => t.status === 'REVIEW') as Task[],
+        COMPLETED: transformedTasks.filter(t => t.status === 'COMPLETED') as Task[],
+        CANCELLED: transformedTasks.filter(t => t.status === 'CANCELLED') as Task[],
       };
 
       logger.debug('Task getKanbanTasks', {
