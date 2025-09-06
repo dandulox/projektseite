@@ -25,7 +25,19 @@ app.use(cors({
 // Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 Minuten
-  max: 100 // max 100 Anfragen pro IP
+  max: 1000, // max 1000 Anfragen pro IP (erhöht für Entwicklung)
+  message: {
+    error: 'Zu viele Anfragen. Bitte warten Sie einen Moment.',
+    retryAfter: '15 Minuten'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Skip rate limiting für lokale Entwicklung
+  skip: (req) => {
+    const isLocalhost = req.ip === '127.0.0.1' || req.ip === '::1' || req.ip === '::ffff:127.0.0.1';
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    return isLocalhost || isDevelopment;
+  }
 });
 app.use('/api/', limiter);
 
