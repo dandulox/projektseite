@@ -208,7 +208,7 @@ install_backend() {
             cat > .env << EOF
 NODE_ENV=$ENVIRONMENT
 PORT=3001
-DATABASE_URL="postgresql://admin:secure_password_123@localhost:5432/projektseite"
+DATABASE_URL="postgresql://dev:dev_password@localhost:5433/projektseite_dev"
 JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
 JWT_EXPIRES_IN="24h"
 FRONTEND_URL="http://localhost:3000"
@@ -276,7 +276,7 @@ setup_database() {
     while [ $attempt -le $max_attempts ]; do
         print_info "Attempt $attempt/$max_attempts - Testing database connection..."
         
-        if nc -z localhost 5432 2>/dev/null; then
+        if nc -z localhost 5433 2>/dev/null; then
             print_success "Database is ready!"
             break
         else

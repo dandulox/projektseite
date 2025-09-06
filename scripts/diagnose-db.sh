@@ -45,7 +45,7 @@ print_warning() {
 # Test database connection with different methods
 test_database_connection() {
     local host=${1:-"localhost"}
-    local port=${2:-5432}
+    local port=${2:-5433}
     
     print_step "Testing database connection to $host:$port"
     
@@ -138,11 +138,11 @@ check_network() {
         print_error "localhost ping failed"
     fi
     
-    print_info "Testing port 5432 availability:"
-    if ss -tuln | grep -q ":5432 "; then
-        print_success "Port 5432 is listening"
+    print_info "Testing port 5433 availability:"
+    if ss -tuln | grep -q ":5433 "; then
+        print_success "Port 5433 is listening"
     else
-        print_warning "Port 5432 is not listening"
+        print_warning "Port 5433 is not listening"
     fi
 }
 

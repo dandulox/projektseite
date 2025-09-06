@@ -41,7 +41,7 @@ print_info() {
 # Wait for database
 wait_for_database() {
     local host=${1:-"localhost"}
-    local port=${2:-5432}
+    local port=${2:-5433}
     local max_attempts=${3:-30}
     local delay_seconds=${4:-2}
     

@@ -44,7 +44,7 @@ function Write-Info {
 function Wait-ForDatabase {
     param(
         [string]$Host = "localhost",
-        [int]$Port = 5432,
+        [int]$Port = 5433,
         [int]$MaxAttempts = 30,
         [int]$DelaySeconds = 2
     )

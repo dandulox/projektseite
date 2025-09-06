@@ -222,7 +222,7 @@ function Install-Backend {
                 @"
 NODE_ENV=$Environment
 PORT=3001
-DATABASE_URL="postgresql://admin:secure_password_123@localhost:5432/projektseite"
+DATABASE_URL="postgresql://dev:dev_password@localhost:5433/projektseite_dev"
 JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
 JWT_EXPIRES_IN="24h"
 FRONTEND_URL="http://localhost:3000"
@@ -303,7 +303,7 @@ function Setup-Database {
         Write-Info "Attempt $attempt/$maxAttempts - Testing database connection..."
         
         try {
-            $result = Test-NetConnection -ComputerName "localhost" -Port 5432 -InformationLevel Quiet
+            $result = Test-NetConnection -ComputerName "localhost" -Port 5433 -InformationLevel Quiet
             if ($result) {
                 Write-Success "Database is ready!"
                 break
