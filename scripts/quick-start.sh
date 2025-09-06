@@ -70,46 +70,11 @@ update_repository() {
     if [ -d ".git" ]; then
         print_info "Pulling latest changes..."
         
-        # Try normal pull first
-        if git pull origin main; then
-            print_success "Repository updated"
-        else
-            print_warning "Git pull failed, attempting conflict resolution..."
-            
-            # Check if there are local changes
-            if ! git diff --quiet || ! git diff --cached --quiet; then
-                print_info "Local changes detected, resolving conflicts..."
-                
-                # Option 1: Try to stash changes
-                if git stash push -m "Auto-stash before pull $(date)"; then
-                    print_info "Changes stashed, pulling..."
-                    if git pull origin main; then
-                        print_success "Repository updated after stash"
-                        print_info "Restoring stashed changes..."
-                        if git stash pop; then
-                            print_success "Stashed changes restored"
-                        else
-                            print_warning "Could not restore stashed changes, but repository is updated"
-                        fi
-                    else
-                        print_error "Pull failed even after stash"
-                        return 1
-                    fi
-                else
-                    # Option 2: Force reset to remote
-                    print_info "Stash failed, using force reset to remote..."
-                    git fetch origin main
-                    git reset --hard origin/main
-                    print_success "Repository force-updated to remote version"
-                fi
-            else
-                # No local changes, just fetch and reset
-                print_info "No local changes, force updating to remote..."
-                git fetch origin main
-                git reset --hard origin/main
-                print_success "Repository force-updated to remote version"
-            fi
-        fi
+        # Always force reset to remote (overwrite local changes)
+        print_info "Force updating to remote version (overwriting local changes)..."
+        git fetch origin main
+        git reset --hard origin/main
+        print_success "Repository force-updated to remote version"
         
         print_info "Checking for submodules..."
         if [ -f ".gitmodules" ]; then
