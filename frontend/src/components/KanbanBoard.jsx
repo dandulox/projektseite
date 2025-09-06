@@ -23,7 +23,20 @@ import { de } from 'date-fns/locale';
 // API-Funktionen
 const fetchKanbanBoard = async (projectId) => {
   const token = localStorage.getItem('token');
-  const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
+  
+  // API Base URL Helper
+  const getApiBaseUrl = () => {
+    const currentHost = window.location.hostname;
+    if (currentHost.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+      return `http://${currentHost}:3001/api`;
+    }
+    if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
+      return `http://${currentHost}:3001/api`;
+    }
+    return '/api';
+  };
+  
+  const API_BASE_URL = getApiBaseUrl();
   const response = await fetch(`${API_BASE_URL}/projects/${projectId}/board`, {
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -40,7 +53,20 @@ const fetchKanbanBoard = async (projectId) => {
 
 const updateTaskStatus = async ({ taskId, status }) => {
   const token = localStorage.getItem('token');
-  const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
+  
+  // API Base URL Helper
+  const getApiBaseUrl = () => {
+    const currentHost = window.location.hostname;
+    if (currentHost.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+      return `http://${currentHost}:3001/api`;
+    }
+    if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
+      return `http://${currentHost}:3001/api`;
+    }
+    return '/api';
+  };
+  
+  const API_BASE_URL = getApiBaseUrl();
   const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
     method: 'PATCH',
     headers: {

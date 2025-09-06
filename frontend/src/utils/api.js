@@ -10,6 +10,11 @@ export const getApiBaseUrl = () => {
   const currentHost = window.location.hostname;
   const currentPort = window.location.port;
   
+  // Für Server-Umgebung (IP-Adressen)
+  if (currentHost.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+    return `http://${currentHost}:3001/api`;
+  }
+  
   if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
     return `http://${currentHost}:3001/api`;
   }
