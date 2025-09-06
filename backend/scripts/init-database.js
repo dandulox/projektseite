@@ -3,6 +3,7 @@ const path = require('path');
 const pool = require('../config/database');
 const { createDefaultUsers } = require('./create-default-users');
 const { initGreetings } = require('./init-greetings');
+const { createMinimalSchema } = require('./create-minimal-schema');
 
 async function initializeDatabase() {
   try {
@@ -56,28 +57,94 @@ async function initializeDatabase() {
       }
       
       if (!schemaPath) {
-        console.log('📁 Schema-Datei nicht gefunden in folgenden Pfaden:');
-        possibleSchemaPaths.forEach(p => console.log(`   - ${p}`));
-        throw new Error('Schema-Datei 01_schema.sql nicht gefunden - Volume-Mount möglicherweise nicht verfügbar');
+        console.log('📁 Schema-Datei nicht gefunden, verwende minimales Schema');
+        await createMinimalSchema();
+        return; // Beende hier, da minimales Schema bereits erstellt wurde
       }
       
       const schemaSQL = fs.readFileSync(schemaPath, 'utf8');
       
-      // Führe das Schema aus
-      try {
-        await pool.query(schemaSQL);
-        console.log('✅ Datenbankschema erfolgreich erstellt');
-      } catch (error) {
-        console.log('⚠️ Schema-Erstellung mit Fehlern, aber möglicherweise erfolgreich');
-        console.log(`   Fehler: ${error.message}`);
+      // Teile das Schema in ausführbare Blöcke auf
+      console.log('📋 Teile Schema in ausführbare Blöcke auf...');
+      
+      // Entferne Kommentare und teile nach CREATE TABLE/INSERT/etc.
+      const cleanSQL = schemaSQL
+        .replace(/--.*$/gm, '') // Entferne Zeilenkommentare
+        .replace(/\/\*[\s\S]*?\*\//g, '') // Entferne Blockkommentare
+        .trim();
+      
+      // Teile nach Semikolons, aber berücksichtige mehrzeilige Statements
+      const statements = [];
+      let currentStatement = '';
+      let inString = false;
+      let stringChar = '';
+      
+      for (let i = 0; i < cleanSQL.length; i++) {
+        const char = cleanSQL[i];
+        const prevChar = i > 0 ? cleanSQL[i - 1] : '';
         
-        // Prüfe, ob das Schema trotzdem funktioniert
+        if (!inString && (char === "'" || char === '"')) {
+          inString = true;
+          stringChar = char;
+        } else if (inString && char === stringChar && prevChar !== '\\') {
+          inString = false;
+        } else if (!inString && char === ';') {
+          if (currentStatement.trim()) {
+            statements.push(currentStatement.trim());
+          }
+          currentStatement = '';
+          continue;
+        }
+        
+        currentStatement += char;
+      }
+      
+      // Füge den letzten Statement hinzu, falls vorhanden
+      if (currentStatement.trim()) {
+        statements.push(currentStatement.trim());
+      }
+      
+      console.log(`📋 Gefundene ${statements.length} SQL-Statements`);
+      
+      // Führe die Statements aus
+      let successCount = 0;
+      let errorCount = 0;
+      
+      for (let i = 0; i < statements.length; i++) {
+        const statement = statements[i];
+        if (statement.length === 0) continue;
+        
         try {
-          await pool.query('SELECT 1 FROM users LIMIT 1');
-          console.log('✅ Schema funktioniert trotz Fehlern');
-        } catch (testError) {
-          console.log('❌ Schema funktioniert nicht, werfe Fehler weiter');
-          throw error;
+          await pool.query(statement);
+          successCount++;
+          if (i % 10 === 0) {
+            console.log(`✅ Statement ${i + 1}/${statements.length} erfolgreich`);
+          }
+        } catch (error) {
+          errorCount++;
+          // Einige Fehler sind normal (z.B. IF NOT EXISTS)
+          if (!error.message.includes('already exists') && 
+              !error.message.includes('does not exist') &&
+              !error.message.includes('duplicate key')) {
+            console.log(`⚠️ Statement ${i + 1} Fehler: ${error.message}`);
+          }
+        }
+      }
+      
+      console.log(`✅ Schema-Ausführung abgeschlossen: ${successCount} erfolgreich, ${errorCount} Fehler`);
+      
+      // Prüfe, ob das Schema funktioniert
+      try {
+        await pool.query('SELECT 1 FROM users LIMIT 1');
+        console.log('✅ Vollständiges Schema funktioniert');
+      } catch (error) {
+        console.log('⚠️ Vollständiges Schema funktioniert nicht, verwende minimales Schema');
+        try {
+          await createMinimalSchema();
+          console.log('✅ Minimales Schema erfolgreich erstellt');
+        } catch (minimalError) {
+          console.error('❌ Auch minimales Schema fehlgeschlagen:', minimalError.message);
+          throw minimalError;
         }
       }
     } else {
@@ -91,7 +158,7 @@ async function initializeDatabase() {
     console.log('⏳ Warte auf Schema-Vollständigkeit...');
     let schemaReady = false;
     let attempts = 0;
-    const maxAttempts = 10;
+    const maxAttempts = 20; // Mehr Versuche, da Schema-Ausführung länger dauert
 
     while (!schemaReady && attempts < maxAttempts) {
       try {
@@ -103,14 +170,20 @@ async function initializeDatabase() {
         attempts++;
         console.log(`⏳ Schema noch nicht bereit... (Versuch ${attempts}/${maxAttempts})`);
         if (attempts < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise(resolve => setTimeout(resolve, 2000)); // 2 Sekunden warten
         }
       }
     }
 
     if (!schemaReady) {
-      console.log('⚠️ Schema konnte nicht vollständig geladen werden, überspringe weitere Initialisierung');
-      return;
+      console.log('⚠️ Schema konnte nicht vollständig geladen werden, versuche minimales Schema');
+      try {
+        await createMinimalSchema();
+        console.log('✅ Minimales Schema als Fallback erstellt');
+      } catch (error) {
+        console.log('❌ Auch minimales Schema fehlgeschlagen, überspringe weitere Initialisierung');
+        return;
+      }
     }
 
     // Prüfe ob Benutzer bereits existieren
@@ -136,6 +209,17 @@ async function initializeDatabase() {
     } catch (error) {
       console.log('⚠️ Begrüßungen konnten nicht initialisiert werden');
       console.log(`   Fehler: ${error.message}`);
+      // Versuche, mindestens eine Standard-Begrüßung zu erstellen
+      try {
+        await pool.query(`
+          INSERT INTO greetings (text, category, is_active) 
+          VALUES ('Willkommen bei der Projektseite!', 'general', true)
+          ON CONFLICT DO NOTHING
+        `);
+        console.log('✅ Standard-Begrüßung erstellt');
+      } catch (greetingError) {
+        console.log('⚠️ Auch Standard-Begrüßung fehlgeschlagen');
+      }
     }
 
     console.log('🎉 Datenbank-Initialisierung abgeschlossen');
