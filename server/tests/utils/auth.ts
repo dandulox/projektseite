@@ -6,14 +6,14 @@ const JWT_SECRET = process.env.JWT_SECRET || 'test-secret-key';
 // Generate JWT token for testing
 export function generateToken(userId: string, expiresIn: string = '24h'): string {
   const payload = { userId };
-  const options: jwt.SignOptions = { expiresIn };
+  const options: jwt.SignOptions = { expiresIn: expiresIn as any };
   return jwt.sign(payload, JWT_SECRET, options);
 }
 
 // Generate expired token for testing
 export function generateExpiredToken(userId: string): string {
   const payload = { userId };
-  const options: jwt.SignOptions = { expiresIn: '-1h' };
+  const options: jwt.SignOptions = { expiresIn: '-1h' as any };
   return jwt.sign(payload, JWT_SECRET, options);
 }
 
