@@ -234,6 +234,13 @@ FRONTEND_URL="http://localhost:3000"
 LOG_LEVEL="info"
 "@ | Out-File -FilePath ".env" -Encoding UTF8
             }
+        } else {
+            # Update existing .env with correct database URL
+            Write-Info "Updating existing .env with correct database configuration..."
+            $envContent = Get-Content ".env" -Raw
+            $envContent = $envContent -replace 'DATABASE_URL="postgresql://[^"]*"', 'DATABASE_URL="postgresql://dev:dev_password@localhost:5433/projektseite_dev"'
+            $envContent | Out-File -FilePath ".env" -Encoding UTF8
+            Write-Success "Updated .env with correct database URL"
         }
         
         Write-Info "Generating Prisma client..."
@@ -272,6 +279,13 @@ REACT_APP_API_URL=http://localhost:3001/api
 REACT_APP_ENVIRONMENT=$Environment
 "@ | Out-File -FilePath ".env" -Encoding UTF8
             }
+        } else {
+            # Update existing .env with correct API URL
+            Write-Info "Updating existing .env with correct API configuration..."
+            $envContent = Get-Content ".env" -Raw
+            $envContent = $envContent -replace 'REACT_APP_API_URL=.*', 'REACT_APP_API_URL=http://localhost:3001/api'
+            $envContent | Out-File -FilePath ".env" -Encoding UTF8
+            Write-Success "Updated .env with correct API URL"
         }
         
         Write-Success "Frontend setup complete"
@@ -348,6 +362,88 @@ function Setup-Database {
         exit 1
     }
     
+    Set-Location ..
+}
+
+# Create missing Dockerfiles
+function Create-Dockerfiles {
+    Write-Step "Creating missing Dockerfiles..."
+    
+    # Create server Dockerfile.dev if missing
+    if (-not (Test-Path "server\Dockerfile.dev")) {
+        Write-Info "Creating server\Dockerfile.dev..."
+        @"
+# Development Dockerfile for Backend
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install --include=dev
+
+# Copy source code
+COPY . .
+
+# Expose port
+EXPOSE 3001
+
+# Start development server
+CMD ["npm", "run", "dev"]
+"@ | Out-File -FilePath "server\Dockerfile.dev" -Encoding UTF8
+        Write-Success "Server Dockerfile.dev created"
+    }
+    
+    # Create client Dockerfile.dev if missing
+    if (-not (Test-Path "client\Dockerfile.dev")) {
+        Write-Info "Creating client\Dockerfile.dev..."
+        @"
+# Development Dockerfile for Frontend
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install --include=dev
+
+# Copy source code
+COPY . .
+
+# Expose port
+EXPOSE 3000
+
+# Start development server
+CMD ["npm", "run", "dev"]
+"@ | Out-File -FilePath "client\Dockerfile.dev" -Encoding UTF8
+        Write-Success "Client Dockerfile.dev created"
+    }
+}
+
+# Setup Docker
+function Setup-Docker {
+    if ($SkipDocker) {
+        Write-Info "Skipping Docker setup"
+        return
+    }
+    
+    Write-Step "Setting up Docker containers..."
+    
+    # Create missing Dockerfiles first
+    Create-Dockerfiles
+    
+    Set-Location docker
+    
+    Write-Info "Building and starting development containers..."
+    docker-compose -f docker-compose.dev.yml up -d --build
+    
+    Write-Success "Docker containers started"
     Set-Location ..
 }
 

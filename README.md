@@ -225,83 +225,38 @@ npm run dev
 
 ## 🔧 Troubleshooting
 
-### Dependency-Probleme
+**Hinweis:** Die Installations-Scripts beheben automatisch die meisten Probleme:
 
-Falls beim Build-Prozess Fehler wie "tsc: not found" auftreten:
+### Automatische Problemlösung
 
-```powershell
-# Windows PowerShell
-.\scripts\fix-dependencies.ps1
+Die Scripts erstellen automatisch:
+- ✅ **Fehlende .env-Dateien** mit korrekten Ports (5433)
+- ✅ **Fehlende Dockerfiles** für Development
+- ✅ **Korrekte Datenbankverbindungen**
+- ✅ **Robuste Git-Pull-Funktionen**
 
-# Linux/macOS
-./scripts/fix-dependencies.sh
-```
+### Manuelle Fix-Scripts (falls nötig)
 
-### Prisma-Schema-Probleme
-
-Falls Prisma-Schema-Validierungsfehler auftreten:
+Falls dennoch Probleme auftreten:
 
 ```powershell
 # Windows PowerShell
-.\scripts\fix-prisma.ps1
+.\scripts\fix-dependencies.ps1    # Dependency-Probleme
+.\scripts\fix-prisma.ps1          # Prisma-Schema-Probleme
+.\scripts\fix-shared.ps1          # Shared-Module-Probleme
+.\scripts\wait-for-db.ps1         # Datenbankverbindungsprobleme
 
 # Linux/macOS
-./scripts/fix-prisma.sh
-```
-
-### Shared-Module-Probleme
-
-Falls Shared-Module-Build-Fehler auftreten:
-
-```powershell
-# Windows PowerShell
-.\scripts\fix-shared.ps1
-
-# Linux/macOS
-./scripts/fix-shared.sh
-```
-
-### Datenbankverbindungsprobleme
-
-Falls die Datenbank nicht bereit ist:
-
-```powershell
-# Windows PowerShell
-.\scripts\wait-for-db.ps1
-
-# Linux/macOS
-./scripts/wait-for-db.sh
-```
-
-### Environment-Probleme
-
-Falls die .env-Dateien falsche Ports haben:
-
-```powershell
-# Windows PowerShell
-.\scripts\fix-env.ps1
-
-# Linux/macOS
-./scripts/fix-env.sh
-```
-
-### Dockerfile-Probleme
-
-Falls Dockerfiles für Development fehlen:
-
-```powershell
-# Windows PowerShell
-.\scripts\fix-dockerfiles.ps1
-
-# Linux/macOS
-./scripts/fix-dockerfiles.sh
+./scripts/fix-dependencies.sh     # Dependency-Probleme
+./scripts/fix-prisma.sh           # Prisma-Schema-Probleme
+./scripts/fix-shared.sh           # Shared-Module-Probleme
+./scripts/wait-for-db.sh          # Datenbankverbindungsprobleme
 ```
 
 **Hinweise:**
 - Die Scripts warten automatisch bis zu 5 Minuten (30 Versuche × 10 Sekunden) auf die Datenbankbereitschaft
 - **Git-Verhalten**: Alle Scripts überschreiben automatisch lokale Änderungen mit der Remote-Version (Force Reset)
-
-Diese Scripts beheben die häufigsten Installationsprobleme.
+- **Automatische Reparatur**: Fehlende Dateien werden automatisch erstellt
 
 ## 🎨 Features
 

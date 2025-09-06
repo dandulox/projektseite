@@ -220,6 +220,11 @@ FRONTEND_URL="http://localhost:3000"
 LOG_LEVEL="info"
 EOF
         fi
+    else
+        # Update existing .env with correct database URL
+        print_info "Updating existing .env with correct database configuration..."
+        sed -i 's|DATABASE_URL="postgresql://.*"|DATABASE_URL="postgresql://dev:dev_password@localhost:5433/projektseite_dev"|' .env
+        print_success "Updated .env with correct database URL"
     fi
     
     print_info "Generating Prisma client..."
@@ -250,6 +255,11 @@ REACT_APP_API_URL=http://localhost:3001/api
 REACT_APP_ENVIRONMENT=$ENVIRONMENT
 EOF
         fi
+    else
+        # Update existing .env with correct API URL
+        print_info "Updating existing .env with correct API configuration..."
+        sed -i 's|REACT_APP_API_URL=.*|REACT_APP_API_URL=http://localhost:3001/api|' .env
+        print_success "Updated .env with correct API URL"
     fi
     
     print_success "Frontend setup complete"
@@ -311,6 +321,67 @@ setup_database() {
     cd ..
 }
 
+# Create missing Dockerfiles
+create_dockerfiles() {
+    print_step "Creating missing Dockerfiles..."
+    
+    # Create server Dockerfile.dev if missing
+    if [ ! -f "server/Dockerfile.dev" ]; then
+        print_info "Creating server/Dockerfile.dev..."
+        cat > server/Dockerfile.dev << 'EOF'
+# Development Dockerfile for Backend
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install --include=dev
+
+# Copy source code
+COPY . .
+
+# Expose port
+EXPOSE 3001
+
+# Start development server
+CMD ["npm", "run", "dev"]
+EOF
+        print_success "Server Dockerfile.dev created"
+    fi
+    
+    # Create client Dockerfile.dev if missing
+    if [ ! -f "client/Dockerfile.dev" ]; then
+        print_info "Creating client/Dockerfile.dev..."
+        cat > client/Dockerfile.dev << 'EOF'
+# Development Dockerfile for Frontend
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install --include=dev
+
+# Copy source code
+COPY . .
+
+# Expose port
+EXPOSE 3000
+
+# Start development server
+CMD ["npm", "run", "dev"]
+EOF
+        print_success "Client Dockerfile.dev created"
+    fi
+}
+
 # Setup Docker
 setup_docker() {
     if [ "$SKIP_DOCKER" = true ]; then
@@ -319,6 +390,9 @@ setup_docker() {
     fi
     
     print_step "Setting up Docker containers..."
+    
+    # Create missing Dockerfiles first
+    create_dockerfiles
     
     cd docker
     
