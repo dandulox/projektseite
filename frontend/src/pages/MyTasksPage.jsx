@@ -6,6 +6,7 @@ import TaskTable from '../components/tasks/TaskTable';
 import TaskFilters from '../components/tasks/TaskFilters';
 import TaskStats from '../components/tasks/TaskStats';
 import BulkActions from '../components/tasks/BulkActions';
+import { tasksApi } from '../utils/api';
 import { 
   CheckSquare, 
   Clock, 
@@ -38,29 +39,23 @@ const MyTasksPage = () => {
 
   // API-Funktionen
   const fetchMyTasks = async () => {
-    const params = new URLSearchParams({
+    const params = {
       page: page.toString(),
       limit: limit.toString(),
       sort_by: sortBy,
       sort_order: sortOrder,
       ...Object.fromEntries(Object.entries(filters).filter(([_, value]) => value !== ''))
-    });
+    };
 
-    const response = await userApi.get(`/tasks/my-tasks?${params}`);
-    return response.data;
+    return await tasksApi.getMyTasks(params);
   };
 
   const fetchTaskStats = async () => {
-    const response = await userApi.get('/tasks/my-tasks/stats');
-    return response.data;
+    return await tasksApi.getTaskStats();
   };
 
   const bulkUpdateTasks = async (updates) => {
-    const response = await userApi.put('/tasks/bulk-update', {
-      task_ids: selectedTasks,
-      updates
-    });
-    return response.data;
+    return await tasksApi.bulkUpdateTasks(selectedTasks, updates);
   };
 
   // Queries

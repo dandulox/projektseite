@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../contexts/AuthContext';
+import { projectsApi } from '../../utils/api';
 import { 
   X, 
   Search, 
@@ -12,16 +13,12 @@ import {
 } from 'lucide-react';
 
 const TaskFilters = ({ filters, onFiltersChange, onClose }) => {
-  const { api } = useAuth();
   const [localFilters, setLocalFilters] = useState(filters);
 
   // Projekte für Filter abrufen
   const { data: projectsData } = useQuery({
     queryKey: ['projects-for-filter'],
-    queryFn: async () => {
-      const response = await api.get('/projects');
-      return response.data;
-    }
+    queryFn: () => projectsApi.getProjects()
   });
 
   const handleFilterChange = (key, value) => {
