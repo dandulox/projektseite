@@ -1,133 +1,155 @@
-# Datenbank-Schema - Projektseite
+# Datenbank-Schema - Projektseite v3.0
 
 ## Haupttabellen
 
 ### Benutzer (`users`)
-- `id` - Primärschlüssel
+- `id` - Primärschlüssel (CUID)
 - `username` - Eindeutiger Benutzername
 - `email` - E-Mail-Adresse
-- `password_hash` - Gehashtes Passwort
-- `role` - Rolle (admin, user, viewer)
-- `is_active` - Aktiv-Status
-- `created_at`, `updated_at` - Zeitstempel
+- `password` - Gehashtes Passwort
+- `role` - Rolle (ADMIN, USER, VIEWER)
+- `isActive` - Aktiv-Status
+- `createdAt`, `updatedAt` - Zeitstempel
 
 ### Teams (`teams`)
-- `id` - Primärschlüssel
+- `id` - Primärschlüssel (CUID)
 - `name` - Team-Name
 - `description` - Team-Beschreibung
-- `team_leader_id` - Team-Leader (Referenz auf users)
-- `is_active` - Aktiv-Status
-- `created_at`, `updated_at` - Zeitstempel
+- `leaderId` - Team-Leader (Referenz auf users)
+- `isActive` - Aktiv-Status
+- `createdAt`, `updatedAt` - Zeitstempel
 
 ### Team-Mitgliedschaften (`team_memberships`)
-- `id` - Primärschlüssel
-- `team_id` - Team-Referenz
-- `user_id` - Benutzer-Referenz
-- `role` - Rolle im Team (leader, member, viewer)
-- `joined_at` - Beitrittsdatum
+- `id` - Primärschlüssel (CUID)
+- `teamId` - Team-Referenz
+- `userId` - Benutzer-Referenz
+- `role` - Rolle im Team (LEADER, MEMBER, VIEWER)
+- `joinedAt` - Beitrittsdatum
 
 ### Projekte (`projects`)
-- `id` - Primärschlüssel
+- `id` - Primärschlüssel (CUID)
 - `name` - Projekt-Name
 - `description` - Projekt-Beschreibung
-- `status` - Status (planning, active, on_hold, completed, cancelled)
-- `priority` - Priorität (low, medium, high, critical)
-- `owner_id` - Eigentümer (Referenz auf users)
-- `team_id` - Team-Referenz (optional)
-- `visibility` - Sichtbarkeit (private, team, public)
-- `completion_percentage` - Fortschritt in Prozent
-- `start_date`, `target_date` - Zeiträume
-- `created_at`, `updated_at` - Zeitstempel
+- `status` - Status (PLANNING, ACTIVE, ON_HOLD, COMPLETED, CANCELLED)
+- `priority` - Priorität (LOW, MEDIUM, HIGH, CRITICAL)
+- `ownerId` - Eigentümer (Referenz auf users)
+- `teamId` - Team-Referenz (optional)
+- `visibility` - Sichtbarkeit (PRIVATE, TEAM, PUBLIC)
+- `completionPercentage` - Fortschritt in Prozent
+- `startDate`, `targetDate` - Zeiträume
+- `createdAt`, `updatedAt` - Zeitstempel
 
-### Projekt-Module (`project_modules`)
-- `id` - Primärschlüssel
-- `project_id` - Projekt-Referenz
+### Tasks (`tasks`)
+- `id` - Primärschlüssel (CUID)
+- `title` - Task-Titel
+- `description` - Task-Beschreibung
+- `status` - Status (TODO, IN_PROGRESS, REVIEW, COMPLETED, CANCELLED)
+- `priority` - Priorität (LOW, MEDIUM, HIGH, CRITICAL)
+- `assigneeId` - Zugewiesener Benutzer (optional)
+- `projectId` - Projekt-Referenz (optional)
+- `moduleId` - Modul-Referenz (optional)
+- `createdById` - Ersteller (Referenz auf users)
+- `dueDate` - Fälligkeitsdatum
+- `estimatedHours`, `actualHours` - Zeitaufwand (Decimal)
+- `tags` - Tags als Array
+- `createdAt`, `updatedAt`, `completedAt` - Zeitstempel
+
+### Module (`modules`)
+- `id` - Primärschlüssel (CUID)
+- `projectId` - Projekt-Referenz
 - `name` - Modul-Name
 - `description` - Modul-Beschreibung
-- `status` - Status (not_started, in_progress, testing, completed)
-- `priority` - Priorität (low, medium, high, critical)
-- `assigned_to` - Zugewiesener Benutzer
-- `estimated_hours`, `actual_hours` - Zeitaufwand
-- `due_date` - Fälligkeitsdatum
-- `completion_percentage` - Fortschritt in Prozent
-- `visibility` - Sichtbarkeit (private, team, public)
-- `team_id` - Team-Referenz (optional)
-- `tags` - Tags als Array
-- `dependencies` - Abhängigkeiten als Array
-- `created_at`, `updated_at` - Zeitstempel
+- `status` - Status (NOT_STARTED, IN_PROGRESS, TESTING, COMPLETED)
+- `priority` - Priorität (LOW, MEDIUM, HIGH, CRITICAL)
+- `assignedTo` - Zugewiesener Benutzer (optional)
+- `dueDate` - Fälligkeitsdatum
+- `estimatedHours`, `actualHours` - Zeitaufwand (Decimal)
+- `completionPercentage` - Fortschritt in Prozent
+- `createdAt`, `updatedAt` - Zeitstempel
 
-### Eigenständige Module (`standalone_modules`)
-- `id` - Primärschlüssel
-- `name` - Modul-Name
-- `description` - Modul-Beschreibung
-- `status` - Status (planning, active, on_hold, completed, cancelled)
-- `priority` - Priorität (low, medium, high, critical)
-- `owner_id` - Eigentümer (Referenz auf users)
-- `team_id` - Team-Referenz (optional)
-- `assigned_to` - Zugewiesener Benutzer
-- `start_date`, `target_date` - Zeiträume
-- `estimated_hours`, `actual_hours` - Zeitaufwand
-- `completion_percentage` - Fortschritt in Prozent
-- `visibility` - Sichtbarkeit (private, team, public)
-- `tags` - Tags als Array
-- `dependencies` - Abhängigkeiten als Array
-- `created_at`, `updated_at` - Zeitstempel
+### Activity Logs (`activity_logs`)
+- `id` - Primärschlüssel (CUID)
+- `userId` - Benutzer (optional)
+- `entityType` - Entitätstyp (project, task, module, team)
+- `entityId` - Entitäts-ID
+- `action` - Aktion (created, updated, deleted, status_changed)
+- `details` - Details (JSON)
+- `createdAt` - Zeitstempel
 
-### Benachrichtigungen (`notifications`)
-- `id` - Primärschlüssel
-- `user_id` - Empfänger (Referenz auf users)
-- `type` - Benachrichtigungstyp
-- `title` - Titel
-- `message` - Nachricht
-- `is_read` - Gelesen-Status
-- `from_user_id` - Absender (optional)
-- `project_id` - Projekt-Referenz (optional)
-- `team_id` - Team-Referenz (optional)
-- `action_url` - Aktions-URL (optional)
-- `created_at` - Erstellungsdatum
+### Task Comments (`task_comments`)
+- `id` - Primärschlüssel (CUID)
+- `taskId` - Task-Referenz
+- `userId` - Benutzer-Referenz
+- `content` - Kommentar-Inhalt
+- `createdAt`, `updatedAt` - Zeitstempel
 
-### Begrüßungen (`greetings`)
-- `id` - Primärschlüssel
-- `text` - Begrüßungstext
-- `category` - Kategorie (morning, afternoon, evening, general)
-- `is_active` - Aktiv-Status
-- `created_at`, `updated_at` - Zeitstempel
+### Task Attachments (`task_attachments`)
+- `id` - Primärschlüssel (CUID)
+- `taskId` - Task-Referenz
+- `userId` - Benutzer-Referenz
+- `filename` - Dateiname
+- `originalName` - Originaler Dateiname
+- `filePath` - Dateipfad
+- `fileSize` - Dateigröße
+- `mimeType` - MIME-Typ
+- `uploadedAt` - Upload-Zeitstempel
 
-## Berechtigungstabellen
-
-### Projekt-Berechtigungen (`project_permissions`)
-- `id` - Primärschlüssel
-- `project_id` - Projekt-Referenz
-- `user_id` - Benutzer-Referenz
-- `permission_type` - Berechtigungstyp (view, edit, admin)
-- `granted_by` - Gewährt von (Referenz auf users)
-- `granted_at` - Gewährungsdatum
-
-### Modul-Berechtigungen (`module_permissions`)
-- `id` - Primärschlüssel
-- `module_id` - Modul-Referenz
-- `module_type` - Modul-Typ (project, standalone)
-- `user_id` - Benutzer-Referenz
-- `permission_type` - Berechtigungstyp (view, edit, admin)
-- `granted_by` - Gewährt von (Referenz auf users)
-- `granted_at` - Gewährungsdatum
-
-## Log-Tabellen
-
-### Projekt-Logs (`project_logs`)
-- `id` - Primärschlüssel
-- `project_id` - Projekt-Referenz
-- `user_id` - Benutzer-Referenz
+### Task Activities (`task_activities`)
+- `id` - Primärschlüssel (CUID)
+- `taskId` - Task-Referenz
+- `userId` - Benutzer (optional)
 - `action` - Aktion
-- `details` - Details
-- `timestamp` - Zeitstempel
+- `details` - Details (JSON)
+- `createdAt` - Zeitstempel
 
-### Modul-Logs (`module_logs`)
-- `id` - Primärschlüssel
-- `module_id` - Modul-Referenz
-- `module_type` - Modul-Typ (project, standalone)
-- `user_id` - Benutzer-Referenz
+### Module Activities (`module_activities`)
+- `id` - Primärschlüssel (CUID)
+- `moduleId` - Modul-Referenz
+- `userId` - Benutzer (optional)
 - `action` - Aktion
-- `details` - Details
-- `timestamp` - Zeitstempel
+- `details` - Details (JSON)
+- `createdAt` - Zeitstempel
+
+## Enums
+
+### UserRole
+- `ADMIN` - Administrator
+- `USER` - Standard-Benutzer
+- `VIEWER` - Nur Lesezugriff
+
+### ProjectStatus
+- `PLANNING` - In Planung
+- `ACTIVE` - Aktiv
+- `ON_HOLD` - Pausiert
+- `COMPLETED` - Abgeschlossen
+- `CANCELLED` - Abgebrochen
+
+### TaskStatus
+- `TODO` - Zu erledigen
+- `IN_PROGRESS` - In Bearbeitung
+- `REVIEW` - In Überprüfung
+- `COMPLETED` - Abgeschlossen
+- `CANCELLED` - Abgebrochen
+
+### ModuleStatus
+- `NOT_STARTED` - Nicht begonnen
+- `IN_PROGRESS` - In Bearbeitung
+- `TESTING` - In Tests
+- `COMPLETED` - Abgeschlossen
+
+### Priority
+- `LOW` - Niedrig
+- `MEDIUM` - Mittel
+- `HIGH` - Hoch
+- `CRITICAL` - Kritisch
+
+### Visibility
+- `PRIVATE` - Privat
+- `TEAM` - Team
+- `PUBLIC` - Öffentlich
+
+### TeamRole
+- `LEADER` - Team-Leiter
+- `MEMBER` - Mitglied
+- `VIEWER` - Betrachter
 

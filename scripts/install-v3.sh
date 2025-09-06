@@ -263,9 +263,35 @@ setup_database() {
             print_info "Starting PostgreSQL database..."
             cd ../docker
             docker-compose -f docker-compose.dev.yml up -d postgres-dev
-            sleep 10
             cd ../server
         fi
+    fi
+    
+    # Wait for database to be ready
+    print_info "Waiting for database to be ready..."
+    local max_attempts=30
+    local delay=2
+    local attempt=1
+    
+    while [ $attempt -le $max_attempts ]; do
+        print_info "Attempt $attempt/$max_attempts - Testing database connection..."
+        
+        if nc -z localhost 5432 2>/dev/null; then
+            print_success "Database is ready!"
+            break
+        else
+            print_info "Database not ready yet, waiting $delay seconds..."
+            sleep $delay
+            attempt=$((attempt + 1))
+        fi
+    done
+    
+    if [ $attempt -gt $max_attempts ]; then
+        print_error "Database did not become ready within timeout"
+        print_info "Please check Docker containers:"
+        echo "  • docker ps"
+        echo "  • docker logs projektseite-postgres-dev"
+        return 1
     fi
     
     print_info "Running database migrations..."

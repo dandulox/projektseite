@@ -1,29 +1,45 @@
-# Technologie-Stack - Projektseite
+# Technologie-Stack - Projektseite v3.0
 
 ## Backend
 - **Node.js 18.x** mit Express.js
+- **TypeScript** für Typsicherheit
 - **PostgreSQL 15** als Datenbank
+- **Prisma ORM** für Datenbankzugriff
 - **JWT** für Authentifizierung
+- **bcryptjs** für Passwort-Hashing
+- **Zod** für Validierung
+- **Winston** für Logging
 - **Modulare Architektur** für einfache Erweiterung
 
 ## Frontend
 - **React 18** mit modernen Hooks
+- **TypeScript** für Typsicherheit
 - **React Router 6** für Navigation
-- **React Query** für Server-State-Management
+- **TanStack React Query** für Server-State-Management
+- **Zustand** für Client-State-Management
+- **React Hook Form** mit Zod-Validierung
 - **Tailwind CSS** für Styling mit CSS-Variablen
 - **Vite** als Build-Tool und Development Server
-- **TypeScript** für Typsicherheit
 - **CSS-Variablen** für Light/Dark Mode Support
 - **Responsive Design** mit Mobile-First-Ansatz
+- **React Beautiful DnD** für Drag & Drop
+- **Lucide React** für Icons
+- **React Hot Toast** für Benachrichtigungen
 
 ## Infrastructure
 - **Docker & Docker Compose** für Containerisierung
 - **Ubuntu 24.04 LTS** als Server-OS
 - **Grafana** für Monitoring
 - **Prometheus Node Exporter** für System-Metriken
+- **Nginx** als Reverse Proxy
+
+## Shared Package
+- **TypeScript** für geteilte Typen und Contracts
+- **Zod** für Validierungsschemas
+- **Gemeinsame Utilities** für Frontend und Backend
 
 ## CSS-Variablen und Design-System
-Das Frontend verwendet ein zentrales Design-System mit CSS-Variablen in `frontend/src/index.css`:
+Das Frontend verwendet ein zentrales Design-System mit CSS-Variablen in `client/src/index.css`:
 
 ```css
 :root {

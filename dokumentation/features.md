@@ -1,32 +1,32 @@
-# Features - Projektseite
+# Features - Projektseite v3.0
 
-## 🆕 Neue Features (Version 2.0)
+## 🆕 Aktuelle Features (Version 3.0)
 
 ### 📁 Projektverwaltung
 - **Vollständige CRUD-Operationen** für Projekte
-- **Erweiterte Filterung** nach Team, Status und Sichtbarkeit
-- **Automatische Fortschrittsverfolgung** basierend auf Modulen
-- **Manuelle Fortschrittsaktualisierung** mit einem Klick
+- **Erweiterte Filterung** nach Status, Priorität und Sichtbarkeit
+- **Automatische Fortschrittsverfolgung** basierend auf Tasks
 - **Team-Zuweisungen** und Berechtigungsmanagement
-- **Projekt-Logs** für Aktivitätsverfolgung
+- **Projekt-Statistiken** für Übersicht und Monitoring
 - **Responsive Design** mit modernem UI
+
+### ✅ Task-Management
+- **Vollständige CRUD-Operationen** für Tasks
+- **Status-Management** (TODO, IN_PROGRESS, REVIEW, COMPLETED, CANCELLED)
+- **Prioritäts-System** (LOW, MEDIUM, HIGH, CRITICAL)
+- **Task-Zuweisungen** an Benutzer
+- **Zeitaufwand-Tracking** (geschätzt vs. tatsächlich)
+- **Tag-System** für Kategorisierung
+- **Task-Statistiken** für Übersicht
+- **Kanban Board** mit Drag & Drop Funktionalität
 
 ### 🧩 Modulverwaltung
 - **Projekt-Module** für strukturierte Projektaufteilung
 - **Eigenständige Module** für unabhängige Aufgaben
 - **Tag-System** für Kategorisierung
-- **Abhängigkeitsmanagement** zwischen Modulen
 - **Zeitaufwand-Tracking** (geschätzt vs. tatsächlich)
-- **Zuweisungen** an Benutzer und Teams
+- **Zuweisungen** an Benutzer
 - **Automatische Fortschrittsberechnung** bei Statusänderungen
-
-### 📊 Fortschritts-Tracking
-- **Automatische Berechnung** basierend auf abgeschlossenen Modulen
-- **Formel**: Fortschritt = (abgeschlossene Module / Gesamtmodule) × 100%
-- **Echtzeit-Updates** bei Modul-Status-Änderungen
-- **Manuelle Aktualisierung** über API-Endpunkt
-- **Visuelle Fortschrittsbalken** in Projektliste und Details
-- **Datenbank-Trigger** für automatische Synchronisation
 
 ### 👥 Team-Management
 - **Team-Erstellung** und -Verwaltung
@@ -38,7 +38,7 @@
 ### 🔔 Benachrichtigungssystem
 - **Echtzeit-Benachrichtigungen** für wichtige Ereignisse
 - **Team-Benachrichtigungen** für alle Mitglieder
-- **Projekt-Updates** und Modul-Änderungen
+- **Projekt-Updates** und Task-Änderungen
 - **Benachrichtigungs-Glocke** in der Navigation
 - **Gelesen-Status** und Verwaltung
 
@@ -52,11 +52,11 @@
 - **Welcome Page Buttons** mit Light/Dark Mode Optimierung
 - **Auth-Modal-Styles** für bessere Lesbarkeit in beiden Modi
 
-## ✅ Implementiert
-- **Modulares Backend-Design** mit Express.js
+## ✅ Implementiert (Version 3.0)
+- **Modulares Backend-Design** mit Express.js und TypeScript
 - **Tailwind CSS** mit CSS-Variablen für konsistentes Styling
 - **Vite Build-System** für schnelle Entwicklung
-- **PostgreSQL-Datenbank** mit vollständigem Schema
+- **PostgreSQL-Datenbank** mit Prisma ORM und vollständigem Schema
 - **Docker-Container** mit Ubuntu 24.04 Server-Unterstützung
 - **React Admin-Interface** mit modernem Design
 - **Grafana-Monitoring** vorbereitet mit Prometheus-Integration
@@ -65,21 +65,23 @@
 - **👥 Benutzerverwaltung** mit Rollen (Admin, User, Viewer) und CRUD-Operationen
 - **🛡️ Geschützte API-Routen** mit Token-Validierung
 - **📱 Responsive Login/Registrierung** mit modernem Design
-- **⚙️ Admin-API** mit Benutzerverwaltung und System-Statistiken
+- **⚙️ Admin-API** mit System-Health-Check und Datenbank-Diagnose
 - **📁 Vollständige Projektverwaltung** mit CRUD-Operationen, Filterung und Berechtigungen
+- **✅ Task-Management** mit vollständigen CRUD-Operationen und Status-Management
 - **🧩 Modulverwaltung** für Projekte mit eigenständigen Modulen
 - **👥 Team-Management** mit Rollen, Mitgliederverwaltung und Berechtigungen
 - **🔔 Benachrichtigungssystem** mit Team- und Projekt-Benachrichtigungen
-- **📊 Erweiterte Datenbank-Schemas** für Projekte, Module, Teams und Berechtigungen
+- **📊 Erweiterte Datenbank-Schemas** für Projekte, Tasks, Module, Teams und Berechtigungen
 - **🎨 Design-System** mit Theme-Management und CSS-Variablen
 - **📱 Responsive Navigation** mit Mobile-Menu und Benutzer-Dropdown
 - **🔍 Suchfunktionalität** und Filterung in allen Bereichen
 - **📈 Fortschrittsverfolgung** mit visuellen Indikatoren
-- **🏷️ Tag-System** und Abhängigkeitsmanagement für Module
+- **🏷️ Tag-System** für Tasks und Module
 - **👤 Benutzerprofile** mit Einstellungen und Design-Anpassungen
 - **🎨 Erweiterte Design-Konsistenz** mit zentralen CSS-Klassen
 - **📱 Optimierte Mobile-Ansicht** für alle Komponenten
 - **🔧 API-URL-Konfiguration** für flexible Deployment-Umgebungen
+- **📋 Kanban Board** mit Drag & Drop Funktionalität für Task-Management
 
 ## 🔄 Zu implementieren
 - Live-Edit-Funktionalität für Design-Einstellungen

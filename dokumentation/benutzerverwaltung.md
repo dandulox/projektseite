@@ -36,40 +36,36 @@ Nach der Installation sind folgende Benutzer automatisch verfügbar:
 ### Authentifizierung (`/api/auth`)
 - `POST /api/auth/login` - Benutzer anmelden
 - `POST /api/auth/register` - Neuen Benutzer registrieren
-- `GET /api/auth/profile` - Benutzerprofil abrufen
-- `PUT /api/auth/change-password` - Passwort ändern
-- `GET /api/auth/validate` - Token validieren
+- `POST /api/auth/refresh` - Token erneuern
 - `POST /api/auth/logout` - Benutzer abmelden
 
 ### Admin-Funktionen (`/api/admin`)
-- `GET /api/admin/users` - Alle Benutzer abrufen (mit Paginierung und Filter)
-- `GET /api/admin/users/:id` - Einzelnen Benutzer abrufen
-- `POST /api/admin/users` - Benutzer erstellen
-- `PUT /api/admin/users/:id` - Benutzer bearbeiten
-- `PUT /api/admin/users/:id/reset-password` - Benutzer-Passwort zurücksetzen
-- `DELETE /api/admin/users/:id` - Benutzer löschen
-- `GET /api/admin/stats` - System-Statistiken abrufen
+- `GET /api/admin/health` - System-Health-Check
+- `GET /api/admin/db/status` - Datenbank-Status
+- `GET /api/admin/db/tables` - Alle Datenbank-Tabellen auflisten
+- `GET /api/admin/db/tables/:tableName` - Tabellen-Informationen abrufen
+- `GET /api/admin/db/tables/:tableName/data` - Tabellen-Daten abrufen
+- `GET /api/admin/db/tables/:tableName/count` - Anzahl der Datensätze
+- `GET /api/admin/db/tables/:tableName/schema` - Tabellen-Schema abrufen
 
 ## Benutzer-Datenbank-Schema
 
 ### Benutzer (`users`)
-- `id` - Primärschlüssel
+- `id` - Primärschlüssel (CUID)
 - `username` - Eindeutiger Benutzername
 - `email` - E-Mail-Adresse
-- `password_hash` - Gehashtes Passwort
-- `role` - Rolle (admin, user, viewer)
-- `is_active` - Aktiv-Status
-- `created_at`, `updated_at` - Zeitstempel
+- `password` - Gehashtes Passwort
+- `role` - Rolle (ADMIN, USER, VIEWER)
+- `isActive` - Aktiv-Status
+- `createdAt`, `updatedAt` - Zeitstempel
 
-## Admin-Benutzer erstellen
+## Benutzer erstellen
 ```bash
-# Erstellt einen neuen Admin-Benutzer
-./scripts/create-admin-user.sh
+# Benutzer werden über die API erstellt
+# POST /api/auth/register
 
-# Das Skript ermöglicht:
-# - Interaktive Erstellung von Admin-Benutzern
-# - Sichere Passwort-Eingabe
-# - Automatische Datenbank-Integration
+# Oder über das Frontend-Interface
+# Registrierung über das Login-Formular
 ```
 
 ## Benutzerprofile

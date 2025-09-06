@@ -1,41 +1,44 @@
-# Setup-Anweisungen - Projektseite
+# Setup-Anweisungen - Projektseite v3.0
 
 ## Voraussetzungen
-- Ubuntu 24.04 LTS Server
+- Ubuntu 24.04 LTS Server oder macOS/Linux
 - Mindestens 2GB RAM
 - 20GB freier Festplattenspeicher
 - Root-Zugriff oder sudo-Berechtigungen
+- Node.js 18.x (wird automatisch installiert)
+- Docker & Docker Compose (wird automatisch installiert)
 
-## 1. Server-Setup (Ubuntu 24.04)
+## 1. Projekt-Setup
 ```bash
 # Projektdateien herunterladen
 git clone https://github.com/dandulox/projektseite.git
 cd projektseite
 
-# Server-Setup ausführen
-chmod +x scripts/setup-server.sh
-./scripts/setup-server.sh
+# Vollständige Installation (empfohlen)
+chmod +x scripts/install-v3.sh
+./scripts/install-v3.sh
 
-# Server neu starten (wichtig!)
-sudo reboot
+# Oder mit Optionen
+./scripts/install-v3.sh --environment production --skip-tests
 ```
 
 ## 2. Standard-Logindaten nach der Installation
 
 Nach erfolgreicher Installation sind folgende Standard-Zugangsdaten verfügbar:
 
-### 🌐 Frontend (Admin-Interface)
+### 🌐 Frontend (Client)
 - **URL:** http://localhost:3000
 - **Login:** http://localhost:3000/login
-- **Status:** Wird nach dem ersten Build verfügbar sein
+- **Status:** Wird nach dem Build verfügbar sein
 - **Authentifizierung:** Vollständig implementiert mit JWT
 
-### 🔧 Backend API
+### 🔧 Backend API (Server)
 - **URL:** http://localhost:3001
-- **Health Check:** http://localhost:3001/health
+- **API Info:** http://localhost:3001/api
+- **Health Check:** http://localhost:3001/api/admin/health
 - **Auth API:** http://localhost:3001/api/auth
 - **Admin API:** http://localhost:3001/api/admin
-- **Status:** Läuft nach dem ersten Build
+- **Status:** Läuft nach dem Build
 - **Authentifizierung:** JWT-basiert mit bcrypt-Passwort-Hashing
 
 ### 🗄️ PostgreSQL Datenbank
@@ -45,6 +48,7 @@ Nach erfolgreicher Installation sind folgende Standard-Zugangsdaten verfügbar:
 - **Benutzer:** admin
 - **Passwort:** secure_password_123
 - **Status:** Läuft sofort nach dem Setup
+- **Prisma ORM:** Vollständig konfiguriert
 
 ### 📊 Grafana Monitoring
 - **URL:** http://localhost:3002
@@ -76,28 +80,30 @@ Nach der Installation sind folgende Benutzer automatisch verfügbar:
 - Fail2ban für Sicherheit
 - Prometheus Node Exporter
 - Git & automatische Cron-Jobs
-- Automatisches Klonen von GitHub
+- Prisma ORM und Dependencies
+- TypeScript und Build-Tools
 
-## 3. Projekt wird automatisch geklont
+## 3. Alternative Setup-Methoden
+
+### Quick Start (für Entwicklung)
 ```bash
-# Nach dem Reboot wird das Projekt automatisch von GitHub geklont
-# Keine manuellen Schritte erforderlich
-cd /opt/projektseite
+# Schnellstart für lokale Entwicklung
+chmod +x scripts/quick-start.sh
+./scripts/quick-start.sh
 ```
 
-## 4. Docker-Container starten
+### Update-System
 ```bash
-# Berechtigungen setzen
-chmod +x scripts/*.sh
-
-# Docker-Container starten
-./scripts/start-docker.sh
+# System aktualisieren
+chmod +x scripts/update-v3.sh
+./scripts/update-v3.sh
 ```
 
-## 5. Datenbank initialisieren
+### Validierung
 ```bash
-# Datenbank-Schema erstellen
-./scripts/init-database.sh
+# System validieren
+chmod +x scripts/validate-v3.sh
+./scripts/validate-v3.sh
 ```
 
 ## 🚀 System-Verwaltung
@@ -137,7 +143,7 @@ Nach dem erfolgreichen Start sind folgende Services verfügbar:
 
 | Service | URL | Port | Beschreibung |
 |---------|-----|-------|--------------|
-| **Frontend (Admin)** | http://localhost:3000 | 3000 | React Admin-Interface |
-| **Backend API** | http://localhost:3001 | 3001 | Node.js/Express API |
+| **Frontend (Client)** | http://localhost:3000 | 3000 | React Client-Interface |
+| **Backend API (Server)** | http://localhost:3001 | 3001 | Node.js/Express API mit TypeScript |
 | **Grafana** | http://localhost:3002 | 3002 | Monitoring Dashboard |
-| **PostgreSQL** | localhost:5432 | 5432 | Datenbank |
+| **PostgreSQL** | localhost:5432 | 5432 | Datenbank mit Prisma ORM |

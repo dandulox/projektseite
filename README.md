@@ -261,6 +261,18 @@ Falls Shared-Module-Build-Fehler auftreten:
 ./scripts/fix-shared.sh
 ```
 
+### Datenbankverbindungsprobleme
+
+Falls die Datenbank nicht bereit ist:
+
+```powershell
+# Windows PowerShell
+.\scripts\wait-for-db.ps1
+
+# Linux/macOS
+./scripts/wait-for-db.sh
+```
+
 Diese Scripts beheben die häufigsten Installationsprobleme.
 
 ## 🎨 Features

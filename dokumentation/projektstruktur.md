@@ -1,148 +1,130 @@
-# Projektstruktur - Projektseite
+# Projektstruktur - Projektseite v3.0
 
 ## 📁 Verzeichnisstruktur
 
 ```
 projektseite/
 ├── 📖 README.md                           # Projektbeschreibung und Setup
-├── 📋 PROJEKTSTRUKTUR.md                  # Detaillierte Projektübersicht
+├── 📋 LICENSE                             # MIT-Lizenz
 ├── 🐳 docker/
-│   └── docker-compose.yml                 # Docker-Container-Konfiguration
-├── ⚙️ backend/
+│   ├── docker-compose.yml                 # Docker-Container-Konfiguration
+│   ├── docker-compose.dev.yml             # Development-Container
+│   ├── monitoring/                        # Monitoring-Konfiguration
+│   │   ├── grafana/                       # Grafana-Konfiguration
+│   │   └── prometheus.yml                 # Prometheus-Konfiguration
+│   └── nginx/
+│       └── nginx.conf                     # Nginx-Konfiguration
+├── ⚙️ server/                             # Backend (TypeScript)
 │   ├── package.json                       # Node.js-Abhängigkeiten
-│   ├── server.js                          # Hauptserver mit modularem Design
+│   ├── tsconfig.json                      # TypeScript-Konfiguration
+│   ├── jest.config.js                     # Jest-Test-Konfiguration
 │   ├── Dockerfile                         # Backend-Container
-│   ├── routes/                            # API-Routen
-│   │   ├── auth.js                        # Authentifizierung (implementiert)
-│   │   ├── admin.js                       # Admin-Funktionen (implementiert)
-│   │   ├── projects.js                    # Projektverwaltung (implementiert)
-│   │   ├── modules.js                     # Modulverwaltung (implementiert)
-│   │   ├── teams.js                       # Team-Management (implementiert)
-│   │   ├── notifications.js               # Benachrichtigungssystem (implementiert)
-│   │   └── greetings.js                   # Begrüßungssystem (implementiert)
-│   └── scripts/                           # Backend-Skripte
-│       ├── create-default-users.js        # Standard-Benutzer erstellen
-│       ├── init-database.js               # Datenbank initialisieren
-│       └── init-greetings.js              # Begrüßungen initialisieren
-├── 🎨 frontend/
+│   ├── Dockerfile.dev                     # Development-Container
+│   ├── env.example                        # Umgebungsvariablen-Vorlage
+│   ├── env.test                           # Test-Umgebungsvariablen
+│   ├── prisma/                            # Prisma ORM
+│   │   ├── schema.prisma                  # Datenbankschema
+│   │   ├── seed.ts                        # Seed-Daten
+│   │   └── migrations/                    # Datenbank-Migrationen
+│   ├── src/                               # Backend-Quellcode
+│   │   ├── server.ts                      # Hauptserver
+│   │   ├── config/                        # Konfiguration
+│   │   ├── controllers/                   # API-Controller
+│   │   │   ├── admin.controller.ts        # Admin-Funktionen
+│   │   │   ├── auth.controller.ts         # Authentifizierung
+│   │   │   ├── project.controller.ts      # Projektverwaltung
+│   │   │   └── task.controller.ts         # Task-Management
+│   │   ├── middleware/                    # Express-Middleware
+│   │   ├── repositories/                  # Datenbank-Repositories
+│   │   ├── routes/                        # API-Routen
+│   │   ├── services/                      # Business-Logic
+│   │   ├── types/                         # TypeScript-Typen
+│   │   └── utils/                         # Hilfsfunktionen
+│   └── tests/                             # Backend-Tests
+├── 🎨 client/                             # Frontend (React + TypeScript)
 │   ├── package.json                       # React-Abhängigkeiten
-│   ├── Dockerfile                         # Frontend-Container
-│   ├── index.html                         # HTML-Template
-│   ├── nginx.conf                         # Nginx-Konfiguration
-│   ├── vite.config.js                     # Vite-Konfiguration
-│   ├── tailwind.config.cjs                # Tailwind CSS-Konfiguration
-│   ├── postcss.config.cjs                 # PostCSS-Konfiguration
-│   ├── README.md                          # Frontend-Dokumentation
-│   └── src/
-│       ├── App.jsx                        # Haupt-App-Komponente
-│       ├── main.jsx                       # React Entry Point
-│       ├── index.css                      # Globale Styles mit CSS-Variablen
-│       ├── components/                    # React-Komponenten
-│       │   ├── LoginForm.jsx              # Login-Formular
-│       │   ├── RegisterFormStartPage.jsx  # Registrierungs-Formular
-│       │   ├── UserManagement.jsx         # Benutzerverwaltung
-│       │   ├── UserSettings.jsx           # Benutzereinstellungen
-│       │   ├── ProjectManagement.jsx      # Projektverwaltung
-│       │   ├── ModuleForm.jsx             # Modul-Formular
-│       │   ├── ModuleManagement.jsx       # Modulverwaltung
-│       │   ├── TeamManagement.jsx         # Team-Management
-│       │   ├── GreetingManagement.jsx     # Begrüßungsverwaltung
-│       │   ├── DynamicGreeting.jsx        # Dynamische Begrüßungen
-│       │   └── NotificationBell.jsx       # Benachrichtigungs-Glocke
-│       ├── pages/                         # Seiten-Komponenten
-│       │   └── AuthPage.jsx               # Authentifizierungs-Seite
-│       └── contexts/                      # React Contexts
-│           └── AuthContext.jsx            # Authentifizierungs-Context
-├── 🗄️ database/
-│   ├── init/
-│   │   └── 01_schema.sql                  # PostgreSQL-Datenbankschema
-│   └── patches/                           # Datenbank-Patches
-│       ├── 001_ensure_greetings_table.sql # Begrüßungstabelle sicherstellen
-│       ├── 002_example_patch_template.sql # Patch-Vorlage
-│       ├── 003_new_humor_greetings.sql    # Neue humorvolle Begrüßungen
-│       ├── 004_team_functionality.sql     # Team-Funktionalität
-│       ├── 005_notifications_system.sql   # Benachrichtigungssystem
-│       ├── 008_module_management_system.sql # Modulverwaltungs-System
-│       └── README.md                      # Patch-Dokumentation
-├── 🎨 shared/
-│   └── styles/                            # Geteilte Styles (aktuell leer)
-├── 📊 monitoring/
-│   └── grafana/
-│       └── dashboards/
-│           └── projektseite-overview.json # Grafana-Dashboard
-└── 🔧 scripts/
-    ├── launcher.sh                        # 🚀 Hauptlauncher (Empfohlen)
-    ├── main-control.sh                    # Erweiterte System-Verwaltung
-    ├── batch-runner.sh                    # Batch-Ausführung von Scripts
-    ├── create-batch.sh                    # Batch-Dateien erstellen
-    ├── functions/                         # Hilfsfunktionen
-    │   └── set-permissions.sh             # Berechtigungs-Management
-    ├── patches/                           # Patch-Scripts für Systemupdates
-    │   ├── patch-manager.sh               # Patch-Management-Tool
-    │   ├── install-activity-log.sh        # Aktivitätslog-System Installation
-    │   └── README.md                      # Patch-Dokumentation
-    ├── batches/                           # Batch-Dateien für automatisierte Tasks
-    ├── setup-server.sh                    # Server-Setup (Ubuntu 24.04)
-    ├── start-docker.sh                    # Docker-Container starten
-    ├── check-logs.sh                      # Container-Logs überprüfen
-    ├── create-admin-user.sh               # Admin-Benutzer erstellen
-    ├── debug-build.sh                     # Build-Probleme debuggen
-    ├── patch-system.sh                    # System-Patch (Git + Docker)
-    ├── fix-systemd.sh                     # Systemd Service reparieren
-    ├── update-system.sh                   # System-Updates
-    ├── update-app.sh                      # App-Update (nur Container)
-    ├── backup-system.sh                   # System-Backups
-    └── restore-system.sh                  # System-Wiederherstellung
+│   ├── tsconfig.json                      # TypeScript-Konfiguration
+│   ├── vite.config.ts                     # Vite-Konfiguration
+│   ├── tailwind.config.js                 # Tailwind CSS-Konfiguration
+│   └── src/                               # Frontend-Quellcode
+├── 🎨 shared/                             # Geteilte Pakete
+│   ├── package.json                       # Shared-Package-Abhängigkeiten
+│   ├── tsconfig.json                      # TypeScript-Konfiguration
+│   ├── contracts/                         # API-Contracts
+│   ├── types/                             # Geteilte Typen
+│   └── utils/                             # Geteilte Utilities
+├── 📊 docs/                               # API-Dokumentation
+│   ├── API.md                             # API-Dokumentation
+│   ├── DEPLOYMENT.md                      # Deployment-Anweisungen
+│   ├── ADRs/                              # Architecture Decision Records
+│   └── api/
+│       └── openapi.yaml                   # OpenAPI-Spezifikation
+├── 📋 dokumentation/                      # Projekt-Dokumentation
+│   ├── features.md                        # Feature-Übersicht
+│   ├── api-endpunkte.md                   # API-Endpunkte
+│   ├── technologie-stack.md               # Technologie-Stack
+│   ├── setup-anweisungen.md               # Setup-Anweisungen
+│   ├── datenbank-schema.md                # Datenbank-Schema
+│   ├── projektstruktur.md                 # Projektstruktur
+│   ├── benutzerverwaltung.md              # Benutzerverwaltung
+│   ├── kanban-board.md                    # Kanban Board Feature
+│   └── versionsverlauf.md                 # Versionsverlauf
+└── 🔧 scripts/                            # Wartungsskripte
+    ├── install-v3.sh                      # Vollständige Installation
+    ├── update-v3.sh                       # System-Update
+    ├── validate-v3.sh                     # System-Validierung
+    ├── quick-start.sh                     # Schnellstart
+    ├── fix-dependencies.sh                # Dependencies reparieren
+    ├── fix-prisma.sh                      # Prisma reparieren
+    └── fix-shared.sh                      # Shared-Package reparieren
 ```
 
-## Script-System
+## Architektur-Übersicht
 
-### 🚀 Launcher (Empfohlen)
-- **Benutzerfreundliche Oberfläche** für alle Scripts
-- **Schnellstart-Optionen** mit vordefinierten Operationssequenzen
-- **FastPatch**: Direkter Zugriff auf Patch-Manager
-- **FastUpdate**: Schnelles App-Update mit Git-Pull
-- **Integrierte Hilfe** und Dokumentation
-
-### 🔧 Main Control System
-- **Interaktive Steuerung** aller Scripts
-- **Warteschlangen-Management** für Script-Ausführung
-- **Batch-Operationen** für automatisierte Tasks
-- **System-Status-Überwachung** und Logging
-
-### 📦 Patch-System
-- **Zentralisierte Patch-Verwaltung** im `patches/` Verzeichnis
-- **Patch-Manager** für einfache Installation und Verwaltung
-- **Automatische Berechtigungssetzung** nach Git-Updates
-- **Aktivitätslog-System** für erweiterte Protokollierung
-
-### 🛠️ Hilfsfunktionen
-- **Berechtigungs-Management** für alle Scripts
-- **Automatische Wartung** nach Git-Updates
-- **Fehlerbehandlung** mit Fallback-Mechanismen
-
-## Backend-Struktur
-- **Modulare Architektur** mit separaten Route-Dateien
+### Backend (Server)
+- **TypeScript** für Typsicherheit
+- **Express.js** als Web-Framework
+- **Prisma ORM** für Datenbankzugriff
+- **Modulare Architektur** mit Controllern, Services und Repositories
 - **Middleware** für Authentifizierung und Validierung
-- **Datenbank-Integration** mit PostgreSQL
-- **Error-Handling** mit zentraler Fehlerbehandlung
-- **Logging** für Debugging und Monitoring
+- **JWT** für Token-basierte Authentifizierung
+- **Winston** für strukturiertes Logging
 
-## Frontend-Struktur
-- **React-Komponenten** mit modernen Hooks
-- **Context-API** für State-Management
-- **Responsive Design** mit Tailwind CSS
-- **CSS-Variablen** für Theme-Management
-- **Modulare Komponenten** für Wiederverwendbarkeit
+### Frontend (Client)
+- **React 18** mit TypeScript
+- **Vite** als Build-Tool
+- **TanStack React Query** für Server-State-Management
+- **Zustand** für Client-State-Management
+- **React Hook Form** mit Zod-Validierung
+- **Tailwind CSS** für Styling
+- **React Beautiful DnD** für Drag & Drop
 
-## Datenbank-Struktur
+### Shared Package
+- **TypeScript** für geteilte Typen
+- **Zod** für Validierungsschemas
+- **Gemeinsame Utilities** für Frontend und Backend
+
+### Datenbank
 - **PostgreSQL** als Hauptdatenbank
-- **Patch-System** für Schema-Updates
-- **Backup-Strategie** mit automatischen Backups
-- **Migrations-System** für Datenbankänderungen
+- **Prisma ORM** für Typsicherheit
+- **Migrations-System** für Schema-Updates
+- **Seed-Daten** für Entwicklung und Tests
+
+### Infrastructure
+- **Docker & Docker Compose** für Containerisierung
+- **Nginx** als Reverse Proxy
+- **Grafana & Prometheus** für Monitoring
+- **Ubuntu 24.04 LTS** als Server-OS
 
 ## Script-System
-- **Wartungsskripte** für Updates und Backups
-- **Setup-Skripte** für Server-Installation
-- **Debug-Skripte** für Fehlerbehebung
-- **Batch-System** für automatisierte Operationen
+
+### Installation & Setup
+- **install-v3.sh** - Vollständige Installation
+- **quick-start.sh** - Schnellstart für Entwicklung
+- **validate-v3.sh** - System-Validierung
+
+### Wartung & Updates
+- **update-v3.sh** - System-Update
+- **fix-dependencies.sh** - Dependencies reparieren
+- **fix-prisma.sh** - Prisma reparieren
+- **fix-shared.sh** - Shared-Package reparieren

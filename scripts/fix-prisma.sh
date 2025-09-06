@@ -45,11 +45,19 @@ fix_prisma_schema() {
     if [ -d "server" ]; then
         cd server
         
+        print_info "Formatting Prisma schema..."
+        if npx prisma format; then
+            print_success "Prisma schema formatted"
+        else
+            print_warning "Prisma format failed"
+        fi
+        
         print_info "Validating Prisma schema..."
         if npx prisma validate; then
             print_success "Prisma schema is valid"
         else
             print_error "Prisma schema validation failed"
+            print_info "Please check the schema for relation errors"
             cd ..
             return
         fi

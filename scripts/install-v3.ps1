@@ -288,11 +288,43 @@ function Setup-Database {
         Write-Info "Starting PostgreSQL with Docker..."
         Set-Location docker
         docker-compose -f docker-compose.dev.yml up -d postgres-dev
-        Start-Sleep -Seconds 10
         Set-Location ..
     }
     
     Set-Location server
+    
+    # Wait for database to be ready
+    Write-Info "Waiting for database to be ready..."
+    $maxAttempts = 30
+    $delay = 2
+    $attempt = 1
+    
+    while ($attempt -le $maxAttempts) {
+        Write-Info "Attempt $attempt/$maxAttempts - Testing database connection..."
+        
+        try {
+            $result = Test-NetConnection -ComputerName "localhost" -Port 5432 -InformationLevel Quiet
+            if ($result) {
+                Write-Success "Database is ready!"
+                break
+            }
+        } catch {
+            # Connection failed, continue waiting
+        }
+        
+        Write-Info "Database not ready yet, waiting $delay seconds..."
+        Start-Sleep -Seconds $delay
+        $attempt++
+    }
+    
+    if ($attempt -gt $maxAttempts) {
+        Write-Error "Database did not become ready within timeout"
+        Write-Info "Please check Docker containers:"
+        Write-Host "  • docker ps" -ForegroundColor White
+        Write-Host "  • docker logs projektseite-postgres-dev" -ForegroundColor White
+        Set-Location ..
+        exit 1
+    }
     
     try {
         Write-Info "Running database migrations..."
