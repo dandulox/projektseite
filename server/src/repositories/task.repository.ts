@@ -393,12 +393,26 @@ export class TaskRepository extends BaseRepository<Task> {
         orderBy: { createdAt: 'desc' },
       });
 
+      // Transform tasks to match TypeScript interface (convert null to undefined)
+      const transformedTasks = tasks.map(task => ({
+        ...task,
+        description: task.description ?? undefined,
+        assigneeId: task.assigneeId ?? undefined,
+        projectId: task.projectId ?? undefined,
+        moduleId: task.moduleId ?? undefined,
+        createdById: task.createdById ?? undefined,
+        dueDate: task.dueDate ?? undefined,
+        estimatedHours: task.estimatedHours ?? undefined,
+        actualHours: task.actualHours ?? undefined,
+        completedAt: task.completedAt ?? undefined,
+      }));
+
       const kanbanTasks = {
-        TODO: tasks.filter(t => t.status === 'TODO'),
-        IN_PROGRESS: tasks.filter(t => t.status === 'IN_PROGRESS'),
-        REVIEW: tasks.filter(t => t.status === 'REVIEW'),
-        COMPLETED: tasks.filter(t => t.status === 'COMPLETED'),
-        CANCELLED: tasks.filter(t => t.status === 'CANCELLED'),
+        TODO: transformedTasks.filter(t => t.status === 'TODO'),
+        IN_PROGRESS: transformedTasks.filter(t => t.status === 'IN_PROGRESS'),
+        REVIEW: transformedTasks.filter(t => t.status === 'REVIEW'),
+        COMPLETED: transformedTasks.filter(t => t.status === 'COMPLETED'),
+        CANCELLED: transformedTasks.filter(t => t.status === 'CANCELLED'),
       };
 
       logger.debug('Task getKanbanTasks', {
