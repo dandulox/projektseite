@@ -43,7 +43,7 @@ export class UserRepository extends BaseRepository<User> {
   async findByRole(role: UserRole): Promise<User[]> {
     try {
       const users = await prisma.user.findMany({
-        where: { role },
+        where: { role: role as any },
         orderBy: { createdAt: 'desc' },
       });
       

@@ -5,6 +5,7 @@ export interface User {
   id: string;
   username: string;
   email: string;
+  password?: string; // Optional für API-Responses
   role: UserRole;
   isActive: boolean;
   createdAt: Date;
@@ -36,6 +37,7 @@ export interface Task {
   assigneeId?: string;
   projectId?: string;
   moduleId?: string;
+  createdById?: string;
   dueDate?: Date;
   estimatedHours?: number;
   actualHours?: number;
@@ -78,46 +80,46 @@ export interface Notification {
   readAt?: Date;
 }
 
-// Enums
+// Enums - Using string literals to match Prisma schema
 export enum UserRole {
-  ADMIN = 'admin',
-  USER = 'user',
-  VIEWER = 'viewer'
+  ADMIN = 'ADMIN',
+  USER = 'USER',
+  VIEWER = 'VIEWER'
 }
 
 export enum ProjectStatus {
-  PLANNING = 'planning',
-  ACTIVE = 'active',
-  ON_HOLD = 'on_hold',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled'
+  PLANNING = 'PLANNING',
+  ACTIVE = 'ACTIVE',
+  ON_HOLD = 'ON_HOLD',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED'
 }
 
 export enum TaskStatus {
-  TODO = 'todo',
-  IN_PROGRESS = 'in_progress',
-  REVIEW = 'review',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled'
+  TODO = 'TODO',
+  IN_PROGRESS = 'IN_PROGRESS',
+  REVIEW = 'REVIEW',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED'
 }
 
 export enum Priority {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  CRITICAL = 'critical'
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+  CRITICAL = 'CRITICAL'
 }
 
 export enum Visibility {
-  PRIVATE = 'private',
-  TEAM = 'team',
-  PUBLIC = 'public'
+  PRIVATE = 'PRIVATE',
+  TEAM = 'TEAM',
+  PUBLIC = 'PUBLIC'
 }
 
 export enum TeamRole {
-  LEADER = 'leader',
-  MEMBER = 'member',
-  VIEWER = 'viewer'
+  LEADER = 'LEADER',
+  MEMBER = 'MEMBER',
+  VIEWER = 'VIEWER'
 }
 
 // Utility Types
@@ -265,11 +267,11 @@ export interface Module {
 }
 
 export enum ModuleStatus {
-  PLANNING = 'planning',
-  ACTIVE = 'active',
-  ON_HOLD = 'on_hold',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled'
+  PLANNING = 'PLANNING',
+  ACTIVE = 'ACTIVE',
+  ON_HOLD = 'ON_HOLD',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED'
 }
 
 // Input types for validation
@@ -371,4 +373,13 @@ export interface DeadlineQueryInput {
   to?: Date;
   projectId?: string;
   assigneeId?: string;
+}
+
+// Kanban Board Types
+export interface KanbanTasks {
+  todo: Task[];
+  in_progress: Task[];
+  review: Task[];
+  completed: Task[];
+  cancelled: Task[];
 }

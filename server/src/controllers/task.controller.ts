@@ -9,7 +9,7 @@ import {
   CreateTaskInput, 
   UpdateTaskInput, 
   TaskFilters 
-} from '@shared/contracts/validation';
+} from '@shared/types';
 import { logger } from '@/utils/logger';
 import { stringUtils } from '@shared/utils';
 

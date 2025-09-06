@@ -175,7 +175,7 @@ export abstract class BaseRepository<T> {
   }
 
   // Transaction Helper
-  async transaction<R>(fn: (tx: PrismaClient) => Promise<R>): Promise<R> {
+  async transaction<R>(fn: (tx: any) => Promise<R>): Promise<R> {
     try {
       return await this.prisma.$transaction(fn);
     } catch (error) {

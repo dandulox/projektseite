@@ -110,7 +110,7 @@ export class TeamRepository extends BaseRepository<Team> {
         data: {
           teamId,
           userId,
-          role,
+          role: role as any,
         },
       });
 
@@ -150,7 +150,7 @@ export class TeamRepository extends BaseRepository<Team> {
             userId,
           },
         },
-        data: { role },
+        data: { role: role as any },
       });
 
       logger.info('Team updateMemberRole', { teamId, userId, role });

@@ -203,7 +203,7 @@ export class UserService {
     try {
       // Check if user has permission to view all users
       const requestingUser = await this.userRepository.findById(requestingUserId);
-      if (!requestingUser || requestingUser.role !== 'ADMIN') {
+      if (!requestingUser || requestingUser.role !== UserRole.ADMIN) {
         throw new ForbiddenError('Keine Berechtigung, alle Benutzer anzuzeigen');
       }
 
@@ -289,7 +289,7 @@ export class UserService {
 
     // Admin has full access
     const requestingUser = await this.userRepository.findById(requestingUserId);
-    if (requestingUser && requestingUser.role === 'ADMIN') {
+    if (requestingUser && requestingUser.role === UserRole.ADMIN) {
       return;
     }
 

@@ -1,6 +1,7 @@
 // Logger Utility - Structured logging with Winston
 import winston from 'winston';
 import path from 'path';
+import { Request, Response, NextFunction } from 'express';
 
 // Create logs directory if it doesn't exist
 const logDir = path.join(process.cwd(), 'logs');

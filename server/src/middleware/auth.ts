@@ -23,7 +23,7 @@ declare global {
 
 // Generate JWT token
 export function generateToken(userId: string, expiresIn: string = '24h'): string {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn });
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: expiresIn });
 }
 
 // Verify JWT token
@@ -84,7 +84,7 @@ export const requireAdmin = (req: Request, res: Response, next: NextFunction) =>
     throw new UnauthorizedError('User not authenticated');
   }
 
-  if (req.user.role !== 'ADMIN') {
+  if (req.user.role !== UserRole.ADMIN) {
     throw new ForbiddenError('Admin access required');
   }
 

@@ -17,6 +17,7 @@ export interface ApiResponse<T = any> {
     requestId: string;
     pagination?: PaginationMeta;
   };
+  details?: Record<string, any>;
 }
 
 export interface PaginationMeta {
@@ -61,6 +62,7 @@ export const ERROR_CODES = {
   INTERNAL_ERROR: 'INTERNAL_ERROR',
   DATABASE_ERROR: 'DATABASE_ERROR',
   EXTERNAL_SERVICE_ERROR: 'EXTERNAL_SERVICE_ERROR',
+  UNKNOWN_ERROR: 'UNKNOWN_ERROR',
 } as const;
 
 export type ErrorCode = typeof ERROR_CODES[keyof typeof ERROR_CODES];
@@ -154,7 +156,7 @@ export class ApiResponseFactory {
     };
   }
 
-  static error(error: ApiError, meta?: Partial<ApiResponse['meta']>): ApiResponse {
+  static error(error: ApiError, meta?: Partial<ApiResponse['meta']>, details?: Record<string, any>): ApiResponse {
     return {
       success: false,
       error,
@@ -163,6 +165,7 @@ export class ApiResponseFactory {
         requestId: this.generateRequestId(),
         ...meta,
       },
+      details,
     };
   }
 

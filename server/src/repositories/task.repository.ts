@@ -316,9 +316,9 @@ export class TaskRepository extends BaseRepository<Task> {
       const task = await prisma.task.update({
         where: { id },
         data: {
-          status,
+          status: status as any,
           updatedAt: new Date(),
-          ...(status === 'COMPLETED' && { completedAt: new Date() }),
+          ...(status === TaskStatus.COMPLETED && { completedAt: new Date() }),
         },
         include: {
           assignee: {
@@ -394,11 +394,11 @@ export class TaskRepository extends BaseRepository<Task> {
       });
 
       const kanbanTasks = {
-        TODO: tasks.filter(t => t.status === 'TODO'),
-        IN_PROGRESS: tasks.filter(t => t.status === 'IN_PROGRESS'),
-        REVIEW: tasks.filter(t => t.status === 'REVIEW'),
-        COMPLETED: tasks.filter(t => t.status === 'COMPLETED'),
-        CANCELLED: tasks.filter(t => t.status === 'CANCELLED'),
+        todo: tasks.filter(t => t.status === 'TODO'),
+        in_progress: tasks.filter(t => t.status === 'IN_PROGRESS'),
+        review: tasks.filter(t => t.status === 'REVIEW'),
+        completed: tasks.filter(t => t.status === 'COMPLETED'),
+        cancelled: tasks.filter(t => t.status === 'CANCELLED'),
       };
 
       logger.debug('Task getKanbanTasks', {

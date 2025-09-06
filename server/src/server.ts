@@ -79,7 +79,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Request Validation
-app.use(validateContentType(['application/json']));
+app.use(validateContentType('application/json'));
 app.use(validateRequestSize(10 * 1024 * 1024)); // 10MB
 
 // Logging

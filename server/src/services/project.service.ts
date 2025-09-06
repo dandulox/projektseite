@@ -301,12 +301,12 @@ export class ProjectService {
 
     // Admin has full access
     const user = await this.userRepository.findById(userId);
-    if (user && user.role === 'ADMIN') {
+    if (user && user.role === UserRole.ADMIN) {
       return;
     }
 
     // Public projects are viewable by everyone
-    if (project.visibility === 'PUBLIC' && permission === 'view') {
+    if (project.visibility === Visibility.PUBLIC && permission === 'view') {
       return;
     }
 

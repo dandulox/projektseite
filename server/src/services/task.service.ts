@@ -5,7 +5,8 @@ import {
   UpdateTaskInput, 
   TaskFilters,
   TaskStatus,
-  Priority 
+  Priority,
+  UserRole
 } from '@shared/types';
 import { TaskRepository } from '@/repositories/task.repository';
 import { ProjectRepository } from '@/repositories/project.repository';
@@ -345,7 +346,7 @@ export class TaskService {
 
     // Admin has full access
     const user = await this.userRepository.findById(userId);
-    if (user && user.role === 'ADMIN') {
+    if (user && user.role === UserRole.ADMIN) {
       return;
     }
 
@@ -360,7 +361,7 @@ export class TaskService {
 
     // Admin has access
     const user = await this.userRepository.findById(userId);
-    if (user && user.role === 'ADMIN') {
+    if (user && user.role === UserRole.ADMIN) {
       return;
     }
 

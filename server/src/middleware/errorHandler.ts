@@ -80,17 +80,12 @@ export const errorHandler = (
     errorResponse = {
       code: err.errorCode,
       message: err.message,
-      details: err.details,
     };
   } else if (err instanceof ZodError) {
     statusCode = 422;
     errorResponse = {
       code: ERROR_CODES.VALIDATION_ERROR,
       message: 'Validation failed',
-      details: err.errors.map(issue => ({
-        path: issue.path.join('.'),
-        message: issue.message,
-      })),
     };
   } else {
     // Log unexpected errors
@@ -107,10 +102,7 @@ export const errorHandler = (
 
   res.status(statusCode).json(
     ApiResponseFactory.error(
-      errorResponse.code as any,
-      errorResponse.message,
-      errorResponse.details,
-      statusCode,
+      errorResponse,
       { requestId: req.headers['x-request-id'] as string || 'N/A' }
     )
   );
@@ -120,10 +112,7 @@ export const errorHandler = (
 export const notFoundHandler = (req: Request, res: Response) => {
   res.status(404).json(
     ApiResponseFactory.error(
-      ERROR_CODES.NOT_FOUND,
-      `Route ${req.originalUrl} not found`,
-      undefined,
-      404,
+      { code: ERROR_CODES.NOT_FOUND, message: `Route ${req.originalUrl} not found` },
       { requestId: req.headers['x-request-id'] as string || 'N/A' }
     )
   );
