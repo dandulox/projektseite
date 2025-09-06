@@ -18,7 +18,8 @@
     "baseUrl": "./",
     "paths": {
       "@shared/*": ["./*"]
-    }
+    },
+    "composite": true
   },
   "include": [
     "**/*.ts"
