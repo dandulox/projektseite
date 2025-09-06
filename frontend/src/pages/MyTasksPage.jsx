@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 const MyTasksPage = () => {
-  const { api } = useAuth();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   
   // State für Filter und Pagination
@@ -46,17 +46,17 @@ const MyTasksPage = () => {
       ...Object.fromEntries(Object.entries(filters).filter(([_, value]) => value !== ''))
     });
 
-    const response = await api.get(`/tasks/my-tasks?${params}`);
+    const response = await userApi.get(`/tasks/my-tasks?${params}`);
     return response.data;
   };
 
   const fetchTaskStats = async () => {
-    const response = await api.get('/tasks/my-tasks/stats');
+    const response = await userApi.get('/tasks/my-tasks/stats');
     return response.data;
   };
 
   const bulkUpdateTasks = async (updates) => {
-    const response = await api.put('/tasks/bulk-update', {
+    const response = await userApi.put('/tasks/bulk-update', {
       task_ids: selectedTasks,
       updates
     });

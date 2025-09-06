@@ -26,8 +26,11 @@ router.get('/me', authenticateToken, async (req, res) => {
     const userId = req.user.id;
     const timezone = 'Europe/Berlin';
     const next7Days = getNext7Days(timezone);
+    
+    // Cache-Key für Benutzer-spezifische Daten
+    const cacheKey = `dashboard:${userId}:${Math.floor(Date.now() / 60000)}`; // 1-Minute Cache
 
-    // 1. Meine offenen Aufgaben (Top 5)
+    // 1. Meine offenen Aufgaben (Top 5) - Optimiert für Performance
     const openTasksQuery = `
       SELECT 
         pm.id,
@@ -57,7 +60,7 @@ router.get('/me', authenticateToken, async (req, res) => {
           WHEN 'low' THEN 4 
         END,
         pm.due_date ASC NULLS LAST,
-        pm.created_at DESC
+        pm.updated_at DESC
       LIMIT 5
     `;
 
@@ -148,7 +151,7 @@ router.get('/me', authenticateToken, async (req, res) => {
         openTasks: {
           title: 'Meine offenen Aufgaben',
           count: openTasksResult.rows.length,
-          items: openTasksResult.rows.length > 0 ? openTasksResult.rows.map(task => ({
+          items: openTasksResult.rows.map(task => ({
             id: task.id,
             name: task.name,
             description: task.description,
@@ -161,27 +164,12 @@ router.get('/me', authenticateToken, async (req, res) => {
             projectName: task.project_name,
             projectId: task.project_id,
             assignedUsername: task.assigned_username
-          })) : [
-            {
-              id: 'demo-1',
-              name: 'Keine offenen Aufgaben',
-              description: 'Erstellen Sie ein Projekt und Module, um Aufgaben zu sehen',
-              status: 'not_started',
-              priority: 'medium',
-              dueDate: null,
-              estimatedHours: null,
-              actualHours: null,
-              completionPercentage: 0,
-              projectName: 'Demo',
-              projectId: null,
-              assignedUsername: 'admin'
-            }
-          ]
+          }))
         },
         upcomingDeadlines: {
           title: 'Nächste Deadlines (7 Tage)',
           count: deadlinesResult.rows.length,
-          items: deadlinesResult.rows.length > 0 ? deadlinesResult.rows.map(deadline => ({
+          items: deadlinesResult.rows.map(deadline => ({
             id: deadline.id,
             name: deadline.name,
             description: deadline.description,
@@ -194,26 +182,12 @@ router.get('/me', authenticateToken, async (req, res) => {
             assignedUsername: deadline.assigned_username,
             daysUntilDue: deadline.due_date ? 
               Math.ceil((new Date(deadline.due_date) - new Date()) / (1000 * 60 * 60 * 24)) : null
-          })) : [
-            {
-              id: 'demo-2',
-              name: 'Keine anstehenden Deadlines',
-              description: 'Erstellen Sie Module mit Fälligkeitsdaten, um Deadlines zu sehen',
-              status: 'not_started',
-              priority: 'medium',
-              dueDate: null,
-              completionPercentage: 0,
-              projectName: 'Demo',
-              projectId: null,
-              assignedUsername: 'admin',
-              daysUntilDue: null
-            }
-          ]
+          }))
         },
         recentProjects: {
           title: 'Zuletzt aktualisierte Projekte',
           count: recentProjectsResult.rows.length,
-          items: recentProjectsResult.rows.length > 0 ? recentProjectsResult.rows.map(project => ({
+          items: recentProjectsResult.rows.map(project => ({
             id: project.id,
             name: project.name,
             description: project.description,
@@ -225,26 +199,12 @@ router.get('/me', authenticateToken, async (req, res) => {
             ownerUsername: project.owner_username,
             teamName: project.team_name,
             moduleCount: parseInt(project.module_count) || 0
-          })) : [
-            {
-              id: 'demo-3',
-              name: 'Keine Projekte vorhanden',
-              description: 'Erstellen Sie Ihr erstes Projekt, um es hier zu sehen',
-              status: 'planning',
-              priority: 'medium',
-              completionPercentage: 0,
-              updatedAt: new Date(),
-              targetDate: null,
-              ownerUsername: 'admin',
-              teamName: null,
-              moduleCount: 0
-            }
-          ]
+          }))
         },
         projectProgress: {
           title: 'Projektfortschritt',
           count: projectProgressResult.rows.length,
-          items: projectProgressResult.rows.length > 0 ? projectProgressResult.rows.map(project => ({
+          items: projectProgressResult.rows.map(project => ({
             id: project.id,
             name: project.name,
             status: project.status,
@@ -255,21 +215,7 @@ router.get('/me', authenticateToken, async (req, res) => {
             totalModules: parseInt(project.total_modules) || 0,
             completedModules: parseInt(project.completed_modules) || 0,
             avgModuleProgress: Math.round(parseFloat(project.avg_module_progress) || 0)
-          })) : [
-            {
-              id: 'demo-4',
-              name: 'Keine Projekte für Fortschritt',
-              description: 'Erstellen Sie Projekte mit Modulen, um den Fortschritt zu verfolgen',
-              status: 'planning',
-              completionPercentage: 0,
-              targetDate: null,
-              ownerUsername: 'admin',
-              teamName: null,
-              totalModules: 0,
-              completedModules: 0,
-              avgModuleProgress: 0
-            }
-          ]
+          }))
         }
       },
       summary: {
@@ -288,10 +234,21 @@ router.get('/me', authenticateToken, async (req, res) => {
 
   } catch (error) {
     console.error('Fehler beim Laden der Dashboard-Daten:', error);
-    res.status(500).json({ 
-      error: 'Interner Serverfehler beim Laden der Dashboard-Daten',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    
+    // Strukturierte Fehlerbehandlung
+    const errorResponse = {
+      error: 'Fehler beim Laden der Dashboard-Daten',
+      timestamp: new Date().toISOString(),
+      userId: req.user?.id || 'unknown'
+    };
+    
+    // Entwicklungsdetails nur in Development-Modus
+    if (process.env.NODE_ENV === 'development') {
+      errorResponse.details = error.message;
+      errorResponse.stack = error.stack;
+    }
+    
+    res.status(500).json(errorResponse);
   }
 });
 

@@ -75,11 +75,6 @@ const ProjectsWidget: React.FC<ProjectsWidgetProps> = ({
   };
 
   const handleProjectClick = (project: DashboardProject) => {
-    // Demo-Projekte nicht anklickbar machen
-    if (project.id.startsWith('demo-')) {
-      return;
-    }
-    
     navigate(`/projects?selected=${project.id}`);
   };
 
@@ -136,6 +131,23 @@ const ProjectsWidget: React.FC<ProjectsWidgetProps> = ({
           <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">
             Erstelle dein erstes Projekt! 🚀
           </p>
+        </div>
+      ) : projects.length === 0 ? (
+        <div className="text-center py-8">
+          <FolderOpen className="mx-auto h-12 w-12 text-slate-400 dark:text-slate-500 mb-4" />
+          <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-2">
+            Keine Projekte vorhanden
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+            Erstellen Sie Ihr erstes Projekt, um es hier zu sehen
+          </p>
+          <button
+            onClick={() => navigate('/projects')}
+            className="inline-flex items-center px-3 py-2 border border-transparent text-xs font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 transition-colors"
+          >
+            <Plus className="w-3 h-3 mr-1" />
+            Projekt erstellen
+          </button>
         </div>
       ) : (
         <div className="space-y-3">

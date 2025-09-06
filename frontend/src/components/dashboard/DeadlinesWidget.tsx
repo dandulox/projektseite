@@ -68,11 +68,6 @@ const DeadlinesWidget: React.FC<DeadlinesWidgetProps> = ({
   };
 
   const handleDeadlineClick = (deadline: DashboardDeadline) => {
-    // Demo-Deadlines nicht anklickbar machen
-    if (deadline.id.startsWith('demo-')) {
-      return;
-    }
-    
     navigate(`/projects?selected=${deadline.projectId}&module=${deadline.id}`);
   };
 
@@ -129,6 +124,23 @@ const DeadlinesWidget: React.FC<DeadlinesWidgetProps> = ({
           <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">
             Alles im Zeitplan! 🎯
           </p>
+        </div>
+      ) : deadlines.length === 0 ? (
+        <div className="text-center py-8">
+          <Calendar className="mx-auto h-12 w-12 text-slate-400 dark:text-slate-500 mb-4" />
+          <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-2">
+            Keine anstehenden Deadlines
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+            Erstellen Sie Module mit Fälligkeitsdaten, um Deadlines zu sehen
+          </p>
+          <button
+            onClick={() => navigate('/projects')}
+            className="inline-flex items-center px-3 py-2 border border-transparent text-xs font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 transition-colors"
+          >
+            <Target className="w-3 h-3 mr-1" />
+            Modul erstellen
+          </button>
         </div>
       ) : (
         <div className="space-y-3">

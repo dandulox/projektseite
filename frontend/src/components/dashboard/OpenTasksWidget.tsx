@@ -69,11 +69,6 @@ const OpenTasksWidget: React.FC<OpenTasksWidgetProps> = ({
   };
 
   const handleTaskClick = (task: DashboardTask) => {
-    // Demo-Tasks nicht anklickbar machen
-    if (task.id.startsWith('demo-')) {
-      return;
-    }
-    
     navigate(`/projects?selected=${task.projectId}&module=${task.id}`);
   };
 
@@ -131,28 +126,36 @@ const OpenTasksWidget: React.FC<OpenTasksWidgetProps> = ({
             Alle Aufgaben sind abgeschlossen! 🎉
           </p>
         </div>
+      ) : tasks.length === 0 ? (
+        <div className="text-center py-8">
+          <CheckSquare className="mx-auto h-12 w-12 text-slate-400 dark:text-slate-500 mb-4" />
+          <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-2">
+            Keine offenen Aufgaben
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+            Erstellen Sie ein Projekt und Module, um Aufgaben zu sehen
+          </p>
+          <button
+            onClick={() => navigate('/projects')}
+            className="inline-flex items-center px-3 py-2 border border-transparent text-xs font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 transition-colors"
+          >
+            <Target className="w-3 h-3 mr-1" />
+            Projekt erstellen
+          </button>
+        </div>
       ) : (
         <div className="space-y-3">
           {tasks.map((task) => (
             <div
               key={task.id}
               onClick={() => handleTaskClick(task)}
-              className={`p-3 rounded-lg border transition-colors group ${
-                task.id.startsWith('demo-') 
-                  ? 'border-amber-200 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-900/20 cursor-default' 
-                  : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer'
-              }`}
+              className="p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors group"
             >
               {/* Task Header */}
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0">
                   <h4 className="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     {task.name}
-                    {task.id.startsWith('demo-') && (
-                      <span className="ml-2 text-xs text-amber-600 dark:text-amber-400 font-normal">
-                        (Demo)
-                      </span>
-                    )}
                   </h4>
                   <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                     {task.projectName}
