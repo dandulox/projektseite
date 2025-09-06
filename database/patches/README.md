@@ -20,6 +20,10 @@ Die neue `01_schema.sql` enthält alle vorherigen Patches:
 - ✅ **Fortschritts-Tracking** - Automatische Berechnung
 - ✅ **Humorvolle Begrüßungen** - Fun-Feature mit Tageszeiten
 - ✅ **Umfassende Berechtigungen** - Modul- und Projekt-Berechtigungen
+- ✅ **Task-Management-System** - Tasks, Kommentare, Attachments
+- ✅ **Activity-Logs** - Detaillierte Aktivitätsverfolgung
+- ✅ **Kanban-Board-Funktionalität** - Task-Status-Management
+- ✅ **Deadlines und Fälligkeitsverfolgung** - Due-Date-Tracking
 
 ## Migration von Patches
 
@@ -32,6 +36,11 @@ Alle folgenden Patches wurden erfolgreich integriert:
 - ~~`005_notifications_system_fixed.sql`~~ → Integriert
 - ~~`008_module_management_system.sql`~~ → Integriert
 - ~~`009_progress_tracking_system.sql`~~ → Integriert
+- ~~`002_activity_log_enhancement.sql`~~ → Integriert
+- ~~`003_dashboard_demo_data.sql`~~ → Entfernt (Demo-Daten)
+- ~~`004_tasks_system.sql`~~ → Integriert
+- ~~`005_kanban_demo_data.sql`~~ → Entfernt (Demo-Daten)
+- ~~`006_enhanced_task_seeds.sql`~~ → Entfernt (Demo-Daten)
 
 ## Neue Datenbank-Initialisierung
 
