@@ -94,46 +94,9 @@ update_repository() {
     current_branch=$(git branch --show-current)
     print_info "Current branch: $current_branch"
     
-    print_info "Pulling latest changes..."
-    if git pull origin "$current_branch"; then
-        print_success "Repository updated successfully"
-    else
-        print_warning "Git pull failed, attempting conflict resolution..."
-        
-        # Check if there are local changes
-        if ! git diff --quiet || ! git diff --cached --quiet; then
-            print_info "Local changes detected, resolving conflicts..."
-            
-            # Option 1: Try to stash changes
-            if git stash push -m "Auto-stash before pull $(date)"; then
-                print_info "Changes stashed, pulling..."
-                if git pull origin "$current_branch"; then
-                    print_success "Repository updated after stash"
-                    print_info "Restoring stashed changes..."
-                    if git stash pop; then
-                        print_success "Stashed changes restored"
-                    else
-                        print_warning "Could not restore stashed changes, but repository is updated"
-                    fi
-                else
-                    print_error "Pull failed even after stash"
-                    if [ "$FORCE" = false ]; then
-                        exit 1
-                    fi
-                fi
-            else
-                # Option 2: Force reset to remote
-                print_info "Stash failed, using force reset to remote..."
-                git reset --hard "origin/$current_branch"
-                print_success "Repository force-updated to remote version"
-            fi
-        else
-            # No local changes, just fetch and reset
-            print_info "No local changes, force updating to remote..."
-            git reset --hard "origin/$current_branch"
-            print_success "Repository force-updated to remote version"
-        fi
-    fi
+    print_info "Force updating to remote version (overwriting local changes)..."
+    git reset --hard "origin/$current_branch"
+    print_success "Repository force-updated to remote version"
     
     print_info "Checking for submodules..."
     if [ -f ".gitmodules" ]; then
