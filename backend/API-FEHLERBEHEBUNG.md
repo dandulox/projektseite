@@ -155,8 +155,46 @@ docker-compose logs -f backend
 
 1. **Datenbank initialisieren**: `node scripts/init-minimal-database.js`
 2. **API testen**: `node scripts/test-api-endpoints.js`
-3. **Frontend testen**: Öffne die Anwendung im Browser
-4. **Logs überwachen**: Prüfe Server-Logs auf weitere Fehler
+3. **Dashboard-Response testen**: `node scripts/test-dashboard-response.js`
+4. **Frontend testen**: Öffne die Anwendung im Browser
+5. **Logs überwachen**: Prüfe Server-Logs auf weitere Fehler
+
+## Frontend-Fehler beheben
+
+### "Cannot read properties of undefined (reading 'items')"
+Dieser Fehler tritt auf, wenn die API-Response nicht die erwartete Datenstruktur hat.
+
+**Lösung:**
+1. Führe das Dashboard-Response-Test-Skript aus:
+   ```bash
+   cd backend
+   node scripts/test-dashboard-response.js
+   ```
+
+2. Prüfe, ob alle vier Widgets vorhanden sind:
+   - `openTasks`
+   - `upcomingDeadlines` 
+   - `recentProjects`
+   - `projectProgress`
+
+3. Jedes Widget muss eine `items`-Array-Eigenschaft haben.
+
+### Status-Werte korrigieren
+Das Frontend erwartet spezifische Status-Werte:
+
+**Tasks:**
+- `not_started` (statt `todo`)
+- `in_progress`
+- `testing` (statt `review`)
+- `completed`
+
+**Projekte:**
+- `planning`
+- `active`
+- `in_progress`
+- `on_hold`
+- `completed`
+- `cancelled`
 
 ## Support
 
