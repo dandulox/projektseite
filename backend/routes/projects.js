@@ -694,34 +694,17 @@ router.get('/:id/board', authenticateToken, async (req, res) => {
       ORDER BY t.priority DESC, t.created_at ASC
     `, [projectId]);
 
-    // Tasks nach Status gruppieren
-    const kanbanColumns = {
-      todo: {
-        id: 'todo',
-        title: 'Zu erledigen',
+    // Tasks nach Status gruppieren - mit zentralen Status-Konstanten
+    const { KANBAN_COLUMNS } = require('../utils/statusConstants');
+    const kanbanColumns = {};
+    
+    KANBAN_COLUMNS.forEach(column => {
+      kanbanColumns[column.id] = {
+        id: column.id,
+        title: column.title,
         tasks: []
-      },
-      in_progress: {
-        id: 'in_progress',
-        title: 'In Bearbeitung',
-        tasks: []
-      },
-      review: {
-        id: 'review',
-        title: 'Review',
-        tasks: []
-      },
-      completed: {
-        id: 'completed',
-        title: 'Abgeschlossen',
-        tasks: []
-      },
-      cancelled: {
-        id: 'cancelled',
-        title: 'Abgebrochen',
-        tasks: []
-      }
-    };
+      };
+    });
 
     // Tasks in entsprechende Spalten einteilen
     tasksResult.rows.forEach(task => {

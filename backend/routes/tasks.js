@@ -1,6 +1,7 @@
 const express = require('express');
 const pool = require('../config/database');
 const { authenticateToken } = require('./auth');
+const { VALID_TASK_STATUSES, VALID_TASK_PRIORITIES } = require('../utils/statusConstants');
 const router = express.Router();
 
 // Hilfsfunktion: Prüft Task-Berechtigung
@@ -384,8 +385,7 @@ router.patch('/:taskId', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Status ist erforderlich' });
     }
 
-    const validStatuses = ['todo', 'in_progress', 'review', 'completed', 'cancelled'];
-    if (!validStatuses.includes(status)) {
+    if (!VALID_TASK_STATUSES.includes(status)) {
       return res.status(400).json({ error: 'Ungültiger Status' });
     }
 

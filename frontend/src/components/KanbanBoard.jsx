@@ -23,7 +23,8 @@ import { de } from 'date-fns/locale';
 // API-Funktionen
 const fetchKanbanBoard = async (projectId) => {
   const token = localStorage.getItem('token');
-  const response = await fetch(`/api/projects/${projectId}/board`, {
+  const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/board`, {
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
@@ -39,7 +40,8 @@ const fetchKanbanBoard = async (projectId) => {
 
 const updateTaskStatus = async ({ taskId, status }) => {
   const token = localStorage.getItem('token');
-  const response = await fetch(`/api/tasks/${taskId}`, {
+  const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
+  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
     method: 'PATCH',
     headers: {
       'Authorization': `Bearer ${token}`,
