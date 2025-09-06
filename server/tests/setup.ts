@@ -11,6 +11,7 @@ declare global {
     createTestProject: (overrides?: any) => any;
     createTestTask: (overrides?: any) => any;
     cleanupTestData: () => Promise<void>;
+    wait: (ms: number) => Promise<void>;
   };
 }
 
