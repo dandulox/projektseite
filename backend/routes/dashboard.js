@@ -30,37 +30,36 @@ router.get('/me', authenticateToken, async (req, res) => {
     // Cache-Key für Benutzer-spezifische Daten
     const cacheKey = `dashboard:${userId}:${Math.floor(Date.now() / 60000)}`; // 1-Minute Cache
 
-    // 1. Meine offenen Aufgaben (Top 5) - Optimiert für Performance
+    // 1. Meine offenen Aufgaben (Top 5) - Tasks statt project_modules
     const openTasksQuery = `
       SELECT 
-        pm.id,
-        pm.name,
-        pm.description,
-        pm.status,
-        pm.priority,
-        pm.due_date,
-        pm.estimated_hours,
-        pm.actual_hours,
-        pm.completion_percentage,
+        t.id,
+        t.title as name,
+        t.description,
+        t.status,
+        t.priority,
+        t.due_date,
+        t.estimated_hours,
+        t.actual_hours,
+        COALESCE(t.completion_percentage, 0) as completion_percentage,
         p.name as project_name,
         p.id as project_id,
         p.owner_id as project_owner_id,
         u.username as assigned_username
-      FROM project_modules pm
-      JOIN projects p ON p.id = pm.project_id
-      LEFT JOIN users u ON u.id = pm.assigned_to
-      WHERE pm.assigned_to = $1 
-        AND pm.status IN ('not_started', 'in_progress', 'testing')
-        AND (pm.visibility = 'public' OR p.owner_id = $1 OR p.visibility = 'public')
+      FROM tasks t
+      JOIN projects p ON p.id = t.project_id
+      LEFT JOIN users u ON u.id = t.assignee_id
+      WHERE t.assignee_id = $1 
+        AND t.status IN ('todo', 'in_progress', 'review')
       ORDER BY 
-        CASE pm.priority 
+        CASE t.priority 
           WHEN 'critical' THEN 1 
           WHEN 'high' THEN 2 
           WHEN 'medium' THEN 3 
           WHEN 'low' THEN 4 
         END,
-        pm.due_date ASC NULLS LAST,
-        pm.updated_at DESC
+        t.due_date ASC NULLS LAST,
+        t.updated_at DESC
       LIMIT 5
     `;
 
@@ -73,7 +72,7 @@ router.get('/me', authenticateToken, async (req, res) => {
         t.status,
         t.priority,
         t.due_date,
-        t.completion_percentage,
+        COALESCE(t.completion_percentage, 0) as completion_percentage,
         p.name as project_name,
         p.id as project_id,
         u.username as assigned_username
@@ -85,7 +84,6 @@ router.get('/me', authenticateToken, async (req, res) => {
         AND t.due_date >= $2
         AND t.due_date <= $3
         AND t.status NOT IN ('completed', 'cancelled')
-        AND (p.visibility = 'public' OR p.owner_id = $1 OR p.visibility = 'public')
       ORDER BY t.due_date ASC
       LIMIT 10
     `;
@@ -280,10 +278,10 @@ router.get('/me/stats', authenticateToken, async (req, res) => {
         (SELECT COUNT(*) FROM user_projects WHERE status = 'completed') as completed_projects,
         (SELECT COUNT(*) FROM user_projects WHERE target_date < NOW() AND status != 'completed') as overdue_projects,
         (SELECT COALESCE(AVG(completion_percentage), 0) FROM user_projects) as avg_project_progress,
-        (SELECT COUNT(*) FROM user_modules WHERE status IN ('not_started', 'in_progress', 'testing')) as open_tasks,
-        (SELECT COUNT(*) FROM user_modules WHERE status = 'completed') as completed_tasks,
+        (SELECT COUNT(*) FROM tasks WHERE assignee_id = $1 AND status IN ('todo', 'in_progress', 'review')) as open_tasks,
+        (SELECT COUNT(*) FROM tasks WHERE assignee_id = $1 AND status = 'completed') as completed_tasks,
         (SELECT COUNT(*) FROM tasks WHERE assignee_id = $1 AND due_date BETWEEN NOW() AND NOW() + INTERVAL '7 days' AND status NOT IN ('completed', 'cancelled')) as upcoming_deadlines,
-        (SELECT COALESCE(AVG(completion_percentage), 0) FROM user_modules) as avg_task_progress
+        (SELECT COALESCE(AVG(completion_percentage), 0) FROM tasks WHERE assignee_id = $1) as avg_task_progress
     `;
 
     const statsResult = await pool.query(statsQuery, [userId]);
