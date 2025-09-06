@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, ProtectedRoute, useAuth } from './contexts/AuthContext';
 import AuthPage from './pages/AuthPage';
+import DashboardPage from './pages/DashboardPage';
 import UserManagement from './components/UserManagement';
 import UserSettings from './components/UserSettings';
 import UserProfile from './components/UserProfile';
@@ -408,8 +409,8 @@ const MobileMenu = ({ isOpen, onClose }) => {
   );
 };
 
-// Dashboard Component - jetzt mit echter Projektübersicht
-const Dashboard = () => <ProjectDashboard />;
+// Dashboard Component - neue Dashboard-Startseite
+const Dashboard = () => <DashboardPage />;
 
 // Projektverwaltung Component - jetzt mit echter Backend-Integration
 const Projects = () => <ProjectManagement />;

@@ -45,6 +45,7 @@ const modulesRoutes = require('./routes/modules');
 const notificationsRoutes = require('./routes/notifications');
 const versionsRoutes = require('./routes/versions');
 const activityLogsRoutes = require('./routes/activity_logs');
+const dashboardRoutes = require('./routes/dashboard');
 
 console.log('🔧 Lade API-Routen...');
 
@@ -58,6 +59,7 @@ app.use('/api/modules', modulesRoutes);
 app.use('/api/notifications', notificationsRoutes.router);
 app.use('/api/versions', versionsRoutes);
 app.use('/api/activity-logs', activityLogsRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Health Check
 app.get('/health', (req, res) => {

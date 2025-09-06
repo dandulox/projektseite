@@ -477,6 +477,19 @@ export const AuthProvider = ({ children }) => {
 
   };
 
+  // Dashboard-Funktionen
+  const dashboardApi = {
+    // Dashboard-Daten abrufen
+    getDashboard: async () => {
+      return await apiRequest('/dashboard/me');
+    },
+
+    // Dashboard-Statistiken abrufen
+    getDashboardStats: async () => {
+      return await apiRequest('/dashboard/me/stats');
+    },
+  };
+
   // Modul-Funktionen
   const moduleApi = {
     // Alle Module abrufen
@@ -582,6 +595,7 @@ export const AuthProvider = ({ children }) => {
     teamApi,
     projectApi,
     moduleApi,
+    dashboardApi,
     // Design-Funktionen
     theme,
     designSettings,
