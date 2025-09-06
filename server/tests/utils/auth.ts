@@ -5,11 +5,13 @@ const JWT_SECRET = process.env.JWT_SECRET || 'test-secret-key';
 
 // Generate JWT token for testing
 export function generateToken(userId: string, expiresIn: string = '24h'): string {
+  // @ts-ignore - JWT library type issue with expiresIn
   return jwt.sign({ userId }, JWT_SECRET, { expiresIn });
 }
 
 // Generate expired token for testing
 export function generateExpiredToken(userId: string): string {
+  // @ts-ignore - JWT library type issue with expiresIn
   return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '-1h' });
 }
 
