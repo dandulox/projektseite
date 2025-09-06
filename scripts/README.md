@@ -31,6 +31,7 @@ Die Scripts in diesem Verzeichnis automatisieren die Installation, Validierung u
 **Parameter**:
 - `-SkipValidation`: Überspringt Struktur-Validierung
 - `-SkipDocker`: Startet keine Docker-Services
+- `-Update`: Repository vor Start aktualisieren
 
 ## 🛠️ Installation Scripts
 
@@ -60,6 +61,7 @@ Die Scripts in diesem Verzeichnis automatisieren die Installation, Validierung u
 - `-SkipTests`: Überspringt Test-Ausführung
 - `-SkipDocker`: Überspringt Docker-Setup
 - `-Force`: Fortsetzen trotz Fehlern
+- `-Update`: Repository vor Installation aktualisieren
 
 ## 🔍 Validation Scripts
 
@@ -91,6 +93,34 @@ Die Scripts in diesem Verzeichnis automatisieren die Installation, Validierung u
 **Parameter**:
 - `-Quick`: Überspringt Build-Tests
 - `-Verbose`: Detaillierte Ausgabe
+- `-Update`: Repository vor Validierung aktualisieren
+
+## 🔄 Update Scripts
+
+### `update-v3.ps1` / `update-v3.sh`
+
+**Zweck**: Automatisches Update des Repositories und aller Komponenten
+
+**Features**:
+- Repository-Update (git pull)
+- Dependency-Updates
+- Application-Rebuild
+- Database-Migration
+- Validierung und Tests
+
+**Verwendung**:
+```powershell
+# Windows
+.\scripts\update-v3.ps1
+
+# Linux/macOS
+./scripts/update-v3.sh
+```
+
+**Parameter**:
+- `-SkipValidation`: Überspringt Validierung
+- `-SkipTests`: Überspringt Test-Ausführung
+- `-Force`: Fortsetzen trotz Fehlern
 
 ## 📊 Script-Features
 
@@ -122,6 +152,9 @@ Alle Scripts führen automatische Validierungen durch:
 ```powershell
 # Schneller Start für neue Entwickler
 .\scripts\quick-start.ps1
+
+# Mit Repository-Update
+.\scripts\quick-start.ps1 -Update
 ```
 
 ### CI/CD Pipeline
@@ -143,6 +176,16 @@ Alle Scripts führen automatische Validierungen durch:
 ```powershell
 # Validierung bei Problemen
 .\scripts\validate-v3.ps1 -Quick
+```
+
+### Repository Update
+
+```powershell
+# Automatisches Update
+.\scripts\update-v3.ps1
+
+# Update ohne Tests
+.\scripts\update-v3.ps1 -SkipTests
 ```
 
 ## 📈 Validierungs-Report

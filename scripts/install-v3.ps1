@@ -1,11 +1,15 @@
 # Projektseite v3.0 - Vollständiges Installations- und Validierungsscript
 # Automatisiertes Setup, Build und Test der neuen Architektur
 
+# Set execution policy for this session
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+
 param(
     [string]$Environment = "development",
     [switch]$SkipTests = $false,
     [switch]$SkipDocker = $false,
-    [switch]$Force = $false
+    [switch]$Force = $false,
+    [switch]$Update = $false
 )
 
 # Colors for output
@@ -60,6 +64,27 @@ function Test-Command {
     }
     catch {
         return $false
+    }
+}
+
+# Update repository
+function Update-Repository {
+    if ($Update) {
+        Write-Step "Updating repository..."
+        
+        if (Test-Path ".git") {
+            Write-Info "Pulling latest changes..."
+            git pull origin main
+            
+            Write-Info "Checking for submodules..."
+            if (Test-Path ".gitmodules") {
+                git submodule update --init --recursive
+            }
+            
+            Write-Success "Repository updated"
+        } else {
+            Write-Warning "Not a git repository, skipping update"
+        }
     }
 }
 
@@ -412,36 +437,40 @@ function Main {
     Write-Info "Skip Tests: $SkipTests"
     Write-Info "Skip Docker: $SkipDocker"
     Write-Info "Force Mode: $Force"
+    Write-Info "Update Repository: $Update"
     Write-Host ""
     
-    # Step 1: Check prerequisites
+    # Step 1: Update repository
+    Update-Repository
+    
+    # Step 2: Check prerequisites
     Test-Prerequisites
     
-    # Step 2: Validate project structure
+    # Step 3: Validate project structure
     Test-ProjectStructure
     
-    # Step 3: Install shared module
+    # Step 4: Install shared module
     Install-Shared
     
-    # Step 4: Install backend
+    # Step 5: Install backend
     Install-Backend
     
-    # Step 5: Install frontend
+    # Step 6: Install frontend
     Install-Frontend
     
-    # Step 6: Setup database
+    # Step 7: Setup database
     Setup-Database
     
-    # Step 7: Build applications
+    # Step 8: Build applications
     Build-Applications
     
-    # Step 8: Run tests
+    # Step 9: Run tests
     Invoke-Tests
     
-    # Step 9: Validate installation
+    # Step 10: Validate installation
     Test-Installation
     
-    # Step 10: Start development environment
+    # Step 11: Start development environment
     Start-Development
     
     Write-Header "Installation Complete!"

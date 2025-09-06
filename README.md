@@ -65,8 +65,14 @@ projektseite/
 # Windows PowerShell
 .\scripts\quick-start.ps1
 
+# Mit Repository-Update
+.\scripts\quick-start.ps1 -Update
+
 # Linux/macOS
 ./scripts/quick-start.sh
+
+# Mit Repository-Update
+./scripts/quick-start.sh --update
 ```
 
 #### Option 2: Vollständige Installation
@@ -74,8 +80,14 @@ projektseite/
 # Windows PowerShell
 .\scripts\install-v3.ps1
 
+# Mit Repository-Update
+.\scripts\install-v3.ps1 -Update
+
 # Linux/macOS
 ./scripts/install-v3.sh
+
+# Mit Repository-Update
+./scripts/install-v3.sh --update
 ```
 
 #### Option 3: Manuelles Setup
@@ -157,6 +169,54 @@ npm run dev
 
 - **Admin**: `admin@projektseite.de` / `admin123`
 - **User**: `user@projektseite.de` / `user123`
+
+## 🔍 Validierung
+
+### Architektur-Validierung
+
+```powershell
+# Windows PowerShell
+.\scripts\validate-v3.ps1
+
+# Mit Repository-Update
+.\scripts\validate-v3.ps1 -Update
+
+# Linux/macOS
+./scripts/validate-v3.sh
+
+# Mit Repository-Update
+./scripts/validate-v3.sh --update
+```
+
+### Validierungsoptionen
+
+- `--quick` / `-Quick`: Schnelle Validierung ohne Build-Tests
+- `--verbose` / `-Verbose`: Detaillierte Ausgabe
+- `--update` / `-Update`: Repository vor Validierung aktualisieren
+
+## 🔄 Update
+
+### Automatisches Update
+
+```powershell
+# Windows PowerShell
+.\scripts\update-v3.ps1
+
+# Mit Optionen
+.\scripts\update-v3.ps1 -SkipTests -Force
+
+# Linux/macOS
+./scripts/update-v3.sh
+
+# Mit Optionen
+./scripts/update-v3.sh --skip-tests --force
+```
+
+### Update-Optionen
+
+- `--skip-validation` / `-SkipValidation`: Validierung überspringen
+- `--skip-tests` / `-SkipTests`: Tests überspringen
+- `--force` / `-Force`: Bei Fehlern fortfahren
 
 ## 🎨 Features
 

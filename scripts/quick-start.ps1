@@ -1,6 +1,9 @@
 # Projektseite v3.0 - Quick Start Script
 # Schneller Start für Development
 
+# Set execution policy for this session
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+
 param(
     [switch]$SkipValidation = $false,
     [switch]$SkipDocker = $false,

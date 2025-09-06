@@ -1,9 +1,13 @@
 # Projektseite v3.0 - Architektur Validierungsscript
 # Testet alle Komponenten der neuen Architektur
 
+# Set execution policy for this session
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+
 param(
     [switch]$Quick = $false,
-    [switch]$Verbose = $false
+    [switch]$Verbose = $false,
+    [switch]$Update = $false
 )
 
 # Colors for output
@@ -47,6 +51,27 @@ function Write-Info {
 function Write-Warning {
     param([string]$Text)
     Write-Host "⚠️  $Text" -ForegroundColor $Yellow
+}
+
+# Update repository
+function Update-Repository {
+    if ($Update) {
+        Write-Step "Updating repository..."
+        
+        if (Test-Path ".git") {
+            Write-Info "Pulling latest changes..."
+            git pull origin main
+            
+            Write-Info "Checking for submodules..."
+            if (Test-Path ".gitmodules") {
+                git submodule update --init --recursive
+            }
+            
+            Write-Success "Repository updated"
+        } else {
+            Write-Warning "Not a git repository, skipping update"
+        }
+    }
 }
 
 # Test results tracking
@@ -428,7 +453,11 @@ function Main {
     
     Write-Info "Quick Mode: $Quick"
     Write-Info "Verbose Mode: $Verbose"
+    Write-Info "Update Repository: $Update"
     Write-Host ""
+    
+    # Update repository
+    Update-Repository
     
     # Run all validation tests
     Test-ProjectStructure
