@@ -1,18 +1,20 @@
 // Test Auth Utilities
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'test-secret-key';
 
 // Generate JWT token for testing
 export function generateToken(userId: string, expiresIn: string = '24h'): string {
-  // @ts-ignore - JWT library type issue with expiresIn
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn });
+  const payload = { userId };
+  const options: jwt.SignOptions = { expiresIn };
+  return jwt.sign(payload, JWT_SECRET, options);
 }
 
 // Generate expired token for testing
 export function generateExpiredToken(userId: string): string {
-  // @ts-ignore - JWT library type issue with expiresIn
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '-1h' });
+  const payload = { userId };
+  const options: jwt.SignOptions = { expiresIn: '-1h' };
+  return jwt.sign(payload, JWT_SECRET, options);
 }
 
 // Generate invalid token for testing
