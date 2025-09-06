@@ -20,14 +20,14 @@ CREATE TABLE IF NOT EXISTS project_activity_logs (
     old_values JSONB,
     new_values JSONB,
     affected_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    -- Indizes für Performance
-    INDEX idx_project_activity_logs_project_id (project_id),
-    INDEX idx_project_activity_logs_user_id (user_id),
-    INDEX idx_project_activity_logs_action_type (action_type),
-    INDEX idx_project_activity_logs_created_at (created_at)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Indizes für Performance
+CREATE INDEX IF NOT EXISTS idx_project_activity_logs_project_id ON project_activity_logs (project_id);
+CREATE INDEX IF NOT EXISTS idx_project_activity_logs_user_id ON project_activity_logs (user_id);
+CREATE INDEX IF NOT EXISTS idx_project_activity_logs_action_type ON project_activity_logs (action_type);
+CREATE INDEX IF NOT EXISTS idx_project_activity_logs_created_at ON project_activity_logs (created_at);
 
 -- Erweiterte Modul-Logs mit detaillierten Änderungen
 CREATE TABLE IF NOT EXISTS module_activity_logs (
@@ -45,15 +45,15 @@ CREATE TABLE IF NOT EXISTS module_activity_logs (
     new_values JSONB,
     affected_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    -- Indizes für Performance
-    INDEX idx_module_activity_logs_module_id (module_id, module_type),
-    INDEX idx_module_activity_logs_user_id (user_id),
-    INDEX idx_module_activity_logs_action_type (action_type),
-    INDEX idx_module_activity_logs_project_id (project_id),
-    INDEX idx_module_activity_logs_created_at (created_at)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Indizes für Performance
+CREATE INDEX IF NOT EXISTS idx_module_activity_logs_module_id ON module_activity_logs (module_id, module_type);
+CREATE INDEX IF NOT EXISTS idx_module_activity_logs_user_id ON module_activity_logs (user_id);
+CREATE INDEX IF NOT EXISTS idx_module_activity_logs_action_type ON module_activity_logs (action_type);
+CREATE INDEX IF NOT EXISTS idx_module_activity_logs_project_id ON module_activity_logs (project_id);
+CREATE INDEX IF NOT EXISTS idx_module_activity_logs_created_at ON module_activity_logs (created_at);
 
 -- ==============================================
 -- ERWEITERTE BENACHRICHTIGUNGSTYPEN
