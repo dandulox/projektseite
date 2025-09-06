@@ -6,6 +6,106 @@
 -- HAUPTTABELLEN
 -- ==============================================
 
+-- Tasks-System (aus Patch 004)
+CREATE TABLE IF NOT EXISTS tasks (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    description TEXT,
+    status VARCHAR(50) DEFAULT 'todo' CHECK (status IN ('todo', 'in_progress', 'review', 'completed', 'cancelled')),
+    priority VARCHAR(20) DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'critical')),
+    assignee_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+    module_id INTEGER REFERENCES project_modules(id) ON DELETE SET NULL,
+    due_date DATE,
+    estimated_hours DECIMAL(8,2),
+    actual_hours DECIMAL(8,2),
+    tags TEXT[],
+    created_by INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMP
+);
+
+-- Task-Kommentare
+CREATE TABLE IF NOT EXISTS task_comments (
+    id SERIAL PRIMARY KEY,
+    task_id INTEGER REFERENCES tasks(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id),
+    comment TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Task-Attachments
+CREATE TABLE IF NOT EXISTS task_attachments (
+    id SERIAL PRIMARY KEY,
+    task_id INTEGER REFERENCES tasks(id) ON DELETE CASCADE,
+    filename VARCHAR(255) NOT NULL,
+    original_filename VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    file_size INTEGER,
+    mime_type VARCHAR(100),
+    uploaded_by INTEGER REFERENCES users(id),
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Task-Aktivitäten
+CREATE TABLE IF NOT EXISTS task_activities (
+    id SERIAL PRIMARY KEY,
+    task_id INTEGER REFERENCES tasks(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id),
+    action VARCHAR(100) NOT NULL,
+    details TEXT,
+    old_values JSONB,
+    new_values JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Task-Berechtigungen
+CREATE TABLE IF NOT EXISTS task_permissions (
+    id SERIAL PRIMARY KEY,
+    task_id INTEGER REFERENCES tasks(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    permission_type VARCHAR(20) DEFAULT 'view' CHECK (permission_type IN ('view', 'edit', 'admin')),
+    granted_by INTEGER REFERENCES users(id),
+    granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(task_id, user_id)
+);
+
+-- Activity-Logs (aus Patch 002)
+CREATE TABLE IF NOT EXISTS project_activity_logs (
+    id SERIAL PRIMARY KEY,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    action_type VARCHAR(50) NOT NULL CHECK (action_type IN (
+        'created', 'updated', 'deleted', 'status_changed', 'priority_changed',
+        'assigned', 'unassigned', 'permission_granted', 'permission_revoked',
+        'module_added', 'module_removed', 'module_updated'
+    )),
+    action_details JSONB,
+    old_values JSONB,
+    new_values JSONB,
+    affected_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS module_activity_logs (
+    id SERIAL PRIMARY KEY,
+    module_id INTEGER NOT NULL,
+    module_type VARCHAR(20) NOT NULL CHECK (module_type IN ('project', 'standalone')),
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    action_type VARCHAR(50) NOT NULL CHECK (action_type IN (
+        'created', 'updated', 'deleted', 'status_changed', 'priority_changed',
+        'assigned', 'unassigned', 'permission_granted', 'permission_revoked',
+        'progress_updated', 'due_date_changed', 'team_changed'
+    )),
+    action_details JSONB,
+    old_values JSONB,
+    new_values JSONB,
+    affected_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Benutzer-Tabelle
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
@@ -270,6 +370,27 @@ CREATE INDEX IF NOT EXISTS idx_modules_assigned ON project_modules(assigned_to);
 CREATE INDEX IF NOT EXISTS idx_logs_project ON project_logs(project_id);
 CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON project_logs(timestamp);
 
+-- Task-Indizes
+CREATE INDEX IF NOT EXISTS idx_tasks_assignee ON tasks(assignee_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
+CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority);
+CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date);
+CREATE INDEX IF NOT EXISTS idx_tasks_project ON tasks(project_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_created_at ON tasks(created_at);
+CREATE INDEX IF NOT EXISTS idx_tasks_updated_at ON tasks(updated_at);
+CREATE INDEX IF NOT EXISTS idx_tasks_assignee_status_due ON tasks(assignee_id, status, due_date);
+
+-- Activity-Log-Indizes
+CREATE INDEX IF NOT EXISTS idx_project_activity_logs_project_id ON project_activity_logs (project_id);
+CREATE INDEX IF NOT EXISTS idx_project_activity_logs_user_id ON project_activity_logs (user_id);
+CREATE INDEX IF NOT EXISTS idx_project_activity_logs_action_type ON project_activity_logs (action_type);
+CREATE INDEX IF NOT EXISTS idx_project_activity_logs_created_at ON project_activity_logs (created_at);
+CREATE INDEX IF NOT EXISTS idx_module_activity_logs_module_id ON module_activity_logs (module_id, module_type);
+CREATE INDEX IF NOT EXISTS idx_module_activity_logs_user_id ON module_activity_logs (user_id);
+CREATE INDEX IF NOT EXISTS idx_module_activity_logs_action_type ON module_activity_logs (action_type);
+CREATE INDEX IF NOT EXISTS idx_module_activity_logs_project_id ON module_activity_logs (project_id);
+CREATE INDEX IF NOT EXISTS idx_module_activity_logs_created_at ON module_activity_logs (created_at);
+
 -- Greetings-Indizes
 CREATE INDEX IF NOT EXISTS idx_greetings_time_period ON greetings(time_period);
 CREATE INDEX IF NOT EXISTS idx_greetings_hour ON greetings(hour);
@@ -341,6 +462,30 @@ CREATE TRIGGER update_teams_updated_at BEFORE UPDATE ON teams
 
 CREATE TRIGGER update_standalone_modules_updated_at BEFORE UPDATE ON standalone_modules
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Task-Trigger
+CREATE TRIGGER trigger_update_tasks_updated_at
+    BEFORE UPDATE ON tasks
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Trigger für completed_at
+CREATE OR REPLACE FUNCTION update_tasks_completed_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.status = 'completed' AND OLD.status != 'completed' THEN
+        NEW.completed_at = CURRENT_TIMESTAMP;
+    ELSIF NEW.status != 'completed' AND OLD.status = 'completed' THEN
+        NEW.completed_at = NULL;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_tasks_completed_at
+    BEFORE UPDATE ON tasks
+    FOR EACH ROW
+    EXECUTE FUNCTION update_tasks_completed_at();
 
 -- Benachrichtigungs-Trigger
 CREATE OR REPLACE FUNCTION update_notification_read_at()
