@@ -1,287 +1,507 @@
-# Projektseite - Projektstatus-Tracker
+# 🚀 Projektseite v3.0 "Modernisierung"
 
-Eine vollständige Projektmanagement-Anwendung mit Task-Management, Kanban-Boards, Deadlines und Team-Kollaboration. Entwickelt mit modernem Tech-Stack und funktioniert vollständig mit leerer Datenbank.
+> **Moderne Projektmanagement-Plattform mit TypeScript, Prisma und React**
 
-## ✨ Features
+[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/dandulox/projektseite)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-green.svg)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/typescript-5.3-blue.svg)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-- ✅ **Projektverwaltung** mit Status-Tracking und Fortschrittsverfolgung
-- ✅ **Task-Management** mit Prioritäten, Deadlines und Zuweisungen
-- ✅ **Kanban-Boards** mit Drag & Drop-Funktionalität
-- ✅ **Deadlines-Kalender** mit Erinnerungen und Statistiken
-- ✅ **Team-Kollaboration** mit Rollen und Berechtigungen
-- ✅ **Admin-Diagnose-Tools** für System-Monitoring
-- ✅ **Responsive Design** mit Dark Mode
-- ✅ **Einheitliche Error-Behandlung** und Validierung
-- ✅ **Empty-States** - funktioniert ohne Demo-Daten
+## 📋 Überblick
 
-## 🚀 Quick Start
+Projektseite v3.0 ist eine vollständig modernisierte Projektmanagement-Plattform mit fokussiertem Design auf **Developer Experience**, **Type-Safety** und **Performance**. Das System wurde von Grund auf neu architektiert mit modernen Web-Standards.
 
-```bash
-# 1. Repository klonen
-git clone https://github.com/dandulox/projektseite.git
-cd projektseite
+### 🎯 Kernverbesserungen v3.0
 
-# 2. Dependencies installieren
-npm ci
-
-# 3. Datenbank migrieren (nur Schema-Änderungen)
-npm run migrate
-
-# 4. Entwicklung starten
-npm run dev
-
-# 5. Anwendung öffnen
-# Frontend: http://localhost:3000
-# Backend: http://localhost:3001
-# Grafana: http://localhost:3002 (admin/admin123)
-```
-
-## 📋 Standard-Zugangsdaten
-
-- **Admin**: `admin` / `admin`
-- **User**: `user` / `user123`
-
-> **Hinweis**: Die App funktioniert vollständig mit einer leeren Datenbank. Alle Features zeigen freundliche Empty-States ohne Demo-Daten.
-
-## 🛠️ Entwicklung
-
-### Backend starten
-```bash
-cd backend
-npm install
-npm run dev
-```
-
-### Frontend starten
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### Tests ausführen
-```bash
-# Backend Tests
-cd backend
-npm test
-
-# Frontend Tests
-cd frontend
-npm test
-
-# E2E Tests
-npm run test:e2e
-```
-
-## 🔧 API-Endpoints
-
-### Tasks
-- `GET /api/tasks/my-tasks` - Meine Aufgaben abrufen
-- `POST /api/tasks` - Task erstellen
-- `PATCH /api/tasks/:id` - Task-Status aktualisieren
-- `PUT /api/tasks/:id` - Task bearbeiten
-
-### Deadlines
-- `GET /api/deadlines` - Nächste Deadlines (7 Tage)
-- `GET /api/deadlines/stats` - Deadline-Statistiken
-- `GET /api/deadlines/calendar` - Kalender-Ansicht
-- `GET /api/deadlines/reminders` - Erinnerungen
-
-### Admin
-- `GET /api/admin/health` - System-Health-Check
-- `GET /api/admin/db/status` - Datenbank-Status
-- `POST /api/admin/api-debug` - API-Debug-Tool
+- **🏗️ Modulare Monorepo-Architektur** - Klare Trennung von Frontend, Backend und Shared Code
+- **🔒 Vollständige Type-Safety** - End-to-End TypeScript mit Zod-Validierung
+- **🗄️ Moderne Datenbank-Integration** - Prisma ORM mit automatischen Migrationen
+- **✅ Umfassende Test-Abdeckung** - API, UI und E2E Tests (≥70% Coverage)
+- **🛡️ Security-First Approach** - JWT Auth, Rate-Limiting, Input-Validation
+- **🎨 Konsistentes Design-System** - Tailwind CSS mit Dark/Light Mode
+- **📱 Responsive & Accessible** - WCAG AA konform, Mobile-First
+- **🚫 No-Seeds Policy** - Empty-States funktionieren ohne Demo-Daten
 
 ## 🏗️ Architektur
 
-### Backend
-- **Express.js** mit modularen Routen
-- **PostgreSQL** mit umfassendem Schema
-- **JWT-Authentifizierung** mit Rollen
-- **Joi-Validierung** für alle Endpoints
-- **Einheitlicher Error-Contract**
-- **Rate-Limiting** und Security-Headers
+```
+projektseite/
+├── shared/           # 📦 Gemeinsame Types, Contracts & Utils
+│   ├── types/        # TypeScript Interfaces & Enums
+│   ├── contracts/    # API Contracts & Validation (Zod)
+│   └── utils/        # Shared Utility Functions
+├── server/           # 🖥️ Backend API (Node.js + Express + Prisma)
+│   ├── src/
+│   │   ├── controllers/  # HTTP Request/Response Handler
+│   │   ├── services/     # Business Logic Layer
+│   │   ├── repositories/ # Data Access Layer
+│   │   ├── middleware/   # Auth, Validation, Error Handling
+│   │   └── routes/       # API Route Definitions
+│   ├── prisma/       # Database Schema & Migrations
+│   └── tests/        # API & Integration Tests
+├── client/           # 🌐 Frontend App (React + TypeScript + Vite)
+│   ├── src/
+│   │   ├── components/   # UI Components (Atomic Design)
+│   │   ├── pages/        # Route Components
+│   │   ├── hooks/        # Custom React Hooks
+│   │   ├── contexts/     # React Context Providers
+│   │   └── utils/        # Frontend Utilities
+│   └── tests/        # UI & E2E Tests
+└── docs/             # 📚 Dokumentation & ADRs
+```
 
-### Frontend
-- **React 18** mit Vite
-- **TypeScript** für Type-Safety
-- **Tailwind CSS** für Styling
-- **React Query** für State-Management
-- **React Router** für Navigation
-- **Empty-State-Komponenten** für bessere UX
+## 🚀 Quick Start
 
-### Datenbank
-- **PostgreSQL 15** mit umfassendem Schema
-- **Automatische Triggers** für Fortschritts-Tracking
-- **Activity-Logs** für Audit-Trail
-- **Berechtigungs-System** mit Rollen
-- **Non-Destructive Migrations**
+### Voraussetzungen
 
-## 🔒 Sicherheit
+- **Node.js** ≥18.0.0
+- **PostgreSQL** ≥13.0
+- **npm** ≥8.0.0
 
-- **JWT-Token** mit Ablaufzeit
-- **Rate-Limiting** (1000 req/15min)
-- **CORS-Konfiguration**
-- **Helmet** Security-Headers
-- **Input-Validierung** mit Joi
-- **SQL-Injection-Schutz** mit Parameterized Queries
+### 1. Repository Klonen
 
-## 📚 Dokumentation
-
-Die vollständige Dokumentation ist in den folgenden Dateien aufgeteilt:
-
-### 🚀 Grundlagen
-- **[Features](dokumentation/features.md)** - Alle implementierten und geplanten Features
-- **[Versionsverlauf](dokumentation/versionsverlauf.md)** - Changelog und Versionshistorie
-- **[Technologie-Stack](dokumentation/technologie-stack.md)** - Verwendete Technologien und Frameworks
-- **[Projektstruktur](dokumentation/projektstruktur.md)** - Detaillierte Verzeichnisstruktur
-
-### 🛠️ Installation & Setup
-- **[Setup-Anweisungen](dokumentation/setup-anweisungen.md)** - Komplette Installationsanleitung
-- **[Feature Setup](FEATURE_SETUP.md)** - Task-Management Features einrichten
-- **[Wartung & Verwaltung](dokumentation/wartung-verwaltung.md)** - Wartung, Updates und Backups
-- **[Main Control System](dokumentation/main-control-system.md)** - Script-Verwaltung und Batch-Operationen
-
-### 🔧 Technische Details
-- **[API-Endpunkte](dokumentation/api-endpunkte.md)** - Vollständige API-Dokumentation
-- **[API-Features](dokumentation/api-features.md)** - Task-Management API-Dokumentation
-- **[Frontend-Komponenten](dokumentation/frontend-components.md)** - React-Komponenten-Dokumentation
-- **[Datenbank-Schema](dokumentation/datenbank-schema.md)** - Datenbankstruktur und Tabellen
-- **[Benutzerverwaltung](dokumentation/benutzerverwaltung.md)** - Rollen, Berechtigungen und Benutzer-API
-
-### 🔒 Sicherheit & Monitoring
-- **[Sicherheit](dokumentation/sicherheit.md)** - Sicherheitsmaßnahmen und Best Practices
-- **[Monitoring & Überwachung](dokumentation/monitoring-ueberwachung.md)** - Grafana, Prometheus und Logs
-
-### 🐛 Spezielle Systeme
-- **[Kommentar-System](dokumentation/kommentar-system.md)** - Installation und Troubleshooting
-- **[Entwicklung & Erweiterung](dokumentation/entwicklung-erweiterung.md)** - Entwicklungsumgebung und Erweiterungen
-- **[Risiken & Follow-Ups](RISKS_AND_FOLLOWUP.md)** - Risikobewertung und zukünftige Verbesserungen
-
-## 🚀 Schnellstart
-
-### 1. Server-Setup
 ```bash
 git clone https://github.com/dandulox/projektseite.git
 cd projektseite
-chmod +x scripts/setup-server.sh
-./scripts/setup-server.sh
-sudo reboot
 ```
 
-### 2. Container starten
-```bash
-cd /opt/projektseite
-chmod +x scripts/*.sh
-./scripts/start-docker.sh
-```
-
-### 3. Datenbank initialisieren
-```bash
-./scripts/init-database.sh
-```
-
-## 🌐 Verfügbare Services
-
-| Service | URL | Port | Beschreibung |
-|---------|-----|-------|--------------|
-| **Frontend (Admin)** | http://localhost:3000 | 3000 | React Admin-Interface |
-| **Backend API** | http://localhost:3001 | 3001 | Node.js/Express API |
-| **Grafana** | http://localhost:3002 | 3002 | Monitoring Dashboard |
-| **PostgreSQL** | localhost:5432 | 5432 | Datenbank |
-
-## 🔐 Standard-Zugangsdaten
-
-| Benutzername | Passwort | Rolle | Beschreibung |
-|--------------|----------|-------|--------------|
-| **admin** | **admin** | Administrator | Vollzugriff auf alle Funktionen |
-| **user** | **user123** | Benutzer | Standard-Benutzerzugriff |
-
-**Wichtiger Hinweis:** Ändern Sie diese Standard-Passwörter nach der ersten Anmeldung!
-
-## 🎮 Main Control System
-
-Für einfache Verwaltung verwenden Sie das Main Control System:
+### 2. Dependencies Installieren
 
 ```bash
-sudo ./scripts/main-control.sh
+# Shared Dependencies
+cd shared && npm install
+
+# Backend Dependencies
+cd ../server && npm install
+
+# Frontend Dependencies
+cd ../client && npm install
 ```
 
-Dies bietet ein interaktives Menü für:
-- Script-Ausführung
-- Batch-Operationen
-- System-Status
-- Wartung und Updates
+### 3. Umgebungsvariablen Konfigurieren
 
-## 📊 Hauptfeatures
+```bash
+# Backend Konfiguration
+cp server/env.example server/.env
 
-### 🔐 Authentifizierung & Benutzerverwaltung
-- **Vollständiges Authentifizierungssystem** mit JWT und bcrypt
-- **Benutzerverwaltung** mit Rollen (Admin, User, Viewer)
-- **Team-Management** mit Rollen und Berechtigungen
-- **Sichere API-Endpunkte** mit Rate-Limiting und Validierung
+# Frontend Konfiguration (falls nötig)
+cp client/.env.example client/.env
+```
 
-### 📁 Projekt- & Task-Management
-- **Projektverwaltung** mit CRUD-Operationen und Filterung
-- **Modulverwaltung** für Projekte mit eigenständigen Modulen
-- **Task-Management** mit Status-Tracking und Deadlines
-- **Kanban-Board** mit Drag & Drop-Funktionalität
-- **Meine Aufgaben** - Personalisierte Task-Übersicht
-- **Deadlines-Widget** - Übersicht kommender Fälligkeiten
+**Wichtige Umgebungsvariablen:**
+```bash
+# server/.env
+DATABASE_URL="postgresql://user:password@localhost:5432/projektseite"
+JWT_SECRET="your-super-secret-jwt-key"
+NODE_ENV="development"
+```
 
-### 🎨 Frontend & UX
-- **Design-System** mit Theme-Management und konsistenten CSS-Klassen
-- **Responsive Design** mit Mobile-First-Ansatz
-- **Flexible API-Konfiguration** für verschiedene Deployment-Umgebungen
-- **Datumsformatierung** - Automatische Konvertierung zwischen ISO und HTML-Formaten
-- **Error-Handling** mit benutzerfreundlichen Fehlermeldungen
+### 4. Datenbank Setup
 
-### 🔔 System-Features
-- **Benachrichtigungssystem** mit Echtzeit-Updates
-- **Fortschrittsverfolgung** mit visuellen Indikatoren
-- **Live-Edit-Funktionalität** für Dokumentation
-- **Monitoring & Logging** mit Grafana und Prometheus
+```bash
+cd server
 
-## 📋 Aktuelle Version
+# Prisma Client generieren
+npm run db:generate
 
-**Version 2.1.0 "Stabilisator"** - Siehe [Versionsverlauf](dokumentation/versionsverlauf.md) für detaillierte Changelog-Informationen.
+# Datenbank Migrationen ausführen
+npm run db:migrate
 
-### 🆕 Neueste Updates (v2.1.0)
-- **Task-Management-System** vollständig implementiert
-- **Kanban-Board** mit Drag & Drop-Funktionalität
-- **Meine Aufgaben** - Personalisierte Task-Übersicht
-- **Deadlines-Widget** - Dashboard-Integration
-- **API-Stabilität** - Rate-Limiting und Error-Handling verbessert
-- **Datumsformatierung** - Automatische Konvertierung für Formulare
-- **Enhanced Seed-Daten** - Realistische Test-Daten für alle Features
+# Optional: Prisma Studio öffnen
+npm run db:studio
+```
 
-## 🛠️ Technologie-Stack
+### 5. Entwicklungsserver Starten
 
-- **Backend**: Node.js 18.x, Express.js, PostgreSQL 15
-- **Frontend**: React 18, Tailwind CSS, Vite
-- **Infrastructure**: Docker, Ubuntu 24.04, Grafana, Prometheus
-- **Sicherheit**: JWT, bcrypt, UFW Firewall, Fail2ban
+```bash
+# Terminal 1: Backend starten
+cd server
+npm run dev
 
-## 📞 Support
+# Terminal 2: Frontend starten
+cd client
+npm run dev
+```
 
-Bei Problemen:
-1. **Logs prüfen**: `/var/log/projektseite/`
-2. **Container-Status**: `docker-compose ps`
-3. **Main Control**: `./scripts/main-control.sh` → Option 7
-4. **Dokumentation**: Siehe oben verlinkte Dokumentationsdateien
+🎉 **Die Anwendung ist verfügbar unter:**
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:3001/api
+- **Health Check**: http://localhost:3001/health
+- **API Dokumentation**: http://localhost:3001/api
 
-## 📄 Lizenz
+## 🎨 Features
 
-MIT License - Siehe LICENSE-Datei für Details.
+### 📊 Dashboard
+- **Projekt-Übersicht** mit Fortschrittsanzeigen
+- **Task-Statistiken** (Todo, In Progress, Completed, Overdue)
+- **Team-Aktivitäten** und Benachrichtigungen
+- **Deadline-Kalender** mit Fälligkeitserinnerungen
 
-## 🤝 Beitragen
+### 📋 Task Management
+- **Kanban Board** mit Drag & Drop
+- **My Tasks** - Persönliche Aufgabenliste
+- **Filter & Suche** nach Status, Priorität, Projekt
+- **Zeiterfassung** mit geschätzten vs. tatsächlichen Stunden
+- **Tags & Labels** für bessere Organisation
 
-1. Fork das Repository: https://github.com/dandulox/projektseite
-2. Erstelle einen Feature-Branch
-3. Committe deine Änderungen
-4. Push zum Branch
-5. Erstelle einen Pull Request
+### 🗂️ Projekt Management
+- **Projekt-Portfolio** mit Status-Tracking
+- **Team-Zuordnung** und Berechtigungen
+- **Milestone-Tracking** mit Zieldaten
+- **Fortschritts-Berechnung** basierend auf Tasks
+
+### 👥 Team Collaboration
+- **Team-Verwaltung** mit Rollen (Leader, Member, Viewer)
+- **Projekt-Freigaben** (Private, Team, Public)
+- **Aktivitäts-Feed** für Transparenz
+- **Benachrichtigungssystem** für wichtige Updates
+
+### ⚙️ Admin Features
+- **System-Überwachung** (Health Checks, DB Status)
+- **Benutzer-Verwaltung** mit Rollenzuweisung
+- **API-Debugging** für Entwickler
+- **System-Metriken** und Logs
+
+## 🧪 Testing
+
+### Test-Strategie
+
+Das System implementiert eine umfassende Test-Strategie mit **≥70% Code Coverage**:
+
+```bash
+# Alle Tests ausführen
+npm run test
+
+# Mit Coverage Report
+npm run test:coverage
+
+# Tests in Watch-Modus
+npm run test:watch
+
+# Spezifische Test-Suites
+npm run test:api         # API Integration Tests
+npm run test:unit        # Unit Tests
+npm run test:e2e         # End-to-End Tests
+```
+
+### Test-Kategorien
+
+1. **API Tests** (`server/tests/api/`)
+   - Endpoint-Testing mit Supertest
+   - Authentifizierung & Autorisierung
+   - Input-Validierung & Error-Handling
+   - Empty-State-Verhalten
+
+2. **Unit Tests** (`server/tests/unit/`)
+   - Service-Layer Business Logic
+   - Repository Data Access
+   - Utility Functions
+
+3. **Frontend Tests** (`client/tests/`)
+   - Component Rendering Tests
+   - User Interaction Testing
+   - Hook Testing
+
+4. **E2E Tests** (`client/tests/e2e/`)
+   - User Journey Testing
+   - Cross-Browser Compatibility
+   - Performance Testing
+
+### Test-Prinzipien
+
+- **🚫 Keine Demo-Daten**: Tests verwenden ephemere Fixtures
+- **🔄 Isolation**: Jeder Test läuft isoliert mit Cleanup
+- **📊 Coverage**: Mindestens 70% Abdeckung für Kernmodule
+- **⚡ Performance**: Tests laufen unter 30 Sekunden
+
+## 🛡️ Sicherheit
+
+### Implementierte Sicherheitsmaßnahmen
+
+- **🔐 JWT Authentication** mit sicheren Token-Policies
+- **🛡️ Input Validation** mit Zod-Schemas für alle Endpunkte
+- **⚡ Rate Limiting** (100 Requests/15min für Auth/Admin)
+- **🔒 Helmet Security Headers** (CSP, XSS Protection)
+- **🌐 CORS Least-Privilege** Policy
+- **🧹 SQL Injection Protection** durch Prisma ORM
+- **📝 Structured Logging** ohne sensible Daten
+
+### Security Headers
+
+```typescript
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+}));
+```
+
+## 📈 Performance
+
+### Optimierungen
+
+- **⚡ API Response Times**: p95 < 250ms (ohne Caching)
+- **🎯 Largest Contentful Paint**: < 2.5s
+- **📄 Pagination**: Alle Listen mit Pagination
+- **🗄️ Database Indexing**: Optimierte Indizes für häufige Queries
+- **🔄 Connection Pooling**: Efficient DB-Verbindungsmanagement
+- **📦 Bundle Optimization**: Code Splitting & Tree Shaking
+
+### Monitoring
+
+```bash
+# Performance Monitoring
+npm run test:performance
+
+# Bundle Analyzer
+npm run analyze
+
+# Lighthouse CI
+npm run lighthouse
+```
+
+## 📚 API Dokumentation
+
+### OpenAPI Spezifikation
+
+Die vollständige API-Dokumentation ist verfügbar unter:
+- **Entwicklung**: http://localhost:3001/api
+- **OpenAPI Spec**: `docs/api/openapi.yaml`
+
+### Wichtige Endpunkte
+
+```bash
+# Health Check
+GET /health
+
+# Authentication
+POST /api/auth/login
+POST /api/auth/refresh
+
+# Tasks
+GET    /api/tasks/my-tasks
+POST   /api/tasks
+PATCH  /api/tasks/:id
+DELETE /api/tasks/:id
+
+# Projects
+GET    /api/projects/my-projects
+POST   /api/projects
+PATCH  /api/projects/:id
+
+# Admin
+GET /api/admin/health
+GET /api/admin/db/status
+```
+
+### Response Format
+
+Alle API-Responses folgen dem einheitlichen Contract:
+
+```typescript
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: {
+    code: string;
+    message: string;
+    details?: any;
+  };
+  meta: {
+    timestamp: string;
+    requestId: string;
+    pagination?: PaginationMeta;
+  };
+}
+```
+
+## 🔧 Entwicklung
+
+### Projekt Setup
+
+```bash
+# Shared Module bauen
+cd shared && npm run build
+
+# Backend entwickeln
+cd server && npm run dev
+
+# Frontend entwickeln
+cd client && npm run dev
+
+# Type-Checking
+npm run type-check
+
+# Linting
+npm run lint && npm run lint:fix
+```
+
+### Code-Qualität
+
+```bash
+# Pre-Commit Hooks
+npm run precommit
+
+# Umfasst:
+# - ESLint (Code Quality)
+# - Prettier (Code Formatting)
+# - TypeScript (Type Checking)
+# - Tests (funktionale Qualität)
+```
+
+### Database Development
+
+```bash
+# Schema ändern
+# 1. Bearbeite prisma/schema.prisma
+# 2. Migration erstellen
+npm run db:migrate
+
+# Database zurücksetzen (Entwicklung)
+npm run db:migrate:rollback
+
+# Prisma Studio öffnen
+npm run db:studio
+```
+
+## 🚢 Deployment
+
+### Production Build
+
+```bash
+# Shared Module bauen
+cd shared && npm run build
+
+# Backend bauen
+cd server && npm run build
+
+# Frontend bauen
+cd client && npm run build
+```
+
+### Docker Deployment
+
+```bash
+# Mit Docker Compose
+docker-compose -f docker/docker-compose.yml up -d
+
+# Oder einzeln
+docker build -t projektseite-server ./server
+docker build -t projektseite-client ./client
+```
+
+### Umgebungsvariablen (Production)
+
+```bash
+NODE_ENV=production
+DATABASE_URL="postgresql://..."
+JWT_SECRET="secure-production-secret"
+FRONTEND_URL="https://your-domain.com"
+```
+
+## 📖 Dokumentation
+
+### Architectural Decision Records (ADRs)
+
+- **[ADR-001](docs/ADRs/ADR-001-error-contract.md)**: Einheitliches Error-Contract
+- **[ADR-002](docs/ADRs/ADR-002-prisma-orm.md)**: Migration zu Prisma ORM
+- **[ADR-003](docs/ADRs/ADR-003-no-seeds-policy.md)**: Keine Demo-Daten im Produktivzweig
+
+### Weitere Dokumentation
+
+- **[Versionsverlauf](dokumentation/versionsverlauf.md)**: Alle Änderungen und Updates
+- **[Setup-Anweisungen](dokumentation/setup-anweisungen.md)**: Detaillierte Installation
+- **[API-Endpunkte](dokumentation/api-endpunkte.md)**: Vollständige API-Referenz
+- **[Datenbank-Schema](dokumentation/datenbank-schema.md)**: DB-Struktur und Beziehungen
+
+## 🐛 Troubleshooting
+
+### Häufige Probleme
+
+**Database Connection Fehler:**
+```bash
+# PostgreSQL Service starten
+sudo systemctl start postgresql
+
+# Verbindung testen
+psql -h localhost -U your_user -d projektseite
+```
+
+**Port bereits in Verwendung:**
+```bash
+# Prozess finden und beenden
+lsof -ti:3001 | xargs kill -9
+```
+
+**Prisma Client Fehler:**
+```bash
+# Prisma Client neu generieren
+npm run db:generate
+
+# Cache leeren
+rm -rf node_modules/.prisma
+```
+
+### Logging & Debugging
+
+```bash
+# Debug-Modus aktivieren
+NODE_ENV=development DEBUG=projektseite:* npm run dev
+
+# Logs anzeigen
+tail -f logs/combined.log
+
+# Error-Logs anzeigen
+tail -f logs/error.log
+```
+
+## 🤝 Contributing
+
+### Development Workflow
+
+1. **Fork** das Repository
+2. **Branch** erstellen (`git checkout -b feature/amazing-feature`)
+3. **Commit** Änderungen (`git commit -m 'Add amazing feature'`)
+4. **Push** zum Branch (`git push origin feature/amazing-feature`)
+5. **Pull Request** erstellen
+
+### Code Standards
+
+- **TypeScript Strict Mode** aktiviert
+- **ESLint + Prettier** für Code-Qualität
+- **Conventional Commits** für Commit-Messages
+- **Tests** für alle neuen Features
+- **Documentation** für API-Änderungen
+
+### Commit-Konventionen
+
+```bash
+feat: neue Funktion hinzufügen
+fix: Fehler beheben
+docs: Dokumentation ändern
+style: Code-Formatierung (ohne Funktionsänderung)
+refactor: Code-Refactoring
+test: Tests hinzufügen oder ändern
+chore: Build-Prozess oder Hilfswerkzeuge
+```
+
+## 📝 Lizenz
+
+Dieses Projekt ist unter der **MIT-Lizenz** lizenziert. Siehe [LICENSE](LICENSE) für Details.
+
+## 🙏 Danksagungen
+
+- **Team Projektseite** für die kontinuierliche Entwicklung
+- **Open Source Community** für die verwendeten Libraries
+- **Contributors** für Feedback und Verbesserungen
 
 ---
 
-**Hinweis**: Diese README bietet einen Überblick. Für detaillierte Informationen siehe die verlinkten Dokumentationsdateien im `dokumentation/` Ordner.
+**Projektseite v3.0** - Built with ❤️ using TypeScript, React, Node.js and PostgreSQL
+
+⭐ **Star uns auf GitHub** wenn dieses Projekt hilfreich ist!

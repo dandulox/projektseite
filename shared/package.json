@@ -1,0 +1,42 @@
+{
+  "name": "@projektseite/shared",
+  "version": "3.0.0",
+  "description": "Shared types, contracts and utilities for Projektseite",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^20.10.5"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist/**/*",
+    "src/**/*",
+    "*.ts"
+  ],
+  "keywords": [
+    "typescript",
+    "shared",
+    "validation",
+    "contracts",
+    "utilities"
+  ],
+  "author": "Projektseite Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dandulox/projektseite.git",
+    "directory": "shared"
+  }
+}
