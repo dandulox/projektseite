@@ -17,9 +17,9 @@ import { validateContentType, validateRequestSize } from '@/middleware/validatio
 // Import routes
 import { taskRoutes } from '@/routes/task.routes';
 import { projectRoutes } from '@/routes/project.routes';
+import { authRoutes } from '@/routes/auth.routes';
+import { adminRoutes } from '@/routes/admin.routes';
 // import { userRoutes } from '@/routes/user.routes';
-// import { authRoutes } from '@/routes/auth.routes';
-// import { adminRoutes } from '@/routes/admin.routes';
 
 // Import database
 import { prisma, checkDatabaseHealth } from '@/config/database';
@@ -110,11 +110,11 @@ app.get('/health', async (req, res) => {
 });
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/admin', adminRoutes);
 // app.use('/api/users', userRoutes);
-// app.use('/api/auth', authRoutes);
-// app.use('/api/admin', adminRoutes);
 
 // API Info
 app.get('/api', (req, res) => {

@@ -1,0 +1,171 @@
+# Docker Compose für Development
+# Erweiterte Konfiguration für lokale Entwicklung
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database (Development)
+  postgres-dev:
+    image: postgres:15-alpine
+    container_name: projektseite-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: projektseite_dev
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev_password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - projektseite-dev-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d projektseite_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (Development)
+  redis-dev:
+    image: redis:7-alpine
+    container_name: projektseite-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - projektseite-dev-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API (Development)
+  backend-dev:
+    build:
+      context: ../server
+      dockerfile: Dockerfile.dev
+    container_name: projektseite-backend-dev
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://dev:dev_password@postgres-dev:5432/projektseite_dev?schema=public
+      JWT_SECRET: dev-jwt-secret-key
+      JWT_EXPIRES_IN: 24h
+      REDIS_URL: redis://redis-dev:6379
+      FRONTEND_URL: http://localhost:3000
+      LOG_LEVEL: debug
+    ports:
+      - "3001:3001"
+    volumes:
+      - ../server:/app
+      - /app/node_modules
+      - backend_dev_logs:/app/logs
+      - backend_dev_uploads:/app/uploads
+    depends_on:
+      postgres-dev:
+        condition: service_healthy
+      redis-dev:
+        condition: service_healthy
+    networks:
+      - projektseite-dev-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: npm run dev
+
+  # Frontend App (Development)
+  frontend-dev:
+    build:
+      context: ../client
+      dockerfile: Dockerfile.dev
+    container_name: projektseite-frontend-dev
+    restart: unless-stopped
+    environment:
+      REACT_APP_API_URL: http://localhost:3001/api
+      REACT_APP_ENVIRONMENT: development
+      CHOKIDAR_USEPOLLING: true
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../client:/app
+      - /app/node_modules
+    depends_on:
+      - backend-dev
+    networks:
+      - projektseite-dev-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: npm run dev
+
+  # Database Admin - pgAdmin
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: projektseite-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@projektseite.de
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres-dev
+    networks:
+      - projektseite-dev-network
+
+  # Redis Admin - Redis Commander
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: projektseite-redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis-dev:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis-dev
+    networks:
+      - projektseite-dev-network
+
+  # Mailhog (für E-Mail Testing)
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: projektseite-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - projektseite-dev-network
+
+volumes:
+  postgres_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local
+  backend_dev_logs:
+    driver: local
+  backend_dev_uploads:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  projektseite-dev-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
