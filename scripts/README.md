@@ -1,141 +1,275 @@
-# Scripts Verzeichnis
+# 📜 Scripts Documentation - Projektseite v3.0
 
-Dieses Verzeichnis enthält alle Verwaltungsscripts für die Projektseite.
+> **Vollständige Dokumentation aller Installations- und Validierungsscripts**
 
-## Struktur
+## 📋 Übersicht
+
+Die Scripts in diesem Verzeichnis automatisieren die Installation, Validierung und den Start der Projektseite v3.0 Architektur.
+
+## 🚀 Quick Start Scripts
+
+### `quick-start.ps1` / `quick-start.sh`
+
+**Zweck**: Schneller Start für Development mit minimaler Konfiguration
+
+**Features**:
+- Automatische Dependency-Installation
+- Environment-Setup
+- Docker-Services starten
+- Datenbank-Migration und Seeding
+- Development-Server starten
+
+**Verwendung**:
+```powershell
+# Windows
+.\scripts\quick-start.ps1
+
+# Linux/macOS
+./scripts/quick-start.sh
+```
+
+**Parameter**:
+- `-SkipValidation`: Überspringt Struktur-Validierung
+- `-SkipDocker`: Startet keine Docker-Services
+
+## 🛠️ Installation Scripts
+
+### `install-v3.ps1` / `install-v3.sh`
+
+**Zweck**: Vollständige Installation und Validierung der v3.0 Architektur
+
+**Features**:
+- Prerequisites-Check
+- Projektstruktur-Validierung
+- Vollständige Dependency-Installation
+- Build-Prozess
+- Test-Ausführung
+- Installation-Validierung
+
+**Verwendung**:
+```powershell
+# Windows
+.\scripts\install-v3.ps1 -Environment development
+
+# Linux/macOS
+./scripts/install-v3.sh development
+```
+
+**Parameter**:
+- `Environment`: development | staging | production
+- `-SkipTests`: Überspringt Test-Ausführung
+- `-SkipDocker`: Überspringt Docker-Setup
+- `-Force`: Fortsetzen trotz Fehlern
+
+## 🔍 Validation Scripts
+
+### `validate-v3.ps1` / `validate-v3.sh`
+
+**Zweck**: Architektur-Validierung und Qualitätsprüfung
+
+**Features**:
+- Projektstruktur-Validierung
+- Package.json-Validierung
+- TypeScript-Konfiguration
+- Docker-Konfiguration
+- Prisma-Schema-Validierung
+- API-Struktur-Validierung
+- Shared-Contracts-Validierung
+- Dokumentation-Validierung
+- Build-Prozess-Test
+- Datenbank-Schema-Validierung
+
+**Verwendung**:
+```powershell
+# Windows
+.\scripts\validate-v3.ps1
+
+# Linux/macOS
+./scripts/validate-v3.sh
+```
+
+**Parameter**:
+- `-Quick`: Überspringt Build-Tests
+- `-Verbose`: Detaillierte Ausgabe
+
+## 📊 Script-Features
+
+### Automatische Validierung
+
+Alle Scripts führen automatische Validierungen durch:
+
+- **Prerequisites-Check**: Node.js, npm, Docker
+- **Struktur-Validierung**: Verzeichnisse und Dateien
+- **Konfiguration-Validierung**: package.json, tsconfig.json
+- **Build-Validierung**: Kompilierung und Tests
+
+### Error Handling
+
+- **Graceful Failures**: Scripts stoppen bei kritischen Fehlern
+- **Detailed Logging**: Farbige Ausgabe mit Status-Indikatoren
+- **Recovery Options**: `-Force` Flag für Fortsetzung trotz Fehlern
+
+### Cross-Platform Support
+
+- **Windows**: PowerShell-Scripts (.ps1)
+- **Linux/macOS**: Bash-Scripts (.sh)
+- **Docker**: Plattform-unabhängige Container
+
+## 🎯 Verwendungs-Szenarien
+
+### Development Setup
+
+```powershell
+# Schneller Start für neue Entwickler
+.\scripts\quick-start.ps1
+```
+
+### CI/CD Pipeline
+
+```powershell
+# Vollständige Installation für CI
+.\scripts\install-v3.ps1 -Environment production -SkipDocker
+```
+
+### Architektur-Validierung
+
+```powershell
+# Validierung vor Deployment
+.\scripts\validate-v3.ps1 -Verbose
+```
+
+### Troubleshooting
+
+```powershell
+# Validierung bei Problemen
+.\scripts\validate-v3.ps1 -Quick
+```
+
+## 📈 Validierungs-Report
+
+Das Validierungsscript generiert einen detaillierten Report:
 
 ```
-scripts/
-├── README.md                    # Diese Datei
-├── functions/                   # Hilfsfunktionen für Scripts
-│   └── set-permissions.sh      # Berechtigungs-Management
-├── patches/                     # Patch-Scripts für Systemupdates
-│   ├── README.md               # Patch-Scripts Dokumentation
-│   ├── patch-manager.sh        # Patch-Management-Tool
-│   └── install-activity-log.sh # Aktivitätslog-System Installation
-├── batches/                     # Batch-Dateien für automatisierte Tasks
-├── [Hauptscripts...]           # Systemverwaltungsscripts
-└── README-WIPE.md              # Wichtige Warnung vor Löschvorgängen
+================================================
+  Validation Report
+================================================
+
+Total Tests: 45
+Passed: 42
+Failed: 1
+Warnings: 2
+
+Success Rate: 93.33%
+
+✅ All critical tests passed! Architecture is valid.
 ```
 
-## Hauptscripts
+### Test-Kategorien
 
-### Systemverwaltung
-- `main-control.sh` - Hauptsteuerungsscript
-- `launcher.sh` - Systemstarter
-- `setup-server.sh` - Server-Initialisierung
-- `update-system.sh` - Systemupdates
+1. **Project Structure** (8 Tests)
+   - Verzeichnis-Existenz
+   - Datei-Existenz
+   - Struktur-Validierung
 
-### Datenbank
-- `db-patch.sh` - Datenbank-Patches
-- `update-versions-schema.sh` - Versionsschema-Updates
-- `fix-versions-table.sh` - Versions-Tabellen-Reparatur
+2. **Package Configuration** (12 Tests)
+   - package.json-Validierung
+   - Scripts-Validierung
+   - Dependencies-Check
 
-### Wartung
-- `backup-system.sh` - System-Backup
-- `restore-system.sh` - System-Wiederherstellung
-- `clean-system.sh` - System-Bereinigung
-- `selective-clean.sh` - Selektive Bereinigung
+3. **TypeScript Configuration** (9 Tests)
+   - tsconfig.json-Validierung
+   - Compiler-Options
+   - Path-Mapping
 
-### Docker
-- `start-docker.sh` - Docker-Container starten
-- `debug-build.sh` - Debug-Build
+4. **Docker Configuration** (8 Tests)
+   - Dockerfile-Existenz
+   - Compose-Services
+   - Container-Konfiguration
 
-### Benutzerverwaltung
-- `create-admin-user.sh` - Admin-Benutzer erstellen
+5. **Database Schema** (6 Tests)
+   - Prisma-Schema
+   - Migrationen
+   - Seed-Dateien
 
-### Monitoring
-- `check-logs.sh` - Log-Überprüfung
-- `test-connection.sh` - Verbindungstest
+6. **API Structure** (16 Tests)
+   - Controller-Validierung
+   - Service-Validierung
+   - Repository-Validierung
+   - Route-Validierung
 
-## Hilfsfunktionen
+7. **Shared Contracts** (8 Tests)
+   - Error-Contracts
+   - Validation-Schemas
+   - Type-Definitionen
+   - Utility-Functions
 
-### Berechtigungs-Management
+8. **Documentation** (6 Tests)
+   - README-Validierung
+   - API-Dokumentation
+   - ADR-Validierung
+
+9. **Build Process** (3 Tests)
+   - Shared-Build
+   - Server-Build
+   - Client-Build
+
+## 🔧 Troubleshooting
+
+### Häufige Probleme
+
+#### Node.js Version
 ```bash
-# Setze Berechtigungen für alle Scripts
-./scripts/functions/set-permissions.sh set
-
-# Prüfe und repariere Berechtigungen
-./scripts/functions/set-permissions.sh check
-
-# Zeige Status aller Scripts
-./scripts/functions/set-permissions.sh status
+# Problem: Node.js Version zu alt
+# Lösung: Node.js 18+ installieren
+node --version  # Sollte 18+ sein
 ```
 
-## Patch-Scripts
-
-**Wichtiger Hinweis**: Patch-Scripts befinden sich im `patches/` Unterverzeichnis.
-
-### Patch-Manager verwenden (Empfohlen)
+#### Docker nicht verfügbar
 ```bash
-# Alle verfügbaren Patches anzeigen
-./scripts/patches/patch-manager.sh list
-
-# Patch installieren
-./scripts/patches/patch-manager.sh install activity-log
+# Problem: Docker nicht installiert
+# Lösung: Docker installieren oder -SkipDocker verwenden
+.\scripts\quick-start.ps1 -SkipDocker
 ```
 
-### Direkte Installation
+#### Ports belegt
 ```bash
-# Aktivitätslog-System direkt installieren
-./scripts/patches/install-activity-log.sh
+# Problem: Ports 3000, 3001, 5432 belegt
+# Lösung: Andere Services stoppen oder Ports ändern
+netstat -ano | findstr :3000
 ```
 
-Weitere Informationen zu Patch-Scripts finden Sie in `patches/README.md`.
-
-## Batch-System
-
-Das Batch-System ermöglicht die Ausführung mehrerer Scripts in Folge:
-
+#### Dependencies-Fehler
 ```bash
-./scripts/batch-runner.sh [batch-name]
+# Problem: npm install Fehler
+# Lösung: Cache leeren und neu installieren
+npm cache clean --force
+rm -rf node_modules package-lock.json
+npm install
 ```
 
-Verfügbare Batches:
-- `backup` - Backup-Prozess
-- `install` - Installationsprozess
-- `maintenance` - Wartungsprozess
-- `update` - Update-Prozess
+### Debug-Modus
 
-## Sicherheitshinweise
-
-⚠️ **WICHTIG**: Lesen Sie `README-WIPE.md` bevor Sie Löschvorgänge durchführen!
-
-- Alle Scripts erstellen automatisch Backups
-- Prüfen Sie die Auswirkungen vor der Ausführung
-- Testen Sie in einer Entwicklungsumgebung
-- Dokumentieren Sie alle Änderungen
-
-## Verwendung
-
-### Script ausführbar machen
-```bash
-chmod +x scripts/[script-name].sh
+```powershell
+# Detaillierte Ausgabe für Debugging
+.\scripts\validate-v3.ps1 -Verbose
 ```
 
-### Script ausführen
-```bash
-./scripts/[script-name].sh
+### Force-Modus
+
+```powershell
+# Fortsetzen trotz Fehlern
+.\scripts\install-v3.ps1 -Force
 ```
 
-### Mit Logging
-```bash
-./scripts/[script-name].sh 2>&1 | tee logs/[script-name].log
-```
+## 📚 Weitere Dokumentation
 
-## Fehlerbehebung
+- [API Documentation](../docs/API.md)
+- [Deployment Guide](../docs/DEPLOYMENT.md)
+- [Architecture Overview](../docs/ARCHITECTURE.md)
+- [Main README](../README.md)
 
-1. Prüfen Sie die Logs in `logs/`
-2. Überprüfen Sie die Berechtigungen
-3. Stellen Sie sicher, dass alle Abhängigkeiten installiert sind
-4. Konsultieren Sie die spezifische Dokumentation für das Script
+---
 
-## Entwicklung
+**Projektseite v3.0** - Scripts Documentation
 
-Bei der Entwicklung neuer Scripts:
-
-1. Folgen Sie den bestehenden Konventionen
-2. Fügen Sie ausführliche Kommentare hinzu
-3. Implementieren Sie Fehlerbehandlung
-4. Erstellen Sie entsprechende Tests
-5. Aktualisieren Sie diese Dokumentation
+🔄 **Script-Updates**: Scripts werden kontinuierlich verbessert basierend auf Feedback und neuen Anforderungen.

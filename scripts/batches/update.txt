@@ -1,9 +1,0 @@
-# Projektseite Batch: update
-# Erstellt: $(date)
-# Beschreibung: System-Update
-
-stop
-update
-patch
-start
-test

@@ -1,188 +1,130 @@
-// Error Handler Middleware
+// Error Handler Middleware - Centralized error handling
 import { Request, Response, NextFunction } from 'express';
-import { 
-  ApiResponseFactory, 
-  ApiErrorFactory, 
-  ERROR_CODES,
-  type ApiResponse 
-} from '@shared/contracts/error';
-import { logger, errorLogger } from '@/utils/logger';
-import { stringUtils } from '@shared/utils';
+import { ZodError } from 'zod';
+import { ApiResponseFactory, ERROR_CODES } from '@shared/contracts/error';
+import { logger } from '@/utils/logger';
 
-// Custom Error Class
-export class AppError extends Error {
-  public readonly statusCode: number;
-  public readonly code: string;
-  public readonly isOperational: boolean;
+// Custom Error Classes
+export class ApiError extends Error {
+  public statusCode: number;
+  public errorCode: string;
+  public details?: any;
 
-  constructor(
-    message: string,
-    statusCode: number = 500,
-    code: string = ERROR_CODES.INTERNAL_ERROR,
-    isOperational: boolean = true
-  ) {
+  constructor(statusCode: number, errorCode: string, message: string, details?: any) {
     super(message);
     this.statusCode = statusCode;
-    this.code = code;
-    this.isOperational = isOperational;
-
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
-
-// Validation Error Class
-export class ValidationError extends AppError {
-  public readonly field?: string;
-  public readonly details?: any;
-
-  constructor(message: string, field?: string, details?: any) {
-    super(message, 400, ERROR_CODES.VALIDATION_ERROR);
-    this.field = field;
+    this.errorCode = errorCode;
     this.details = details;
+    Object.setPrototypeOf(this, ApiError.prototype);
   }
 }
 
-// Not Found Error Class
-export class NotFoundError extends AppError {
+export class NotFoundError extends ApiError {
   constructor(resource: string, id?: string) {
-    super(`${resource}${id ? ` mit ID ${id}` : ''} nicht gefunden`, 404, ERROR_CODES.NOT_FOUND);
+    super(404, ERROR_CODES.NOT_FOUND, `${resource} not found${id ? ` with ID: ${id}` : ''}`);
   }
 }
 
-// Unauthorized Error Class
-export class UnauthorizedError extends AppError {
-  constructor(message: string = 'Nicht autorisiert') {
-    super(message, 401, ERROR_CODES.UNAUTHORIZED);
+export class UnauthorizedError extends ApiError {
+  constructor(message: string = 'Authentication required') {
+    super(401, ERROR_CODES.UNAUTHORIZED, message);
   }
 }
 
-// Forbidden Error Class
-export class ForbiddenError extends AppError {
-  constructor(message: string = 'Zugriff verweigert') {
-    super(message, 403, ERROR_CODES.FORBIDDEN);
+export class ForbiddenError extends ApiError {
+  constructor(message: string = 'Access denied') {
+    super(403, ERROR_CODES.FORBIDDEN, message);
   }
 }
 
-// Conflict Error Class
-export class ConflictError extends AppError {
-  constructor(message: string, details?: any) {
-    super(message, 409, ERROR_CODES.CONFLICT);
+export class ValidationError extends ApiError {
+  constructor(message: string = 'Validation failed', details?: any) {
+    super(422, ERROR_CODES.VALIDATION_ERROR, message, details);
   }
 }
 
-// Rate Limit Error Class
-export class RateLimitError extends AppError {
-  constructor(retryAfter?: number) {
-    super('Zu viele Anfragen. Bitte warten Sie einen Moment.', 429, ERROR_CODES.RATE_LIMIT_EXCEEDED);
+export class ConflictError extends ApiError {
+  constructor(message: string = 'Resource conflict') {
+    super(409, ERROR_CODES.CONFLICT, message);
   }
 }
 
-// Error Handler Middleware
-export const errorHandler = (
-  error: Error | AppError,
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void => {
-  const requestId = req.headers['x-request-id'] as string || stringUtils.generateRequestId();
-  
-  // Log Error
-  errorLogger(error, req);
-  
-  let statusCode = 500;
-  let apiError = ApiErrorFactory.internalError();
-  
-  // Handle Different Error Types
-  if (error instanceof AppError) {
-    statusCode = error.statusCode;
-    apiError = {
-      code: error.code,
-      message: error.message,
-      field: error instanceof ValidationError ? error.field : undefined,
-      details: error instanceof ValidationError ? error.details : undefined,
-    };
-  } else if (error.name === 'ValidationError') {
-    // Zod Validation Error
-    statusCode = 400;
-    apiError = ApiErrorFactory.validationError(
-      'Validierungsfehler',
-      undefined,
-      { originalError: error.message }
-    );
-  } else if (error.name === 'PrismaClientKnownRequestError') {
-    // Prisma Database Error
-    statusCode = 400;
-    apiError = ApiErrorFactory.internalError('Datenbankfehler');
-  } else if (error.name === 'JsonWebTokenError') {
-    // JWT Error
-    statusCode = 401;
-    apiError = ApiErrorFactory.unauthorized('Ungültiger Token');
-  } else if (error.name === 'TokenExpiredError') {
-    // JWT Expired
-    statusCode = 401;
-    apiError = ApiErrorFactory.unauthorized('Token abgelaufen');
-  } else if (error.name === 'MulterError') {
-    // File Upload Error
-    statusCode = 400;
-    apiError = ApiErrorFactory.validationError('Datei-Upload-Fehler');
+export class BadRequestError extends ApiError {
+  constructor(message: string = 'Bad request') {
+    super(400, ERROR_CODES.BAD_REQUEST, message);
   }
-  
-  // Create Error Response
-  const response: ApiResponse = ApiResponseFactory.error(apiError, {
-    requestId,
-  });
-  
-  // Add stack trace in development
-  if (process.env.NODE_ENV === 'development') {
-    response.error!.details = {
-      ...response.error!.details,
-      stack: error.stack,
-    };
-  }
-  
-  res.status(statusCode).json(response);
-};
+}
 
-// 404 Handler
-export const notFoundHandler = (req: Request, res: Response): void => {
-  const requestId = req.headers['x-request-id'] as string || stringUtils.generateRequestId();
-  
-  const response: ApiResponse = ApiResponseFactory.error(
-    ApiErrorFactory.notFound('Route', req.path),
-    { requestId }
-  );
-  
-  res.status(404).json(response);
-};
-
-// Async Error Wrapper
+// Async Handler Wrapper
 export const asyncHandler = (fn: Function) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 };
 
-// Error Factory Functions
-export const createValidationError = (message: string, field?: string, details?: any) => {
-  return new ValidationError(message, field, details);
+// Centralized Error Handling Middleware
+export const errorHandler = (
+  err: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  let statusCode = 500;
+  let errorResponse = {
+    code: ERROR_CODES.UNKNOWN_ERROR,
+    message: 'An unexpected error occurred',
+  };
+
+  if (err instanceof ApiError) {
+    statusCode = err.statusCode;
+    errorResponse = {
+      code: err.errorCode,
+      message: err.message,
+      details: err.details,
+    };
+  } else if (err instanceof ZodError) {
+    statusCode = 422;
+    errorResponse = {
+      code: ERROR_CODES.VALIDATION_ERROR,
+      message: 'Validation failed',
+      details: err.errors.map(issue => ({
+        path: issue.path.join('.'),
+        message: issue.message,
+      })),
+    };
+  } else {
+    // Log unexpected errors
+    logger.error('Unhandled error', {
+      error: err.message,
+      stack: err.stack,
+      path: req.path,
+      method: req.method,
+      body: req.body,
+      query: req.query,
+      params: req.params,
+    });
+  }
+
+  res.status(statusCode).json(
+    ApiResponseFactory.error(
+      errorResponse.code as any,
+      errorResponse.message,
+      errorResponse.details,
+      statusCode,
+      { requestId: req.headers['x-request-id'] as string || 'N/A' }
+    )
+  );
 };
 
-export const createNotFoundError = (resource: string, id?: string) => {
-  return new NotFoundError(resource, id);
-};
-
-export const createUnauthorizedError = (message?: string) => {
-  return new UnauthorizedError(message);
-};
-
-export const createForbiddenError = (message?: string) => {
-  return new ForbiddenError(message);
-};
-
-export const createConflictError = (message: string, details?: any) => {
-  return new ConflictError(message, details);
-};
-
-export const createRateLimitError = (retryAfter?: number) => {
-  return new RateLimitError(retryAfter);
+// 404 Not Found Handler
+export const notFoundHandler = (req: Request, res: Response) => {
+  res.status(404).json(
+    ApiResponseFactory.error(
+      ERROR_CODES.NOT_FOUND,
+      `Route ${req.originalUrl} not found`,
+      undefined,
+      404,
+      { requestId: req.headers['x-request-id'] as string || 'N/A' }
+    )
+  );
 };

@@ -58,24 +58,46 @@ projektseite/
 - **PostgreSQL** ≥13.0
 - **npm** ≥8.0.0
 
-### 1. Repository Klonen
+### Installation
 
-```bash
-git clone https://github.com/dandulox/projektseite.git
-cd projektseite
+#### Option 1: Quick Start (Empfohlen)
+```powershell
+# Windows PowerShell
+.\scripts\quick-start.ps1
+
+# Linux/macOS
+./scripts/quick-start.sh
 ```
 
-### 2. Dependencies Installieren
+#### Option 2: Vollständige Installation
+```powershell
+# Windows PowerShell
+.\scripts\install-v3.ps1
 
+# Linux/macOS
+./scripts/install-v3.sh
+```
+
+#### Option 3: Manuelles Setup
 ```bash
-# Shared Dependencies
-cd shared && npm install
+# 1. Repository klonen
+git clone https://github.com/dandulox/projektseite.git
+cd projektseite
 
-# Backend Dependencies
+# 2. Dependencies installieren
+cd shared && npm install && npm run build
 cd ../server && npm install
-
-# Frontend Dependencies
 cd ../client && npm install
+
+# 3. Datenbank einrichten
+cd ../server
+npm run db:generate
+npm run db:migrate
+npm run db:seed
+
+# 4. Development starten
+npm run dev  # Backend
+cd ../client && npm run dev  # Frontend
 ```
 
 ### 3. Umgebungsvariablen Konfigurieren
@@ -127,7 +149,14 @@ npm run dev
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:3001/api
 - **Health Check**: http://localhost:3001/health
-- **API Dokumentation**: http://localhost:3001/api
+- **pgAdmin**: http://localhost:5050
+- **Redis Commander**: http://localhost:8081
+- **Mailhog**: http://localhost:8025
+
+### Login Credentials (Development)
+
+- **Admin**: `admin@projektseite.de` / `admin123`
+- **User**: `user@projektseite.de` / `user123`
 
 ## 🎨 Features
 

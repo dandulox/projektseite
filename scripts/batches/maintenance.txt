@@ -1,9 +1,0 @@
-# Projektseite Batch: maintenance
-# Erstellt: $(date)
-# Beschreibung: Wartung
-
-stop
-clean
-patch
-start
-test

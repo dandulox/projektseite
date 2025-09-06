@@ -1,7 +1,0 @@
-# Projektseite Batch: install
-# Erstellt: $(date)
-# Beschreibung: Komplette Installation
-
-setup
-start
-test

@@ -1,194 +1,216 @@
-// Validation Contracts mit Zod
-// Wird von Frontend und Backend verwendet
-
+// Validation Schemas - Zod schemas for API validation
 import { z } from 'zod';
-import { UserRole, ProjectStatus, TaskStatus, Priority, Visibility, TeamRole } from '../types';
 
-// Base Schemas
-export const cuidSchema = z.string().cuid();
-export const emailSchema = z.string().email('Ungültige E-Mail-Adresse');
-export const passwordSchema = z.string().min(8, 'Passwort muss mindestens 8 Zeichen lang sein');
-export const usernameSchema = z.string().min(3, 'Benutzername muss mindestens 3 Zeichen lang sein').max(50, 'Benutzername darf maximal 50 Zeichen lang sein');
-export const dateSchema = z.string().datetime('Ungültiges Datumsformat');
+// Common schemas
+export const idSchema = z.string().cuid('Invalid ID format');
+export const emailSchema = z.string().email('Invalid email format');
+export const passwordSchema = z.string().min(8, 'Password must be at least 8 characters');
+export const usernameSchema = z.string().min(3, 'Username must be at least 3 characters').max(50, 'Username too long');
 
-// Enum Schemas
-export const userRoleSchema = z.nativeEnum(UserRole);
-export const projectStatusSchema = z.nativeEnum(ProjectStatus);
-export const taskStatusSchema = z.nativeEnum(TaskStatus);
-export const prioritySchema = z.nativeEnum(Priority);
-export const visibilitySchema = z.nativeEnum(Visibility);
-export const teamRoleSchema = z.nativeEnum(TeamRole);
+// Enums
+export const userRoleSchema = z.enum(['ADMIN', 'USER', 'VIEWER']);
+export const projectStatusSchema = z.enum(['PLANNING', 'ACTIVE', 'ON_HOLD', 'COMPLETED', 'CANCELLED']);
+export const taskStatusSchema = z.enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'COMPLETED', 'CANCELLED']);
+export const prioritySchema = z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']);
+export const visibilitySchema = z.enum(['PRIVATE', 'TEAM', 'PUBLIC']);
+export const teamRoleSchema = z.enum(['LEADER', 'MEMBER', 'VIEWER']);
+export const moduleStatusSchema = z.enum(['NOT_STARTED', 'IN_PROGRESS', 'TESTING', 'COMPLETED']);
 
-// User Schemas
-export const createUserSchema = z.object({
-  username: usernameSchema,
-  email: emailSchema,
-  password: passwordSchema,
-  role: userRoleSchema.optional().default(UserRole.USER),
-});
-
-export const updateUserSchema = z.object({
-  username: usernameSchema.optional(),
-  email: emailSchema.optional(),
-  role: userRoleSchema.optional(),
-  isActive: z.boolean().optional(),
-});
-
-export const loginSchema = z.object({
-  username: z.string().min(1, 'Benutzername ist erforderlich'),
-  password: z.string().min(1, 'Passwort ist erforderlich'),
-});
-
-// Project Schemas
-export const createProjectSchema = z.object({
-  name: z.string().min(1, 'Projektname ist erforderlich').max(200, 'Projektname darf maximal 200 Zeichen lang sein'),
-  description: z.string().max(1000, 'Beschreibung darf maximal 1000 Zeichen lang sein').optional(),
-  priority: prioritySchema.optional().default(Priority.MEDIUM),
-  teamId: cuidSchema.optional(),
-  visibility: visibilitySchema.optional().default(Visibility.PRIVATE),
-  startDate: dateSchema.optional(),
-  targetDate: dateSchema.optional(),
-});
-
-export const updateProjectSchema = z.object({
-  name: z.string().min(1, 'Projektname ist erforderlich').max(200, 'Projektname darf maximal 200 Zeichen lang sein').optional(),
-  description: z.string().max(1000, 'Beschreibung darf maximal 1000 Zeichen lang sein').optional(),
-  status: projectStatusSchema.optional(),
-  priority: prioritySchema.optional(),
-  teamId: cuidSchema.optional(),
-  visibility: visibilitySchema.optional(),
-  startDate: dateSchema.optional(),
-  targetDate: dateSchema.optional(),
-});
-
-// Task Schemas
-export const createTaskSchema = z.object({
-  title: z.string().min(1, 'Titel ist erforderlich').max(200, 'Titel darf maximal 200 Zeichen lang sein'),
-  description: z.string().max(2000, 'Beschreibung darf maximal 2000 Zeichen lang sein').optional(),
-  priority: prioritySchema.optional().default(Priority.MEDIUM),
-  assigneeId: cuidSchema.optional(),
-  projectId: cuidSchema.optional(),
-  moduleId: cuidSchema.optional(),
-  dueDate: dateSchema.optional(),
-  estimatedHours: z.number().positive('Geschätzte Stunden müssen positiv sein').max(9999, 'Geschätzte Stunden dürfen maximal 9999 betragen').optional(),
-  tags: z.array(z.string().max(50, 'Tag darf maximal 50 Zeichen lang sein')).max(10, 'Maximal 10 Tags erlaubt').optional().default([]),
-});
-
-export const updateTaskSchema = z.object({
-  title: z.string().min(1, 'Titel ist erforderlich').max(200, 'Titel darf maximal 200 Zeichen lang sein').optional(),
-  description: z.string().max(2000, 'Beschreibung darf maximal 2000 Zeichen lang sein').optional(),
-  status: taskStatusSchema.optional(),
-  priority: prioritySchema.optional(),
-  assigneeId: cuidSchema.optional(),
-  dueDate: dateSchema.optional(),
-  estimatedHours: z.number().positive('Geschätzte Stunden müssen positiv sein').max(9999, 'Geschätzte Stunden dürfen maximal 9999 betragen').optional(),
-  actualHours: z.number().positive('Tatsächliche Stunden müssen positiv sein').max(9999, 'Tatsächliche Stunden dürfen maximal 9999 betragen').optional(),
-  tags: z.array(z.string().max(50, 'Tag darf maximal 50 Zeichen lang sein')).max(10, 'Maximal 10 Tags erlaubt').optional(),
-});
-
-// Team Schemas
-export const createTeamSchema = z.object({
-  name: z.string().min(1, 'Teamname ist erforderlich').max(100, 'Teamname darf maximal 100 Zeichen lang sein'),
-  description: z.string().max(500, 'Beschreibung darf maximal 500 Zeichen lang sein').optional(),
-});
-
-export const updateTeamSchema = z.object({
-  name: z.string().min(1, 'Teamname ist erforderlich').max(100, 'Teamname darf maximal 100 Zeichen lang sein').optional(),
-  description: z.string().max(500, 'Beschreibung darf maximal 500 Zeichen lang sein').optional(),
-  isActive: z.boolean().optional(),
-});
-
-export const addTeamMemberSchema = z.object({
-  userId: cuidSchema,
-  role: teamRoleSchema.optional().default(TeamRole.MEMBER),
-});
-
-// Query Parameter Schemas
+// Pagination schemas
 export const paginationSchema = z.object({
-  page: z.coerce.number().int().min(1, 'Seite muss mindestens 1 sein').default(1),
-  limit: z.coerce.number().int().min(1, 'Limit muss mindestens 1 sein').max(100, 'Limit darf maximal 100 sein').default(20),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
 export const sortSchema = z.object({
   sortBy: z.string().optional(),
-  sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
-// Task Query Schema
-export const taskQuerySchema = paginationSchema.merge(sortSchema).extend({
+// Common schemas
+export const commonSchemas = {
+  id: z.object({ id: idSchema }),
+  pagination: paginationSchema,
+  sort: sortSchema,
+};
+
+// Auth schemas
+export const loginSchema = z.object({
+  username: z.string().min(1, 'Username is required'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+export const createUserSchema = z.object({
+  username: usernameSchema,
+  email: emailSchema,
+  password: passwordSchema,
+  role: userRoleSchema.optional(),
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: passwordSchema,
+});
+
+export const forgotPasswordSchema = z.object({
+  email: emailSchema,
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, 'Reset token is required'),
+  newPassword: passwordSchema,
+});
+
+// Task schemas
+export const createTaskSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
+  description: z.string().max(2000, 'Description too long').optional(),
+  priority: prioritySchema.optional(),
+  assigneeId: idSchema.optional(),
+  projectId: idSchema.optional(),
+  moduleId: idSchema.optional(),
+  dueDate: z.string().datetime().optional(),
+  estimatedHours: z.number().min(0).max(9999).optional(),
+  tags: z.array(z.string().max(50)).max(10).optional(),
+});
+
+export const updateTaskSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(200, 'Title too long').optional(),
+  description: z.string().max(2000, 'Description too long').optional(),
+  status: taskStatusSchema.optional(),
+  priority: prioritySchema.optional(),
+  assigneeId: idSchema.optional(),
+  dueDate: z.string().datetime().optional(),
+  estimatedHours: z.number().min(0).max(9999).optional(),
+  actualHours: z.number().min(0).max(9999).optional(),
+  tags: z.array(z.string().max(50)).max(10).optional(),
+});
+
+export const taskQuerySchema = z.object({
+  ...paginationSchema.shape,
+  ...sortSchema.shape,
   status: z.array(taskStatusSchema).optional(),
   priority: z.array(prioritySchema).optional(),
-  assigneeId: cuidSchema.optional(),
-  projectId: cuidSchema.optional(),
-  dueDateFrom: dateSchema.optional(),
-  dueDateTo: dateSchema.optional(),
-  tags: z.array(z.string()).optional(),
-  search: z.string().max(100, 'Suchbegriff darf maximal 100 Zeichen lang sein').optional(),
+  assigneeId: idSchema.optional(),
+  projectId: idSchema.optional(),
+  search: z.string().max(100).optional(),
 });
 
-// Project Query Schema
-export const projectQuerySchema = paginationSchema.merge(sortSchema).extend({
+// Project schemas
+export const createProjectSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(200, 'Name too long'),
+  description: z.string().max(1000, 'Description too long').optional(),
+  priority: prioritySchema.optional(),
+  teamId: idSchema.optional(),
+  visibility: visibilitySchema.optional(),
+  startDate: z.string().datetime().optional(),
+  targetDate: z.string().datetime().optional(),
+});
+
+export const updateProjectSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(200, 'Name too long').optional(),
+  description: z.string().max(1000, 'Description too long').optional(),
+  status: projectStatusSchema.optional(),
+  priority: prioritySchema.optional(),
+  teamId: idSchema.optional(),
+  visibility: visibilitySchema.optional(),
+  startDate: z.string().datetime().optional(),
+  targetDate: z.string().datetime().optional(),
+});
+
+export const projectQuerySchema = z.object({
+  ...paginationSchema.shape,
+  ...sortSchema.shape,
   status: z.array(projectStatusSchema).optional(),
   priority: z.array(prioritySchema).optional(),
-  ownerId: cuidSchema.optional(),
-  teamId: cuidSchema.optional(),
   visibility: z.array(visibilitySchema).optional(),
-  search: z.string().max(100, 'Suchbegriff darf maximal 100 Zeichen lang sein').optional(),
+  search: z.string().max(100).optional(),
 });
 
-// Deadline Query Schema
-export const deadlineQuerySchema = z.object({
-  days: z.coerce.number().int().min(1, 'Tage müssen mindestens 1 sein').max(365, 'Tage dürfen maximal 365 sein').default(7),
-  status: z.enum(['active', 'all', 'overdue']).optional().default('active'),
-  projectId: cuidSchema.optional(),
+// Team schemas
+export const createTeamSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
+  description: z.string().max(500, 'Description too long').optional(),
+});
+
+export const updateTeamSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100, 'Name too long').optional(),
+  description: z.string().max(500, 'Description too long').optional(),
+});
+
+export const teamMembershipSchema = z.object({
+  userId: idSchema,
+  role: teamRoleSchema.optional(),
+});
+
+// Module schemas
+export const createModuleSchema = z.object({
+  projectId: idSchema,
+  name: z.string().min(1, 'Name is required').max(200, 'Name too long'),
+  description: z.string().max(1000, 'Description too long').optional(),
   priority: prioritySchema.optional(),
+  assignedTo: idSchema.optional(),
+  dueDate: z.string().datetime().optional(),
+  estimatedHours: z.number().min(0).max(9999).optional(),
 });
 
-// Admin Schemas
+export const updateModuleSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(200, 'Name too long').optional(),
+  description: z.string().max(1000, 'Description too long').optional(),
+  status: moduleStatusSchema.optional(),
+  priority: prioritySchema.optional(),
+  assignedTo: idSchema.optional(),
+  dueDate: z.string().datetime().optional(),
+  estimatedHours: z.number().min(0).max(9999).optional(),
+  actualHours: z.number().min(0).max(9999).optional(),
+});
+
+// Admin schemas
 export const apiDebugSchema = z.object({
   method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']),
-  path: z.string().min(1, 'Pfad ist erforderlich').max(500, 'Pfad darf maximal 500 Zeichen lang sein'),
+  path: z.string().min(1, 'Path is required').max(500, 'Path too long'),
   headers: z.record(z.string()).optional(),
   body: z.any().optional(),
 });
 
-// Type Exports
-export type CreateUserInput = z.infer<typeof createUserSchema>;
-export type UpdateUserInput = z.infer<typeof updateUserSchema>;
-export type LoginInput = z.infer<typeof loginSchema>;
-export type CreateProjectInput = z.infer<typeof createProjectSchema>;
-export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
-export type CreateTaskInput = z.infer<typeof createTaskSchema>;
-export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
-export type CreateTeamInput = z.infer<typeof createTeamSchema>;
-export type UpdateTeamInput = z.infer<typeof updateTeamSchema>;
-export type AddTeamMemberInput = z.infer<typeof addTeamMemberSchema>;
-export type TaskQueryInput = z.infer<typeof taskQuerySchema>;
-export type ProjectQueryInput = z.infer<typeof projectQuerySchema>;
-export type DeadlineQueryInput = z.infer<typeof deadlineQuerySchema>;
-export type ApiDebugInput = z.infer<typeof apiDebugSchema>;
+export const cleanupSchema = z.object({
+  type: z.enum(['expired_tokens', 'old_logs', 'temp_files']),
+});
 
-// Validation Helper Functions
-export function validateInput<T>(schema: z.ZodSchema<T>, input: unknown): T {
-  try {
-    return schema.parse(input);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const validationError = {
-        code: 'VALIDATION_ERROR',
-        message: 'Validierungsfehler',
-        details: error.errors.map(err => ({
-          field: err.path.join('.'),
-          message: err.message,
-          code: err.code,
-        })),
-      };
-      throw validationError;
-    }
-    throw error;
-  }
-}
-
-export function validateQuery<T>(schema: z.ZodSchema<T>, query: Record<string, any>): T {
-  return validateInput(schema, query);
-}
+// Export all schemas
+export const validationSchemas = {
+  // Common
+  id: commonSchemas.id,
+  pagination: commonSchemas.pagination,
+  sort: commonSchemas.sort,
+  
+  // Auth
+  login: loginSchema,
+  createUser: createUserSchema,
+  changePassword: changePasswordSchema,
+  forgotPassword: forgotPasswordSchema,
+  resetPassword: resetPasswordSchema,
+  
+  // Tasks
+  createTask: createTaskSchema,
+  updateTask: updateTaskSchema,
+  taskQuery: taskQuerySchema,
+  
+  // Projects
+  createProject: createProjectSchema,
+  updateProject: updateProjectSchema,
+  projectQuery: projectQuerySchema,
+  
+  // Teams
+  createTeam: createTeamSchema,
+  updateTeam: updateTeamSchema,
+  teamMembership: teamMembershipSchema,
+  
+  // Modules
+  createModule: createModuleSchema,
+  updateModule: updateModuleSchema,
+  
+  // Admin
+  apiDebug: apiDebugSchema,
+  cleanup: cleanupSchema,
+};

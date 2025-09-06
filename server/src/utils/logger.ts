@@ -1,136 +1,84 @@
-// Logger Configuration mit Winston
+// Logger Utility - Structured logging with Winston
 import winston from 'winston';
 import path from 'path';
 
-// Log Levels
-const levels = {
-  error: 0,
-  warn: 1,
-  info: 2,
-  http: 3,
-  debug: 4,
-};
+// Create logs directory if it doesn't exist
+const logDir = path.join(process.cwd(), 'logs');
 
-// Log Colors
-const colors = {
-  error: 'red',
-  warn: 'yellow',
-  info: 'green',
-  http: 'magenta',
-  debug: 'white',
-};
-
-winston.addColors(colors);
-
-// Log Format
-const format = winston.format.combine(
-  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
-  winston.format.colorize({ all: true }),
-  winston.format.printf(
-    (info) => `${info.timestamp} ${info.level}: ${info.message}`
-  )
+// Custom log format
+const logFormat = winston.format.combine(
+  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+  winston.format.errors({ stack: true }),
+  winston.format.splat(),
+  winston.format.json()
 );
 
-// Transports
-const transports = [
-  // Console Transport
-  new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    ),
-  }),
-  
-  // File Transports
-  new winston.transports.File({
-    filename: path.join(process.cwd(), 'logs', 'error.log'),
-    level: 'error',
-    format: winston.format.combine(
-      winston.format.timestamp(),
-      winston.format.json()
-    ),
-  }),
-  
-  new winston.transports.File({
-    filename: path.join(process.cwd(), 'logs', 'combined.log'),
-    format: winston.format.combine(
-      winston.format.timestamp(),
-      winston.format.json()
-    ),
-  }),
-];
+// Console format for development
+const consoleFormat = winston.format.combine(
+  winston.format.colorize(),
+  winston.format.timestamp({ format: 'HH:mm:ss' }),
+  winston.format.printf(({ timestamp, level, message, ...meta }) => {
+    let log = `${timestamp} [${level}]: ${message}`;
+    if (Object.keys(meta).length > 0) {
+      log += ` ${JSON.stringify(meta)}`;
+    }
+    return log;
+  })
+);
 
-// Create Logger
+// Create logger instance
 export const logger = winston.createLogger({
-  level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
-  levels,
-  format,
-  transports,
-  defaultMeta: {
-    service: 'projektseite-api',
-    version: '3.0.0',
-  },
+  level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'development' ? 'debug' : 'info'),
+  format: logFormat,
+  defaultMeta: { service: 'projektseite-api' },
+  transports: [
+    // Console transport
+    new winston.transports.Console({
+      format: process.env.NODE_ENV === 'development' ? consoleFormat : logFormat,
+    }),
+    
+    // Error log file
+    new winston.transports.File({
+      filename: path.join(logDir, 'error.log'),
+      level: 'error',
+      maxsize: 5242880, // 5MB
+      maxFiles: 5,
+    }),
+    
+    // Combined log file
+    new winston.transports.File({
+      filename: path.join(logDir, 'combined.log'),
+      maxsize: 5242880, // 5MB
+      maxFiles: 5,
+    }),
+  ],
 });
 
-// Request Logger Middleware
-export const requestLogger = (req: any, res: any, next: any) => {
+// Request logger middleware
+export const requestLogger = (req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
   
   res.on('finish', () => {
     const duration = Date.now() - start;
     const logData = {
       method: req.method,
-      url: req.url,
-      status: res.statusCode,
+      url: req.originalUrl,
+      statusCode: res.statusCode,
       duration: `${duration}ms`,
       userAgent: req.get('User-Agent'),
       ip: req.ip,
       userId: req.user?.id,
     };
-    
+
     if (res.statusCode >= 400) {
       logger.warn('HTTP Request', logData);
     } else {
-      logger.http('HTTP Request', logData);
+      logger.info('HTTP Request', logData);
     }
   });
-  
+
   next();
 };
 
-// Error Logger
-export const errorLogger = (error: Error, req?: any) => {
-  logger.error('Application Error', {
-    message: error.message,
-    stack: error.stack,
-    url: req?.url,
-    method: req?.method,
-    userId: req?.user?.id,
-  });
-};
-
-// Structured Logging Helper
-export const logWithContext = (level: string, message: string, context: any = {}) => {
-  logger.log(level, message, {
-    ...context,
-    timestamp: new Date().toISOString(),
-  });
-};
-
-// Performance Logger
-export const performanceLogger = (operation: string, duration: number, context: any = {}) => {
-  logger.info(`Performance: ${operation}`, {
-    operation,
-    duration: `${duration}ms`,
-    ...context,
-  });
-};
-
-// Security Logger
-export const securityLogger = (event: string, details: any = {}) => {
-  logger.warn(`Security Event: ${event}`, {
-    event,
-    ...details,
-    timestamp: new Date().toISOString(),
-  });
-};
+// Export logger instance
+export default logger;
