@@ -478,30 +478,56 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
 // Projekt löschen
 router.delete('/:id', authenticateToken, async (req, res) => {
+  const client = await pool.connect();
+  
   try {
+    await client.query('BEGIN');
+    
     const projectId = req.params.id;
 
     // Prüfe Berechtigung (nur Eigentümer oder Admin)
-    const projectResult = await pool.query(
+    const projectResult = await client.query(
       'SELECT owner_id FROM projects WHERE id = $1',
       [projectId]
     );
 
     if (projectResult.rows.length === 0) {
+      await client.query('ROLLBACK');
       return res.status(404).json({ error: 'Projekt nicht gefunden' });
     }
 
     if (projectResult.rows[0].owner_id !== req.user.id && req.user.role !== 'admin') {
+      await client.query('ROLLBACK');
       return res.status(403).json({ error: 'Keine Berechtigung zum Löschen des Projekts' });
     }
 
-    // Projekt löschen (CASCADE löscht auch Module und Logs)
-    await pool.query('DELETE FROM projects WHERE id = $1', [projectId]);
+    // 1. Activity-Logs manuell löschen (vor dem Projekt-Löschen)
+    await client.query('DELETE FROM project_activity_logs WHERE project_id = $1', [projectId]);
+    await client.query('DELETE FROM module_activity_logs WHERE project_id = $1', [projectId]);
+    
+    // 2. Projekt-Module löschen (falls CASCADE nicht funktioniert)
+    await client.query('DELETE FROM project_modules WHERE project_id = $1', [projectId]);
+    
+    // 3. Projekt-Berechtigungen löschen
+    await client.query('DELETE FROM project_permissions WHERE project_id = $1', [projectId]);
+    
+    // 4. Projekt-Logs löschen
+    await client.query('DELETE FROM project_logs WHERE project_id = $1', [projectId]);
+    
+    // 5. Tasks löschen (falls vorhanden)
+    await client.query('DELETE FROM tasks WHERE project_id = $1', [projectId]);
+    
+    // 6. Projekt löschen
+    await client.query('DELETE FROM projects WHERE id = $1', [projectId]);
 
+    await client.query('COMMIT');
     res.json({ message: 'Projekt erfolgreich gelöscht' });
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Fehler beim Löschen des Projekts:', error);
     res.status(500).json({ error: 'Interner Serverfehler' });
+  } finally {
+    client.release();
   }
 });
 
