@@ -273,6 +273,18 @@ Falls die Datenbank nicht bereit ist:
 ./scripts/wait-for-db.sh
 ```
 
+### Environment-Probleme
+
+Falls die .env-Dateien falsche Ports haben:
+
+```powershell
+# Windows PowerShell
+.\scripts\fix-env.ps1
+
+# Linux/macOS
+./scripts/fix-env.sh
+```
+
 **Hinweise:**
 - Die Scripts warten automatisch bis zu 5 Minuten (30 Versuche × 10 Sekunden) auf die Datenbankbereitschaft
 - **Git-Verhalten**: Alle Scripts überschreiben automatisch lokale Änderungen mit der Remote-Version (Force Reset)
