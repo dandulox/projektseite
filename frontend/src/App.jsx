@@ -19,6 +19,7 @@ import LoginForm from './components/LoginForm';
 import DynamicGreeting from './components/DynamicGreeting';
 import NotificationBell from './components/NotificationBell';
 import MyTasksPage from './pages/MyTasksPage';
+import DiagnosticsTabs from './components/admin/DiagnosticsTabs';
 import { 
   Home, 
   FolderOpen, 
@@ -569,6 +570,16 @@ const Admin = () => {
         >
           Versionsverwaltung
         </button>
+        <button
+          onClick={() => setActiveTab('diagnostics')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+            activeTab === 'diagnostics'
+              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+          }`}
+        >
+          Diagnose
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -639,6 +650,7 @@ const Admin = () => {
       {activeTab === 'teams' && <TeamManagement />}
       {activeTab === 'greetings' && <GreetingManagement />}
       {activeTab === 'version' && <VersionManagement />}
+      {activeTab === 'diagnostics' && <DiagnosticsTabs />}
     </div>
   );
 };

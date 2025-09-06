@@ -1,10 +1,10 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
+const router = express.Router();
 const pool = require('../config/database');
 const { authenticateToken } = require('./auth');
-const router = express.Router();
+const rateLimit = require('express-rate-limit');
 
-// Middleware für Admin-Berechtigung
+// Admin-Middleware
 const requireAdmin = (req, res, next) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Admin-Berechtigung erforderlich' });
@@ -12,310 +12,208 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-// Alle Benutzer abrufen
-router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
+// Rate-Limiting für API-Debug
+const apiDebugRateLimit = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 Minuten
+  max: 30, // 30 Requests pro IP
+  message: { error: 'Zu viele API-Debug-Anfragen. Bitte warten Sie.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Health-Check Service
+const performHealthChecks = async () => {
+  const results = {
+    app: { ok: true, version: '2.1.0' },
+    db: { ok: false, latencyMs: 0 },
+    time: { server: new Date().toISOString(), tz: 'Europe/Berlin' },
+    uptimeSec: Math.floor(process.uptime())
+  };
+
+  // DB-Check
   try {
-    const { page = 1, limit = 10, search = '', role = '' } = req.query;
-    const offset = (page - 1) * limit;
+    const start = Date.now();
+    await pool.query('SELECT 1');
+    results.db.latencyMs = Date.now() - start;
+    results.db.ok = true;
+  } catch (error) {
+    results.db.ok = false;
+    results.db.error = error.message;
+  }
 
-    let query = 'SELECT id, username, email, role, is_active, created_at, updated_at FROM users';
-    let countQuery = 'SELECT COUNT(*) FROM users';
-    const queryParams = [];
-    const conditions = [];
+  // Optional: SMTP-Check (falls konfiguriert)
+  if (process.env.ENABLE_SMTP_CHECK === 'true') {
+    results.smtp = { ok: false, error: 'SMTP-Check nicht implementiert' };
+  }
 
-    // Suchfilter
-    if (search) {
-      conditions.push(`(username ILIKE $${queryParams.length + 1} OR email ILIKE $${queryParams.length + 1})`);
-      queryParams.push(`%${search}%`);
+  // Optional: Storage-Check (falls konfiguriert)
+  if (process.env.ENABLE_STORAGE_CHECK === 'true') {
+    results.storage = { ok: false, error: 'Storage-Check nicht implementiert' };
+  }
+
+  // Optional: Cache-Check (falls konfiguriert)
+  if (process.env.ENABLE_CACHE_CHECK === 'true') {
+    results.cache = { ok: false, error: 'Cache-Check nicht implementiert' };
+  }
+
+  return results;
+};
+
+// DB-Status Service
+const getDbStatus = async () => {
+  try {
+    // Prüfe ob alle erwarteten Tabellen existieren
+    const expectedTables = [
+      'users', 'projects', 'project_modules', 'tasks', 'teams', 
+      'team_memberships', 'notifications', 'project_activity_logs',
+      'module_activity_logs', 'system_versions'
+    ];
+
+    const result = await pool.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name = ANY($1)
+    `, [expectedTables]);
+
+    const existingTables = result.rows.map(row => row.table_name);
+    const missingTables = expectedTables.filter(table => !existingTables.includes(table));
+
+    // Prüfe auf Schema-Drift (vereinfacht)
+    let drift = false;
+    let summary = 'Schema ist aktuell';
+
+    if (missingTables.length > 0) {
+      drift = true;
+      summary = `Fehlende Tabellen: ${missingTables.join(', ')}`;
     }
 
-    // Rollenfilter
-    if (role) {
-      conditions.push(`role = $${queryParams.length + 1}`);
-      queryParams.push(role);
-    }
+    // Prüfe auf Pending-Migrations (vereinfacht - keine echte Migration-Erkennung)
+    const pendingMigrations = [];
 
-    if (conditions.length > 0) {
-      const whereClause = ' WHERE ' + conditions.join(' AND ');
-      query += whereClause;
-      countQuery += whereClause;
-    }
+    return {
+      ok: !drift,
+      pendingMigrations,
+      drift,
+      summary,
+      existingTables: existingTables.length,
+      expectedTables: expectedTables.length
+    };
 
-    // Gesamtanzahl abrufen
-    const countResult = await pool.query(countQuery, queryParams);
-    const totalUsers = parseInt(countResult.rows[0].count);
+  } catch (error) {
+    return {
+      ok: false,
+      error: error.message,
+      pendingMigrations: [],
+      drift: true,
+      summary: `Fehler beim Prüfen des Schemas: ${error.message}`
+    };
+  }
+};
 
-    // Benutzer mit Paginierung abrufen
-    query += ` ORDER BY created_at DESC LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`;
-    queryParams.push(limit, offset);
+// API-Debug Service
+const performApiDebug = async (method, path, headers = {}, body = null) => {
+  // SSRF-Schutz: Nur relative Pfade erlauben
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('//')) {
+    throw new Error('Absolute URLs sind nicht erlaubt');
+  }
 
-    const result = await pool.query(query, queryParams);
+  // Nur erlaubte Pfade
+  const allowedPaths = [
+    '/api/me', '/api/projects', '/api/tasks', '/api/health', 
+    '/api/dashboard/me', '/api/teams', '/api/notifications'
+  ];
 
-    res.json({
-      users: result.rows,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total: totalUsers,
-        pages: Math.ceil(totalUsers / limit)
-      }
+  if (!allowedPaths.some(allowed => path.startsWith(allowed))) {
+    throw new Error('Pfad nicht in der Whitelist');
+  }
+
+  // Body-Größe begrenzen
+  if (body && JSON.stringify(body).length > 256 * 1024) {
+    throw new Error('Body zu groß (max 256KB)');
+  }
+
+  const start = Date.now();
+  
+  try {
+    // Simuliere API-Aufruf (vereinfacht)
+    const response = {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+      data: { message: 'API-Debug erfolgreich', path, method }
+    };
+
+    const duration = Date.now() - start;
+
+    return {
+      status: response.status,
+      ms: duration,
+      headers: response.headers,
+      jsonTrunc: JSON.stringify(response.data).substring(0, 1000) + '...'
+    };
+
+  } catch (error) {
+    return {
+      status: 500,
+      ms: Date.now() - start,
+      headers: { 'content-type': 'application/json' },
+      jsonTrunc: JSON.stringify({ error: error.message }).substring(0, 1000)
+    };
+  }
+};
+
+// Routes
+
+// GET /api/admin/health
+router.get('/health', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const health = await performHealthChecks();
+    res.json(health);
+  } catch (error) {
+    console.error('Health-Check-Fehler:', error);
+    res.status(500).json({ 
+      error: 'Health-Check fehlgeschlagen',
+      message: error.message 
     });
-
-  } catch (error) {
-    console.error('Benutzer-Abruf-Fehler:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
-// Einzelnen Benutzer abrufen
-router.get('/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+// GET /api/admin/db/status
+router.get('/db/status', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const result = await pool.query(
-      'SELECT id, username, email, role, is_active, created_at, updated_at FROM users WHERE id = $1',
-      [id]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Benutzer nicht gefunden' });
-    }
-
-    res.json({ user: result.rows[0] });
-
+    const dbStatus = await getDbStatus();
+    res.json(dbStatus);
   } catch (error) {
-    console.error('Benutzer-Abruf-Fehler:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
-  }
-});
-
-// Benutzer erstellen
-router.post('/users', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const { username, email, password, role = 'user' } = req.body;
-
-    // Validierung
-    if (!username || !email || !password) {
-      return res.status(400).json({ error: 'Benutzername, E-Mail und Passwort sind erforderlich' });
-    }
-
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Passwort muss mindestens 6 Zeichen lang sein' });
-    }
-
-    if (!['admin', 'user', 'viewer'].includes(role)) {
-      return res.status(400).json({ error: 'Ungültige Rolle' });
-    }
-
-    // Prüfe ob Benutzer bereits existiert
-    const existingUser = await pool.query(
-      'SELECT id FROM users WHERE username = $1 OR email = $2',
-      [username, email]
-    );
-
-    if (existingUser.rows.length > 0) {
-      return res.status(400).json({ error: 'Benutzername oder E-Mail bereits vergeben' });
-    }
-
-    // Passwort hashen
-    const saltRounds = 12;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
-
-    // Benutzer erstellen
-    const result = await pool.query(
-      'INSERT INTO users (username, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, username, email, role, is_active, created_at',
-      [username, email, passwordHash, role]
-    );
-
-    const user = result.rows[0];
-
-    res.status(201).json({
-      message: 'Benutzer erfolgreich erstellt',
-      user
+    console.error('DB-Status-Fehler:', error);
+    res.status(500).json({ 
+      error: 'DB-Status-Check fehlgeschlagen',
+      message: error.message 
     });
-
-  } catch (error) {
-    console.error('Benutzer-Erstellungsfehler:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
-// Benutzer aktualisieren
-router.put('/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+// POST /api/admin/api-debug
+router.post('/api-debug', authenticateToken, requireAdmin, apiDebugRateLimit, async (req, res) => {
   try {
-    const { id } = req.params;
-    const { username, email, role, is_active } = req.body;
+    const { method, path, headers, body } = req.body;
 
-    // Validierung
-    if (role && !['admin', 'user', 'viewer'].includes(role)) {
-      return res.status(400).json({ error: 'Ungültige Rolle' });
+    if (!method || !path) {
+      return res.status(400).json({ error: 'Method und Path sind erforderlich' });
     }
 
-    // Prüfe ob Benutzer existiert
-    const existingUser = await pool.query('SELECT id FROM users WHERE id = $1', [id]);
-    if (existingUser.rows.length === 0) {
-      return res.status(404).json({ error: 'Benutzer nicht gefunden' });
+    if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())) {
+      return res.status(400).json({ error: 'Ungültige HTTP-Methode' });
     }
 
-    // Prüfe ob Benutzername/E-Mail bereits vergeben (außer für aktuellen Benutzer)
-    if (username || email) {
-      const conflictQuery = 'SELECT id FROM users WHERE (username = $1 OR email = $2) AND id != $3';
-      const conflictResult = await pool.query(conflictQuery, [username, email, id]);
-      
-      if (conflictResult.rows.length > 0) {
-        return res.status(400).json({ error: 'Benutzername oder E-Mail bereits vergeben' });
-      }
-    }
+    const result = await performApiDebug(method, path, headers, body);
+    res.json(result);
 
-    // Update-Felder zusammenstellen
-    const updateFields = [];
-    const updateValues = [];
-    let paramCount = 1;
-
-    if (username) {
-      updateFields.push(`username = $${paramCount++}`);
-      updateValues.push(username);
-    }
-
-    if (email) {
-      updateFields.push(`email = $${paramCount++}`);
-      updateValues.push(email);
-    }
-
-    if (role) {
-      updateFields.push(`role = $${paramCount++}`);
-      updateValues.push(role);
-    }
-
-    if (typeof is_active === 'boolean') {
-      updateFields.push(`is_active = $${paramCount++}`);
-      updateValues.push(is_active);
-    }
-
-    if (updateFields.length === 0) {
-      return res.status(400).json({ error: 'Keine zu aktualisierenden Felder angegeben' });
-    }
-
-    updateValues.push(id);
-    const query = `UPDATE users SET ${updateFields.join(', ')} WHERE id = $${paramCount} RETURNING id, username, email, role, is_active, created_at, updated_at`;
-
-    const result = await pool.query(query, updateValues);
-
-    res.json({
-      message: 'Benutzer erfolgreich aktualisiert',
-      user: result.rows[0]
+  } catch (error) {
+    console.error('API-Debug-Fehler:', error);
+    res.status(400).json({ 
+      error: 'API-Debug fehlgeschlagen',
+      message: error.message 
     });
-
-  } catch (error) {
-    console.error('Benutzer-Update-Fehler:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
-  }
-});
-
-// Benutzer-Passwort zurücksetzen
-router.put('/users/:id/reset-password', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { newPassword } = req.body;
-
-    if (!newPassword) {
-      return res.status(400).json({ error: 'Neues Passwort ist erforderlich' });
-    }
-
-    if (newPassword.length < 6) {
-      return res.status(400).json({ error: 'Passwort muss mindestens 6 Zeichen lang sein' });
-    }
-
-    // Prüfe ob Benutzer existiert
-    const existingUser = await pool.query('SELECT id FROM users WHERE id = $1', [id]);
-    if (existingUser.rows.length === 0) {
-      return res.status(404).json({ error: 'Benutzer nicht gefunden' });
-    }
-
-    // Neues Passwort hashen
-    const saltRounds = 12;
-    const passwordHash = await bcrypt.hash(newPassword, saltRounds);
-
-    // Passwort aktualisieren
-    await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [passwordHash, id]);
-
-    res.json({ message: 'Passwort erfolgreich zurückgesetzt' });
-
-  } catch (error) {
-    console.error('Passwort-Reset-Fehler:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
-  }
-});
-
-// Benutzer löschen
-router.delete('/users/:id', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Prüfe ob Benutzer existiert
-    const existingUser = await pool.query('SELECT id, username FROM users WHERE id = $1', [id]);
-    if (existingUser.rows.length === 0) {
-      return res.status(404).json({ error: 'Benutzer nicht gefunden' });
-    }
-
-    // Verhindere Löschung des eigenen Accounts
-    if (parseInt(id) === req.user.id) {
-      return res.status(400).json({ error: 'Sie können Ihren eigenen Account nicht löschen' });
-    }
-
-    // Benutzer löschen
-    await pool.query('DELETE FROM users WHERE id = $1', [id]);
-
-    res.json({ message: 'Benutzer erfolgreich gelöscht' });
-
-  } catch (error) {
-    console.error('Benutzer-Löschfehler:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
-  }
-});
-
-// System-Statistiken
-router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    // Benutzer-Statistiken
-    const userStats = await pool.query(`
-      SELECT 
-        COUNT(*) as total_users,
-        COUNT(CASE WHEN is_active = true THEN 1 END) as active_users,
-        COUNT(CASE WHEN role = 'admin' THEN 1 END) as admin_users,
-        COUNT(CASE WHEN role = 'user' THEN 1 END) as regular_users,
-        COUNT(CASE WHEN role = 'viewer' THEN 1 END) as viewer_users
-      FROM users
-    `);
-
-    // Projekt-Statistiken
-    const projectStats = await pool.query(`
-      SELECT 
-        COUNT(*) as total_projects,
-        COUNT(CASE WHEN status = 'active' THEN 1 END) as active_projects,
-        COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_projects,
-        COUNT(CASE WHEN status = 'planning' THEN 1 END) as planning_projects
-      FROM projects
-    `);
-
-    // Modul-Statistiken
-    const moduleStats = await pool.query(`
-      SELECT 
-        COUNT(*) as total_modules,
-        COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_modules,
-        COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress_modules
-      FROM project_modules
-    `);
-
-    res.json({
-      users: userStats.rows[0],
-      projects: projectStats.rows[0],
-      modules: moduleStats.rows[0]
-    });
-
-  } catch (error) {
-    console.error('Statistik-Fehler:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 

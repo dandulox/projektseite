@@ -64,7 +64,6 @@ console.log('🔧 Lade API-Routen...');
 
 // API Routen
 app.use('/api/auth', authRoutes.router);
-app.use('/api/admin', adminRoutes);
 app.use('/api/greetings', greetingsRoutes);
 app.use('/api/teams', teamsRoutes);
 app.use('/api/projects', projectsRoutes);
@@ -74,6 +73,7 @@ app.use('/api/versions', versionsRoutes);
 app.use('/api/activity-logs', activityLogsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/tasks', tasksRoutes);
+app.use('/api/admin', require('./routes/admin'));
 
 // Health Check
 app.get('/health', (req, res) => {
