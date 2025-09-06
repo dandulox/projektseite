@@ -52,13 +52,68 @@ function Write-Warning {
     Write-Host "⚠️  $Text" -ForegroundColor $Yellow
 }
 
-# Update repository
+# Update repository with conflict resolution
 function Update-Repository {
     Write-Step "Updating repository..."
     
     if (Test-Path ".git") {
         Write-Info "Pulling latest changes..."
-        git pull origin main
+        
+        # Try normal pull first
+        try {
+            git pull origin main
+            Write-Success "Repository updated"
+        }
+        catch {
+            Write-Warning "Git pull failed, attempting conflict resolution..."
+            
+            # Check if there are local changes
+            $hasChanges = $false
+            try {
+                $diff = git diff --quiet 2>$null
+                $cached = git diff --cached --quiet 2>$null
+                $hasChanges = $LASTEXITCODE -ne 0
+            }
+            catch {
+                $hasChanges = $true
+            }
+            
+            if ($hasChanges) {
+                Write-Info "Local changes detected, resolving conflicts..."
+                
+                # Option 1: Try to stash changes
+                try {
+                    git stash push -m "Auto-stash before pull $(Get-Date)"
+                    Write-Info "Changes stashed, pulling..."
+                    
+                    git pull origin main
+                    Write-Success "Repository updated after stash"
+                    
+                    Write-Info "Restoring stashed changes..."
+                    try {
+                        git stash pop
+                        Write-Success "Stashed changes restored"
+                    }
+                    catch {
+                        Write-Warning "Could not restore stashed changes, but repository is updated"
+                    }
+                }
+                catch {
+                    # Option 2: Force reset to remote
+                    Write-Info "Stash failed, using force reset to remote..."
+                    git fetch origin main
+                    git reset --hard origin/main
+                    Write-Success "Repository force-updated to remote version"
+                }
+            }
+            else {
+                # No local changes, just fetch and reset
+                Write-Info "No local changes, force updating to remote..."
+                git fetch origin main
+                git reset --hard origin/main
+                Write-Success "Repository force-updated to remote version"
+            }
+        }
         
         Write-Info "Checking for submodules..."
         if (Test-Path ".gitmodules") {

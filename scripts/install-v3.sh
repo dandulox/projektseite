@@ -310,7 +310,7 @@ setup_database() {
     # Wait for database to be ready
     print_info "Waiting for database to be ready..."
     local max_attempts=30
-    local delay=2
+    local delay=10
     local attempt=1
     
     while [ $attempt -le $max_attempts ]; do
