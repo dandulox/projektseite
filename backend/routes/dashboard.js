@@ -41,7 +41,7 @@ router.get('/me', authenticateToken, async (req, res) => {
         t.due_date,
         t.estimated_hours,
         t.actual_hours,
-        COALESCE(t.completion_percentage, 0) as completion_percentage,
+        0 as completion_percentage,
         p.name as project_name,
         p.id as project_id,
         p.owner_id as project_owner_id,
@@ -72,7 +72,7 @@ router.get('/me', authenticateToken, async (req, res) => {
         t.status,
         t.priority,
         t.due_date,
-        COALESCE(t.completion_percentage, 0) as completion_percentage,
+        0 as completion_percentage,
         p.name as project_name,
         p.id as project_id,
         u.username as assigned_username
@@ -281,7 +281,7 @@ router.get('/me/stats', authenticateToken, async (req, res) => {
         (SELECT COUNT(*) FROM tasks WHERE assignee_id = $1 AND status IN ('todo', 'in_progress', 'review')) as open_tasks,
         (SELECT COUNT(*) FROM tasks WHERE assignee_id = $1 AND status = 'completed') as completed_tasks,
         (SELECT COUNT(*) FROM tasks WHERE assignee_id = $1 AND due_date BETWEEN NOW() AND NOW() + INTERVAL '7 days' AND status NOT IN ('completed', 'cancelled')) as upcoming_deadlines,
-        (SELECT COALESCE(AVG(completion_percentage), 0) FROM tasks WHERE assignee_id = $1) as avg_task_progress
+        0 as avg_task_progress
     `;
 
     const statsResult = await pool.query(statsQuery, [userId]);
