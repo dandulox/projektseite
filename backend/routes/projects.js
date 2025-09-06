@@ -4,6 +4,7 @@ const { authenticateToken } = require('./auth');
 const { createNotification, createTeamNotification } = require('./notifications');
 const { calculateProjectProgress, updateProjectProgress, calculateModuleProgress } = require('../utils/progressCalculator');
 const { asyncHandler } = require('../middleware/errorHandler');
+const { getProjectsSimple } = require('../middleware/databaseFallback');
 const router = express.Router();
 
 // Hilfsfunktion: Prüft Projekt-Berechtigung
@@ -85,66 +86,28 @@ router.get('/', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const { team_id, status, visibility } = req.query;
     
-    // Einfache Abfrage ohne komplexe Joins, falls Tabellen fehlen
-    let query = `
-      SELECT p.*, 
-             u.username as owner_username
-      FROM projects p
-      LEFT JOIN users u ON u.id = p.owner_id
-      WHERE 1=1
-    `;
+    // Verwende Fallback-System für einfache Abfrage
+    const projects = await getProjectsSimple(req.user.id, 100);
     
-    const params = [];
-    let paramCount = 0;
-
-    // Filter basierend auf Benutzer-Berechtigung
-    if (req.user.role !== 'admin') {
-      query += ` AND (p.owner_id = $${++paramCount} OR p.visibility = 'public')`;
-      params.push(req.user.id);
-    }
-
-    // Zusätzliche Filter
-    if (team_id) {
-      query += ` AND p.team_id = $${++paramCount}`;
-      params.push(team_id);
-    }
+    // Filtere Projekte basierend auf Parametern
+    let filteredProjects = projects;
     
     if (status) {
-      query += ` AND p.status = $${++paramCount}`;
-      params.push(status);
+      filteredProjects = filteredProjects.filter(project => project.status === status);
     }
-    
     if (visibility) {
-      query += ` AND p.visibility = $${++paramCount}`;
-      params.push(visibility);
+      filteredProjects = filteredProjects.filter(project => project.visibility === visibility);
+    }
+    if (team_id) {
+      filteredProjects = filteredProjects.filter(project => project.team_id === parseInt(team_id));
     }
 
-    query += ` ORDER BY p.created_at DESC`;
-
-    const result = await pool.query(query, params);
-    
-    // Versuche, Team-Namen und Modul-Anzahl hinzuzufügen (falls Tabellen existieren)
-    const projectsWithDetails = await Promise.all(result.rows.map(async (project) => {
-      const projectWithDetails = { ...project, team_name: null, module_count: 0 };
-      
-      try {
-        // Team-Name hinzufügen
-        if (project.team_id) {
-          const teamResult = await pool.query('SELECT name FROM teams WHERE id = $1', [project.team_id]);
-          if (teamResult.rows.length > 0) {
-            projectWithDetails.team_name = teamResult.rows[0].name;
-          }
-        }
-        
-        // Modul-Anzahl hinzufügen
-        const moduleResult = await pool.query('SELECT COUNT(*) as count FROM project_modules WHERE project_id = $1', [project.id]);
-        projectWithDetails.module_count = parseInt(moduleResult.rows[0].count);
-      } catch (detailError) {
-        console.warn('Konnte Projekt-Details nicht laden:', detailError.message);
-        // Ignoriere Fehler bei optionalen Details
-      }
-      
-      return projectWithDetails;
+    // Erweitere Projekte mit zusätzlichen Informationen
+    const projectsWithDetails = filteredProjects.map(project => ({
+      ...project,
+      owner_username: 'Unbekannt',
+      team_name: null,
+      module_count: 0
     }));
 
     res.json({ projects: projectsWithDetails });

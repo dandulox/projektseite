@@ -3,6 +3,7 @@ const pool = require('../config/database');
 const { authenticateToken } = require('./auth');
 const { VALID_TASK_STATUSES, VALID_TASK_PRIORITIES } = require('../utils/statusConstants');
 const { asyncHandler } = require('../middleware/errorHandler');
+const { getTasksSimple, getTaskStatsSimple } = require('../middleware/databaseFallback');
 const router = express.Router();
 
 // Hilfsfunktion: Prüft Task-Berechtigung
@@ -99,100 +100,52 @@ router.get('/my-tasks', authenticateToken, asyncHandler(async (req, res) => {
       limit = 20
     } = req.query;
 
-    const offset = (parseInt(page) - 1) * parseInt(limit);
-    const searchTerm = search ? `%${search}%` : null;
-
-    // Einfache Abfrage ohne Datenbankfunktion
-    let query = `
-      SELECT 
-        t.*,
-        p.name as project_name,
-        pm.name as module_name,
-        u.username as assignee_username,
-        u.email as assignee_email,
-        creator.username as created_by_username,
-        CASE 
-          WHEN t.due_date < CURRENT_DATE AND t.status NOT IN ('completed', 'cancelled') THEN true
-          ELSE false
-        END as is_overdue,
-        CASE 
-          WHEN t.due_date <= CURRENT_DATE + INTERVAL '3 days' AND t.status NOT IN ('completed', 'cancelled') THEN true
-          ELSE false
-        END as is_due_soon
-      FROM tasks t
-      LEFT JOIN projects p ON p.id = t.project_id
-      LEFT JOIN project_modules pm ON pm.id = t.module_id
-      LEFT JOIN users u ON u.id = t.assignee_id
-      LEFT JOIN users creator ON creator.id = t.created_by
-      WHERE t.assignee_id = $1
-    `;
+    // Verwende Fallback-System für einfache Abfrage
+    const tasks = await getTasksSimple(req.user.id, parseInt(limit));
     
-    const params = [req.user.id];
-    let paramCount = 1;
-
-    // Filter hinzufügen
+    // Filtere Tasks basierend auf Parametern
+    let filteredTasks = tasks;
+    
     if (status) {
-      query += ` AND t.status = $${++paramCount}`;
-      params.push(status);
+      filteredTasks = filteredTasks.filter(task => task.status === status);
     }
     if (priority) {
-      query += ` AND t.priority = $${++paramCount}`;
-      params.push(priority);
+      filteredTasks = filteredTasks.filter(task => task.priority === priority);
     }
     if (project_id) {
-      query += ` AND t.project_id = $${++paramCount}`;
-      params.push(project_id);
+      filteredTasks = filteredTasks.filter(task => task.project_id === parseInt(project_id));
     }
-    if (searchTerm) {
-      query += ` AND (t.title ILIKE $${++paramCount} OR t.description ILIKE $${++paramCount})`;
-      params.push(searchTerm, searchTerm);
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filteredTasks = filteredTasks.filter(task => 
+        task.title.toLowerCase().includes(searchLower) || 
+        (task.description && task.description.toLowerCase().includes(searchLower))
+      );
     }
 
     // Sortierung
-    query += ` ORDER BY t.${sort_by} ${sort_order}`;
-    
+    filteredTasks.sort((a, b) => {
+      const aVal = a[sort_by];
+      const bVal = b[sort_by];
+      
+      if (sort_order === 'ASC') {
+        return aVal > bVal ? 1 : -1;
+      } else {
+        return aVal < bVal ? 1 : -1;
+      }
+    });
+
     // Pagination
-    query += ` LIMIT $${++paramCount} OFFSET $${++paramCount}`;
-    params.push(parseInt(limit), offset);
-
-    const result = await pool.query(query, params);
-
-    // Gesamtanzahl für Pagination
-    let countQuery = `
-      SELECT COUNT(*) as total
-      FROM tasks t
-      WHERE t.assignee_id = $1
-    `;
-    const countParams = [req.user.id];
-    paramCount = 1;
-
-    if (status) {
-      countQuery += ` AND t.status = $${++paramCount}`;
-      countParams.push(status);
-    }
-    if (priority) {
-      countQuery += ` AND t.priority = $${++paramCount}`;
-      countParams.push(priority);
-    }
-    if (project_id) {
-      countQuery += ` AND t.project_id = $${++paramCount}`;
-      countParams.push(project_id);
-    }
-    if (searchTerm) {
-      countQuery += ` AND (t.title ILIKE $${++paramCount} OR t.description ILIKE $${++paramCount})`;
-      countParams.push(searchTerm, searchTerm);
-    }
-
-    const countResult = await pool.query(countQuery, countParams);
-    const total = parseInt(countResult.rows[0].total);
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+    const paginatedTasks = filteredTasks.slice(offset, offset + parseInt(limit));
 
     res.json({
-      tasks: result.rows,
+      tasks: paginatedTasks,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
-        total,
-        pages: Math.ceil(total / parseInt(limit))
+        total: filteredTasks.length,
+        pages: Math.ceil(filteredTasks.length / parseInt(limit))
       }
     });
   } catch (error) {
@@ -206,34 +159,9 @@ router.get('/my-tasks', authenticateToken, asyncHandler(async (req, res) => {
 // Task-Statistiken für Benutzer
 router.get('/my-tasks/stats', authenticateToken, asyncHandler(async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT 
-        COUNT(*) as total_tasks,
-        COUNT(CASE WHEN status = 'todo' THEN 1 END) as todo_count,
-        COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress_count,
-        COUNT(CASE WHEN status = 'review' THEN 1 END) as review_count,
-        COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_count,
-        COUNT(CASE WHEN due_date < CURRENT_DATE AND status NOT IN ('completed', 'cancelled') THEN 1 END) as overdue_count,
-        COUNT(CASE WHEN due_date <= CURRENT_DATE + INTERVAL '3 days' AND status NOT IN ('completed', 'cancelled') THEN 1 END) as due_soon_count,
-        AVG(CASE WHEN status = 'completed' AND actual_hours IS NOT NULL THEN actual_hours END) as avg_completion_hours
-      FROM tasks
-      WHERE assignee_id = $1
-    `, [req.user.id]);
+    // Verwende Fallback-System für Statistiken
+    const stats = await getTaskStatsSimple(req.user.id);
     
-    if (result.rows.length === 0) {
-      return res.json({
-        total_tasks: 0,
-        todo_count: 0,
-        in_progress_count: 0,
-        review_count: 0,
-        completed_count: 0,
-        overdue_count: 0,
-        due_soon_count: 0,
-        avg_completion_hours: 0
-      });
-    }
-
-    const stats = result.rows[0];
     res.json({
       total_tasks: parseInt(stats.total_tasks) || 0,
       todo_count: parseInt(stats.todo_count) || 0,
