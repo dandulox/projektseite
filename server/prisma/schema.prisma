@@ -33,6 +33,9 @@ model User {
   activityLogs     ActivityLog[]
   createdTeams     Team[]    @relation("TeamLeader")
 
+  // Indexes
+  @@index([role])
+  @@index([isActive])
   @@map("users")
 }
 
@@ -68,6 +71,13 @@ model Project {
   tasks   Task[]
   activityLogs ActivityLog[]
 
+  // Indexes
+  @@index([ownerId])
+  @@index([teamId])
+  @@index([status])
+  @@index([priority])
+  @@index([visibility])
+  @@index([targetDate])
   @@map("projects")
 }
 
@@ -110,6 +120,17 @@ model Task {
   attachments TaskAttachment[]
   activities TaskActivity[]
 
+  // Indexes
+  @@index([assigneeId])
+  @@index([projectId])
+  @@index([moduleId])
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([assigneeId, status])
+  @@index([projectId, status])
   @@map("tasks")
 }
 
@@ -145,6 +166,11 @@ model Module {
   tasks   Task[]
   activities ModuleActivity[]
 
+  // Indexes
+  @@index([projectId])
+  @@index([assignedTo])
+  @@index([status])
+  @@index([priority])
   @@map("modules")
 }
 
@@ -173,6 +199,9 @@ model Team {
   members  TeamMembership[]
   projects Project[]
 
+  // Indexes
+  @@index([leaderId])
+  @@index([isActive])
   @@map("teams")
 }
 
@@ -187,6 +216,10 @@ model TeamMembership {
   team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // Indexes
+  @@index([teamId])
+  @@index([userId])
+  @@index([role])
   @@unique([teamId, userId])
   @@map("team_memberships")
 }
@@ -219,6 +252,11 @@ model Notification {
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   fromUser User?    @relation("NotificationFromUser", fields: [fromUserId], references: [id], onDelete: SetNull)
 
+  // Indexes
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([userId, isRead])
   @@map("notifications")
 }
 
@@ -238,6 +276,10 @@ model ActivityLog {
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  // Indexes
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
   @@map("activity_logs")
 }
 
@@ -257,6 +299,10 @@ model TaskComment {
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user User @relation("TaskCommentUser", fields: [userId], references: [id], onDelete: Cascade)
 
+  // Indexes
+  @@index([taskId])
+  @@index([userId])
+  @@index([createdAt])
   @@map("task_comments")
 }
 
@@ -275,6 +321,9 @@ model TaskAttachment {
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user User @relation("TaskAttachmentUser", fields: [userId], references: [id], onDelete: Cascade)
 
+  // Indexes
+  @@index([taskId])
+  @@index([userId])
   @@map("task_attachments")
 }
 
@@ -294,6 +343,10 @@ model TaskActivity {
   task Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user User? @relation("TaskActivityUser", fields: [userId], references: [id], onDelete: SetNull)
 
+  // Indexes
+  @@index([taskId])
+  @@index([userId])
+  @@index([createdAt])
   @@map("task_activities")
 }
 
@@ -309,6 +362,10 @@ model ModuleActivity {
   module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   user   User?  @relation("ModuleActivityUser", fields: [userId], references: [id], onDelete: SetNull)
 
+  // Indexes
+  @@index([moduleId])
+  @@index([userId])
+  @@index([createdAt])
   @@map("module_activities")
 }
 
@@ -329,77 +386,3 @@ enum Visibility {
   PUBLIC
 }
 
-// ==============================================
-// INDEXES FOR PERFORMANCE
-// ==============================================
-
-// User indexes
-@@index([User.username])
-@@index([User.email])
-@@index([User.role])
-@@index([User.isActive])
-
-// Project indexes
-@@index([Project.ownerId])
-@@index([Project.teamId])
-@@index([Project.status])
-@@index([Project.priority])
-@@index([Project.visibility])
-@@index([Project.targetDate])
-
-// Task indexes
-@@index([Task.assigneeId])
-@@index([Task.projectId])
-@@index([Task.moduleId])
-@@index([Task.status])
-@@index([Task.priority])
-@@index([Task.dueDate])
-@@index([Task.createdAt])
-@@index([Task.updatedAt])
-@@index([Task.assigneeId, Task.status])
-@@index([Task.projectId, Task.status])
-
-// Module indexes
-@@index([Module.projectId])
-@@index([Module.assignedTo])
-@@index([Module.status])
-@@index([Module.priority])
-
-// Team indexes
-@@index([Team.leaderId])
-@@index([Team.isActive])
-
-// TeamMembership indexes
-@@index([TeamMembership.teamId])
-@@index([TeamMembership.userId])
-@@index([TeamMembership.role])
-
-// Notification indexes
-@@index([Notification.userId])
-@@index([Notification.isRead])
-@@index([Notification.createdAt])
-@@index([Notification.userId, Notification.isRead])
-
-// Activity Log indexes
-@@index([ActivityLog.entityType, ActivityLog.entityId])
-@@index([ActivityLog.userId])
-@@index([ActivityLog.createdAt])
-
-// Task Comment indexes
-@@index([TaskComment.taskId])
-@@index([TaskComment.userId])
-@@index([TaskComment.createdAt])
-
-// Task Attachment indexes
-@@index([TaskAttachment.taskId])
-@@index([TaskAttachment.userId])
-
-// Task Activity indexes
-@@index([TaskActivity.taskId])
-@@index([TaskActivity.userId])
-@@index([TaskActivity.createdAt])
-
-// Module Activity indexes
-@@index([ModuleActivity.moduleId])
-@@index([ModuleActivity.userId])
-@@index([ModuleActivity.createdAt])
