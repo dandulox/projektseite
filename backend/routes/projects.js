@@ -181,7 +181,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 // Neues Projekt erstellen
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const { 
       name, 
@@ -329,7 +329,7 @@ router.post('/', authenticateToken, async (req, res) => {
     console.error('Fehler-Stack:', error.stack);
     res.status(500).json({ error: 'Interner Serverfehler', details: process.env.NODE_ENV === 'development' ? error.message : undefined });
   }
-});
+}));
 
 // Projekt aktualisieren
 router.put('/:id', authenticateToken, async (req, res) => {

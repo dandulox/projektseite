@@ -251,6 +251,90 @@ const getDashboardSimple = async (userId) => {
   };
 };
 
+// Vereinfachte Teams-Daten
+const getTeamsSimple = async (userId, limit = 10) => {
+  try {
+    const result = await safeQuery(`
+      SELECT id, name, description, team_leader_id, is_active, created_at, updated_at
+      FROM teams
+      WHERE is_active = true
+      ORDER BY created_at DESC
+      LIMIT $1
+    `, [limit], []);
+    
+    return result.map(team => ({
+      ...team,
+      leader_username: 'Unbekannt',
+      member_count: 0,
+      user_role: 'member'
+    }));
+  } catch (error) {
+    console.warn('Fehler beim Abrufen der Teams:', error.message);
+    return [];
+  }
+};
+
+// Vereinfachte Team-Details
+const getTeamSimple = async (teamId) => {
+  try {
+    const teamResult = await safeQuery(`
+      SELECT id, name, description, team_leader_id, is_active, created_at, updated_at
+      FROM teams
+      WHERE id = $1 AND is_active = true
+    `, [teamId], []);
+    
+    if (teamResult.length === 0) {
+      return null;
+    }
+    
+    const team = teamResult[0];
+    
+    // Versuche Mitglieder zu laden (falls Tabelle existiert)
+    let members = [];
+    try {
+      const membersResult = await safeQuery(`
+        SELECT u.id, u.username, u.email, u.role as user_role, tm.role as team_role, tm.joined_at
+        FROM team_memberships tm
+        JOIN users u ON u.id = tm.user_id
+        WHERE tm.team_id = $1
+        ORDER BY tm.role DESC, tm.joined_at ASC
+      `, [teamId], []);
+      members = membersResult;
+    } catch (membersError) {
+      console.warn('Konnte Team-Mitglieder nicht laden:', membersError.message);
+    }
+    
+    // Versuche Projekte zu laden
+    let projects = [];
+    try {
+      const projectsResult = await safeQuery(`
+        SELECT p.id, p.name, p.description, p.status, p.priority, p.owner_id, p.created_at, p.updated_at
+        FROM projects p
+        WHERE p.team_id = $1
+        ORDER BY p.created_at DESC
+      `, [teamId], []);
+      projects = projectsResult.map(project => ({
+        ...project,
+        owner_username: 'Unbekannt'
+      }));
+    } catch (projectsError) {
+      console.warn('Konnte Team-Projekte nicht laden:', projectsError.message);
+    }
+    
+    return {
+      team: {
+        ...team,
+        leader_username: 'Unbekannt'
+      },
+      members,
+      projects
+    };
+  } catch (error) {
+    console.warn('Fehler beim Abrufen der Team-Details:', error.message);
+    return null;
+  }
+};
+
 module.exports = {
   tableExists,
   functionExists,
@@ -258,5 +342,7 @@ module.exports = {
   getTasksSimple,
   getProjectsSimple,
   getTaskStatsSimple,
-  getDashboardSimple
+  getDashboardSimple,
+  getTeamsSimple,
+  getTeamSimple,
 };

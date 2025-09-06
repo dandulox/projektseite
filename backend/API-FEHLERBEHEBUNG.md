@@ -156,8 +156,9 @@ docker-compose logs -f backend
 1. **Datenbank initialisieren**: `node scripts/init-minimal-database.js`
 2. **API testen**: `node scripts/test-api-endpoints.js`
 3. **Dashboard-Response testen**: `node scripts/test-dashboard-response.js`
-4. **Frontend testen**: Öffne die Anwendung im Browser
-5. **Logs überwachen**: Prüfe Server-Logs auf weitere Fehler
+4. **Aktualisierte Routen testen**: `node scripts/test-updated-routes.js`
+5. **Frontend testen**: Öffne die Anwendung im Browser
+6. **Logs überwachen**: Prüfe Server-Logs auf weitere Fehler
 
 ## Frontend-Fehler beheben
 
@@ -195,6 +196,31 @@ Das Frontend erwartet spezifische Status-Werte:
 - `on_hold`
 - `completed`
 - `cancelled`
+
+## Weitere 500-Fehler beheben
+
+### Teams-Route (/api/teams/:id)
+**Problem:** 500-Fehler beim Abrufen von Team-Details
+
+**Lösung:**
+1. Teams-Route wurde mit Fallback-System ausgestattet
+2. Verwendet `getTeamSimple()` bei fehlenden Tabellen
+3. Gibt leere Arrays für Mitglieder/Projekte zurück, falls Tabellen fehlen
+
+### POST /api/projects
+**Problem:** 500-Fehler beim Erstellen neuer Projekte
+
+**Lösung:**
+1. POST-Route wurde mit `asyncHandler` ausgestattet
+2. Robuste Fehlerbehandlung für fehlende Tabellen
+3. Projekt-Erstellung funktioniert auch bei unvollständigem Schema
+
+### Alle Routen
+**Implementierte Verbesserungen:**
+- `asyncHandler` für bessere Fehlerbehandlung
+- Fallback-System für fehlende Datenbanktabellen
+- Robuste Fehlerbehandlung mit detailliertem Logging
+- Graceful Degradation bei unvollständigem Schema
 
 ## Support
 

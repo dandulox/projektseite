@@ -2,6 +2,8 @@ const express = require('express');
 const pool = require('../config/database');
 const { authenticateToken } = require('./auth');
 const { createNotification, createTeamNotification } = require('./notifications');
+const { asyncHandler } = require('../middleware/errorHandler');
+const { getTeamsSimple, getTeamSimple } = require('../middleware/databaseFallback');
 const router = express.Router();
 
 // Hilfsfunktion: Prüft ob Benutzer Team-Leader oder Admin ist
@@ -44,7 +46,7 @@ const isTeamMember = async (userId, teamId) => {
 };
 
 // Alle Teams abrufen (für Admin) oder Teams des Benutzers
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticateToken, asyncHandler(async (req, res) => {
   try {
     let query, params;
     
@@ -85,18 +87,20 @@ router.get('/', authenticateToken, async (req, res) => {
   } catch (error) {
     if (error.message.includes('relation "teams" does not exist') || 
         error.message.includes('relation "team_memberships" does not exist')) {
-      console.warn('Teams-Tabellen existieren nicht');
-      res.json({ teams: [] });
+      console.warn('Teams-Tabellen existieren nicht, verwende Fallback');
+      // Verwende Fallback-System
+      const teams = await getTeamsSimple(req.user.id, 50);
+      res.json({ teams });
     } else {
       console.error('Fehler beim Abrufen der Teams:', error);
       console.error('Fehler-Details:', error.message);
       res.status(500).json({ error: 'Interner Serverfehler', details: process.env.NODE_ENV === 'development' ? error.message : undefined });
     }
   }
-});
+}));
 
 // Einzelnes Team abrufen
-router.get('/:id', authenticateToken, async (req, res) => {
+router.get('/:id', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const teamId = req.params.id;
     
@@ -157,15 +161,20 @@ router.get('/:id', authenticateToken, async (req, res) => {
     });
   } catch (error) {
     if (error.message.includes('relation "teams" does not exist')) {
-      console.warn('Teams-Tabelle existiert nicht');
-      res.status(404).json({ error: 'Team nicht gefunden' });
+      console.warn('Teams-Tabelle existiert nicht, verwende Fallback');
+      // Verwende Fallback-System
+      const teamData = await getTeamSimple(req.params.id);
+      if (!teamData) {
+        return res.status(404).json({ error: 'Team nicht gefunden' });
+      }
+      res.json(teamData);
     } else {
       console.error('Fehler beim Abrufen des Teams:', error);
       console.error('Fehler-Details:', error.message);
       res.status(500).json({ error: 'Interner Serverfehler', details: process.env.NODE_ENV === 'development' ? error.message : undefined });
     }
   }
-});
+}));
 
 // Neues Team erstellen
 router.post('/', authenticateToken, async (req, res) => {
