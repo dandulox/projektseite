@@ -285,6 +285,18 @@ Falls die .env-Dateien falsche Ports haben:
 ./scripts/fix-env.sh
 ```
 
+### Dockerfile-Probleme
+
+Falls Dockerfiles für Development fehlen:
+
+```powershell
+# Windows PowerShell
+.\scripts\fix-dockerfiles.ps1
+
+# Linux/macOS
+./scripts/fix-dockerfiles.sh
+```
+
 **Hinweise:**
 - Die Scripts warten automatisch bis zu 5 Minuten (30 Versuche × 10 Sekunden) auf die Datenbankbereitschaft
 - **Git-Verhalten**: Alle Scripts überschreiben automatisch lokale Änderungen mit der Remote-Version (Force Reset)

@@ -1,8 +1,6 @@
 # Docker Compose für Development
 # Erweiterte Konfiguration für lokale Entwicklung
 
-version: '3.8'
-
 services:
   # PostgreSQL Database (Development)
   postgres-dev:
