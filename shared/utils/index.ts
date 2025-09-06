@@ -214,7 +214,7 @@ export const objectUtils = {
   },
 
   // Pick properties
-  pick: <T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> => {
+  pick: <T extends object, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> => {
     const result = {} as Pick<T, K>;
     keys.forEach(key => {
       if (key in obj) {
@@ -292,6 +292,66 @@ export const numberUtils = {
   },
 };
 
+// Color utilities
+export const colorUtils = {
+  // Generate random color
+  randomColor: (): string => {
+    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  },
+
+  // Convert hex to RGB
+  hexToRgb: (hex: string): { r: number; g: number; b: number } | null => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  },
+
+  // Get contrast color (black or white)
+  getContrastColor: (hex: string): string => {
+    const rgb = colorUtils.hexToRgb(hex);
+    if (!rgb) return '#000000';
+    
+    const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+    return brightness > 128 ? '#000000' : '#FFFFFF';
+  },
+};
+
+// Environment utilities
+export const envUtils = {
+  // Check if development
+  isDevelopment: (): boolean => {
+    return process.env.NODE_ENV === 'development';
+  },
+
+  // Check if production
+  isProduction: (): boolean => {
+    return process.env.NODE_ENV === 'production';
+  },
+
+  // Check if test
+  isTest: (): boolean => {
+    return process.env.NODE_ENV === 'test';
+  },
+
+  // Get environment variable with default
+  getEnv: (key: string, defaultValue?: string): string | undefined => {
+    return process.env[key] || defaultValue;
+  },
+
+  // Get required environment variable
+  getRequiredEnv: (key: string): string => {
+    const value = process.env[key];
+    if (!value) {
+      throw new Error(`Required environment variable ${key} is not set`);
+    }
+    return value;
+  },
+};
+
 // Export all utilities
 export const utils = {
   string: stringUtils,
@@ -300,4 +360,6 @@ export const utils = {
   array: arrayUtils,
   object: objectUtils,
   number: numberUtils,
+  color: colorUtils,
+  env: envUtils,
 };

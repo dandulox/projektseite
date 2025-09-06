@@ -177,6 +177,29 @@ export const cleanupSchema = z.object({
   type: z.enum(['expired_tokens', 'old_logs', 'temp_files']),
 });
 
+// Validation functions
+export const validateInput = <T>(schema: any, data: unknown): T => {
+  return schema.parse(data);
+};
+
+export const validateQuery = <T>(schema: any, data: unknown): T => {
+  return schema.parse(data);
+};
+
+// Type exports
+export type CreateUserInput = z.infer<typeof createUserSchema>;
+export type UpdateUserInput = z.infer<typeof updateTaskSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
+export type CreateProjectInput = z.infer<typeof createProjectSchema>;
+export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
+export type CreateTaskInput = z.infer<typeof createTaskSchema>;
+export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
+export type CreateTeamInput = z.infer<typeof createTeamSchema>;
+export type UpdateTeamInput = z.infer<typeof updateTeamSchema>;
+export type TaskQueryInput = z.infer<typeof taskQuerySchema>;
+export type ProjectQueryInput = z.infer<typeof projectQuerySchema>;
+export type DeadlineQueryInput = z.infer<typeof taskQuerySchema>;
+
 // Export all schemas
 export const validationSchemas = {
   // Common

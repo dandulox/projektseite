@@ -218,6 +218,22 @@ npm run dev
 - `--skip-tests` / `-SkipTests`: Tests überspringen
 - `--force` / `-Force`: Bei Fehlern fortfahren
 
+## 🔧 Troubleshooting
+
+### Dependency-Probleme
+
+Falls beim Build-Prozess Fehler wie "tsc: not found" auftreten:
+
+```powershell
+# Windows PowerShell
+.\scripts\fix-dependencies.ps1
+
+# Linux/macOS
+./scripts/fix-dependencies.sh
+```
+
+Dieses Script installiert alle fehlenden devDependencies und behebt Build-Probleme.
+
 ## 🎨 Features
 
 ### 📊 Dashboard
