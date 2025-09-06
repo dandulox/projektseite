@@ -237,7 +237,31 @@ Falls beim Build-Prozess Fehler wie "tsc: not found" auftreten:
 ./scripts/fix-dependencies.sh
 ```
 
-Dieses Script installiert alle fehlenden devDependencies und behebt Build-Probleme.
+### Prisma-Schema-Probleme
+
+Falls Prisma-Schema-Validierungsfehler auftreten:
+
+```powershell
+# Windows PowerShell
+.\scripts\fix-prisma.ps1
+
+# Linux/macOS
+./scripts/fix-prisma.sh
+```
+
+### Shared-Module-Probleme
+
+Falls Shared-Module-Build-Fehler auftreten:
+
+```powershell
+# Windows PowerShell
+.\scripts\fix-shared.ps1
+
+# Linux/macOS
+./scripts/fix-shared.sh
+```
+
+Diese Scripts beheben die häufigsten Installationsprobleme.
 
 ## 🎨 Features
 

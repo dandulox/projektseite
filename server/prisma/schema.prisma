@@ -30,8 +30,13 @@ model User {
   createdTasks     Task[]    @relation("TaskCreator")
   teamMemberships  TeamMembership[]
   notifications    Notification[]
+  notificationsFrom Notification[] @relation("NotificationFromUser")
   activityLogs     ActivityLog[]
   createdTeams     Team[]    @relation("TeamLeader")
+  taskComments     TaskComment[] @relation("TaskCommentUser")
+  taskAttachments  TaskAttachment[] @relation("TaskAttachmentUser")
+  taskActivities   TaskActivity[] @relation("TaskActivityUser")
+  moduleActivities ModuleActivity[] @relation("ModuleActivityUser")
 
   // Indexes
   @@index([role])
@@ -69,7 +74,6 @@ model Project {
   team    Team?   @relation(fields: [teamId], references: [id], onDelete: SetNull)
   modules Module[]
   tasks   Task[]
-  activityLogs ActivityLog[]
 
   // Indexes
   @@index([ownerId])
@@ -274,7 +278,7 @@ model ActivityLog {
   createdAt   DateTime @default(now())
 
   // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   // Indexes
   @@index([entityType, entityId])
