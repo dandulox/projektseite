@@ -143,7 +143,7 @@ export class ProjectRepository extends BaseRepository<Project> {
         count: projects.length,
       });
 
-      return projects;
+      return projects as Project[];
     } catch (error) {
       logger.error('Project findByTeam error', { teamId, options, error });
       throw error;
@@ -222,7 +222,7 @@ export class ProjectRepository extends BaseRepository<Project> {
         completedModules,
       });
 
-      return project;
+      return project as Project;
     } catch (error) {
       logger.error('Project updateCompletionPercentage error', { id, error });
       throw error;

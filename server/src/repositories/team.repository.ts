@@ -29,7 +29,7 @@ export class TeamRepository extends BaseRepository<Team> {
       });
 
       logger.debug('Team findByLeader', { leaderId, count: teams.length });
-      return teams;
+      return teams as Team[];
     } catch (error) {
       logger.error('Team findByLeader error', { leaderId, error });
       throw error;
@@ -64,7 +64,7 @@ export class TeamRepository extends BaseRepository<Team> {
       });
 
       logger.debug('Team findByMember', { userId, count: teams.length });
-      return teams;
+      return teams as Team[];
     } catch (error) {
       logger.error('Team findByMember error', { userId, error });
       throw error;
@@ -96,7 +96,7 @@ export class TeamRepository extends BaseRepository<Team> {
       });
 
       logger.debug('Team getTeamMembers', { teamId, count: members.length });
-      return members;
+      return members as any[];
     } catch (error) {
       logger.error('Team getTeamMembers error', { teamId, error });
       throw error;
@@ -192,7 +192,7 @@ export class TeamRepository extends BaseRepository<Team> {
         select: { role: true },
       });
 
-      return membership?.role || null;
+      return membership?.role as any || null;
     } catch (error) {
       logger.error('Team getUserRole error', { teamId, userId, error });
       throw error;

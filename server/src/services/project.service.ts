@@ -6,7 +6,8 @@ import {
   ProjectFilters,
   ProjectStatus,
   Priority,
-  Visibility 
+  Visibility,
+  UserRole 
 } from '@shared/types';
 import { ProjectRepository } from '@/repositories/project.repository';
 import { TeamRepository } from '@/repositories/team.repository';

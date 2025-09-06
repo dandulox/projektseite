@@ -17,7 +17,7 @@ export class UserRepository extends BaseRepository<User> {
       });
       
       logger.debug('User findByUsername', { username, found: !!user });
-      return user;
+      return user as User;
     } catch (error) {
       logger.error('User findByUsername error', { username, error });
       throw error;
@@ -32,7 +32,7 @@ export class UserRepository extends BaseRepository<User> {
       });
       
       logger.debug('User findByEmail', { email, found: !!user });
-      return user;
+      return user as User;
     } catch (error) {
       logger.error('User findByEmail error', { email, error });
       throw error;
@@ -48,7 +48,7 @@ export class UserRepository extends BaseRepository<User> {
       });
       
       logger.debug('User findByRole', { role, count: users.length });
-      return users;
+      return users as User[];
     } catch (error) {
       logger.error('User findByRole error', { role, error });
       throw error;
@@ -64,7 +64,7 @@ export class UserRepository extends BaseRepository<User> {
       });
       
       logger.debug('User findActive', { count: users.length });
-      return users;
+      return users as User[];
     } catch (error) {
       logger.error('User findActive error', { error });
       throw error;
@@ -87,7 +87,7 @@ export class UserRepository extends BaseRepository<User> {
       });
       
       logger.debug('User search', { query, count: users.length });
-      return users;
+      return users as User[];
     } catch (error) {
       logger.error('User search error', { query, error });
       throw error;

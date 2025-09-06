@@ -155,7 +155,7 @@ export class TaskRepository extends BaseRepository<Task> {
         count: tasks.length,
       });
 
-      return tasks;
+      return tasks as Task[];
     } catch (error) {
       logger.error('Task findByProject error', { projectId, options, error });
       throw error;
@@ -192,7 +192,7 @@ export class TaskRepository extends BaseRepository<Task> {
         count: tasks.length,
       });
 
-      return tasks;
+      return tasks as Task[];
     } catch (error) {
       logger.error('Task findOverdue error', { assigneeId, error });
       throw error;
@@ -236,7 +236,7 @@ export class TaskRepository extends BaseRepository<Task> {
         count: tasks.length,
       });
 
-      return tasks;
+      return tasks as Task[];
     } catch (error) {
       logger.error('Task findDueSoon error', { days, assigneeId, error });
       throw error;
@@ -336,7 +336,7 @@ export class TaskRepository extends BaseRepository<Task> {
         userId,
       });
 
-      return task;
+      return task as Task;
     } catch (error) {
       logger.error('Task updateStatus error', { id, status, userId, error });
       throw error;
@@ -368,7 +368,7 @@ export class TaskRepository extends BaseRepository<Task> {
         userId,
       });
 
-      return task;
+      return task as Task;
     } catch (error) {
       logger.error('Task assign error', { id, assigneeId, userId, error });
       throw error;

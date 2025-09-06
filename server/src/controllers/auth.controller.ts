@@ -8,7 +8,7 @@ import {
 import { 
   LoginInput, 
   CreateUserInput 
-} from '@shared/contracts/validation';
+} from '@shared/types';
 import { logger } from '@/utils/logger';
 import { stringUtils } from '@shared/utils';
 
