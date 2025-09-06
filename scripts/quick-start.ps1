@@ -3,7 +3,8 @@
 
 param(
     [switch]$SkipValidation = $false,
-    [switch]$SkipDocker = $false
+    [switch]$SkipDocker = $false,
+    [switch]$Update = $false
 )
 
 # Colors for output
@@ -42,6 +43,27 @@ function Write-Error {
 function Write-Info {
     param([string]$Text)
     Write-Host "ℹ️  $Text" -ForegroundColor $Cyan
+}
+
+# Update repository
+function Update-Repository {
+    if ($Update) {
+        Write-Step "Updating repository..."
+        
+        if (Test-Path ".git") {
+            Write-Info "Pulling latest changes..."
+            git pull origin main
+            
+            Write-Info "Checking for submodules..."
+            if (Test-Path ".gitmodules") {
+                git submodule update --init --recursive
+            }
+            
+            Write-Success "Repository updated"
+        } else {
+            Write-Warning "Not a git repository, skipping update"
+        }
+    }
 }
 
 # Quick validation
@@ -226,7 +248,11 @@ function Main {
     
     Write-Info "Skip Validation: $SkipValidation"
     Write-Info "Skip Docker: $SkipDocker"
+    Write-Info "Update Repository: $Update"
     Write-Host ""
+    
+    # Update repository
+    Update-Repository
     
     # Quick validation
     if (-not $SkipValidation) {
