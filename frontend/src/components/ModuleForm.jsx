@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { formatDateForInput, formatDateForApi } from '../utils/dateUtils';
 import toast from 'react-hot-toast';
 
 const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleType = 'project' }) => {
@@ -36,7 +37,7 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
         priority: editModule.priority || 'medium',
         estimated_hours: editModule.estimated_hours || '',
         assigned_to: editModule.assigned_to ? (Array.isArray(editModule.assigned_to) ? editModule.assigned_to : [editModule.assigned_to]) : [],
-        due_date: editModule.due_date || '',
+        due_date: formatDateForInput(editModule.due_date) || '',
         visibility: editModule.visibility || 'private',
         team_id: editModule.team_id || '',
         tags: editModule.tags ? editModule.tags.join(', ') : '',
@@ -87,6 +88,7 @@ const ModuleForm = ({ projectId, onClose, onSuccess, editModule = null, moduleTy
         ...formData,
         estimated_hours: formData.estimated_hours ? parseFloat(formData.estimated_hours) : null,
         assigned_to: formData.assigned_to.length > 0 ? formData.assigned_to : null,
+        due_date: formatDateForApi(formData.due_date),
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
         dependencies: formData.dependencies ? formData.dependencies.split(',').map(dep => dep.trim()) : []
       };

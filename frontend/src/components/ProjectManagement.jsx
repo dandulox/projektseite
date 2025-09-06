@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { formatDateForInput, formatDateForApi } from '../utils/dateUtils';
 import toast from 'react-hot-toast';
 import ModuleForm from './ModuleForm';
 import UserCard from './UserCard';
@@ -116,7 +117,12 @@ const ProjectManagement = () => {
   const handleCreateProject = async (e) => {
     e.preventDefault();
     try {
-      await projectApi.createProject(newProject);
+      const projectData = {
+        ...newProject,
+        start_date: formatDateForApi(newProject.start_date),
+        target_date: formatDateForApi(newProject.target_date)
+      };
+      await projectApi.createProject(projectData);
       toast.success('Projekt erfolgreich erstellt');
       setNewProject({
         name: '',
@@ -138,7 +144,12 @@ const ProjectManagement = () => {
   const handleUpdateProject = async (e) => {
     e.preventDefault();
     try {
-      await projectApi.updateProject(selectedProject.project.id, selectedProject.project);
+      const projectData = {
+        ...selectedProject.project,
+        start_date: formatDateForApi(selectedProject.project.start_date),
+        target_date: formatDateForApi(selectedProject.project.target_date)
+      };
+      await projectApi.updateProject(selectedProject.project.id, projectData);
       toast.success('Projekt erfolgreich aktualisiert');
       setShowEditForm(false);
       loadProjects();
@@ -1011,7 +1022,7 @@ const ProjectManagement = () => {
                     </label>
                     <input
                       type="date"
-                      value={selectedProject.project.start_date || ''}
+                      value={formatDateForInput(selectedProject.project.start_date) || ''}
                       onChange={(e) => setSelectedProject({
                         ...selectedProject,
                         project: { ...selectedProject.project, start_date: e.target.value }
@@ -1025,7 +1036,7 @@ const ProjectManagement = () => {
                     </label>
                     <input
                       type="date"
-                      value={selectedProject.project.target_date || ''}
+                      value={formatDateForInput(selectedProject.project.target_date) || ''}
                       onChange={(e) => setSelectedProject({
                         ...selectedProject,
                         project: { ...selectedProject.project, target_date: e.target.value }
