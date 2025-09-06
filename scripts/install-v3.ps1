@@ -174,7 +174,7 @@ function Install-Shared {
     
     try {
         Write-Info "Installing dependencies..."
-        npm install
+        npm install --include=dev
         
         Write-Info "Building shared module..."
         npm run build
@@ -198,7 +198,7 @@ function Install-Backend {
     
     try {
         Write-Info "Installing dependencies..."
-        npm install
+        npm install --include=dev
         
         Write-Info "Setting up environment..."
         if (-not (Test-Path ".env")) {
@@ -241,7 +241,7 @@ function Install-Frontend {
     
     try {
         Write-Info "Installing dependencies..."
-        npm install
+        npm install --include=dev
         
         Write-Info "Setting up environment..."
         if (-not (Test-Path ".env")) {

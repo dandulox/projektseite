@@ -177,7 +177,7 @@ install_shared() {
     cd shared
     
     print_info "Installing dependencies..."
-    npm install
+            npm install --include=dev
     
     print_info "Building shared module..."
     npm run build
@@ -193,7 +193,7 @@ install_backend() {
     cd server
     
     print_info "Installing dependencies..."
-    npm install
+            npm install --include=dev
     
     print_info "Setting up environment..."
     if [ ! -f ".env" ]; then
@@ -228,7 +228,7 @@ install_frontend() {
     cd client
     
     print_info "Installing dependencies..."
-    npm install
+            npm install --include=dev
     
     print_info "Setting up environment..."
     if [ ! -f ".env" ]; then

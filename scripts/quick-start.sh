@@ -123,19 +123,19 @@ install_dependencies() {
     # Shared
     print_info "Installing shared dependencies..."
     cd shared
-    npm install --silent
+    npm install --include=dev --silent
     cd ..
     
     # Server
     print_info "Installing server dependencies..."
     cd server
-    npm install --silent
+    npm install --include=dev --silent
     cd ..
     
     # Client
     print_info "Installing client dependencies..."
     cd client
-    npm install --silent
+    npm install --include=dev --silent
     cd ..
     
     print_success "Dependencies installed"

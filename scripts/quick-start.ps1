@@ -98,19 +98,19 @@ function Install-Dependencies {
     # Shared
     Write-Info "Installing shared dependencies..."
     Set-Location shared
-    npm install --silent
+        npm install --include=dev --silent
     Set-Location ..
     
     # Server
     Write-Info "Installing server dependencies..."
     Set-Location server
-    npm install --silent
+        npm install --include=dev --silent
     Set-Location ..
     
     # Client
     Write-Info "Installing client dependencies..."
     Set-Location client
-    npm install --silent
+        npm install --include=dev --silent
     Set-Location ..
     
     Write-Success "Dependencies installed"
