@@ -648,4 +648,102 @@ router.post('/:id/update-progress', authenticateToken, async (req, res) => {
   }
 });
 
+// Kanban Board für Projekt abrufen
+router.get('/:id/board', authenticateToken, async (req, res) => {
+  try {
+    const projectId = req.params.id;
+
+    // Prüfe Berechtigung
+    if (!(await checkProjectPermission(req.user.id, projectId, 'view'))) {
+      return res.status(403).json({ error: 'Keine Berechtigung für dieses Projekt' });
+    }
+
+    // Projekt-Details abrufen
+    const projectResult = await pool.query(`
+      SELECT p.*, u.username as owner_username
+      FROM projects p
+      LEFT JOIN users u ON u.id = p.owner_id
+      WHERE p.id = $1
+    `, [projectId]);
+
+    if (projectResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Projekt nicht gefunden' });
+    }
+
+    const project = projectResult.rows[0];
+
+    // Tasks für Kanban Board abrufen (gruppiert nach Status)
+    const tasksResult = await pool.query(`
+      SELECT 
+        t.*,
+        u.username as assignee_username,
+        u.email as assignee_email,
+        pm.name as module_name,
+        CASE 
+          WHEN t.due_date < CURRENT_DATE AND t.status NOT IN ('completed', 'cancelled') THEN true
+          ELSE false
+        END as is_overdue,
+        CASE 
+          WHEN t.due_date <= CURRENT_DATE + INTERVAL '3 days' AND t.status NOT IN ('completed', 'cancelled') THEN true
+          ELSE false
+        END as is_due_soon
+      FROM tasks t
+      LEFT JOIN users u ON u.id = t.assignee_id
+      LEFT JOIN project_modules pm ON pm.id = t.module_id
+      WHERE t.project_id = $1
+      ORDER BY t.priority DESC, t.created_at ASC
+    `, [projectId]);
+
+    // Tasks nach Status gruppieren
+    const kanbanColumns = {
+      todo: {
+        id: 'todo',
+        title: 'Zu erledigen',
+        tasks: []
+      },
+      in_progress: {
+        id: 'in_progress',
+        title: 'In Bearbeitung',
+        tasks: []
+      },
+      review: {
+        id: 'review',
+        title: 'Review',
+        tasks: []
+      },
+      completed: {
+        id: 'completed',
+        title: 'Abgeschlossen',
+        tasks: []
+      },
+      cancelled: {
+        id: 'cancelled',
+        title: 'Abgebrochen',
+        tasks: []
+      }
+    };
+
+    // Tasks in entsprechende Spalten einteilen
+    tasksResult.rows.forEach(task => {
+      if (kanbanColumns[task.status]) {
+        kanbanColumns[task.status].tasks.push(task);
+      }
+    });
+
+    // Spalten in Array umwandeln (ohne leere Spalten)
+    const columns = Object.values(kanbanColumns).filter(column => 
+      column.tasks.length > 0 || ['todo', 'in_progress', 'review', 'completed'].includes(column.id)
+    );
+
+    res.json({
+      project,
+      columns,
+      totalTasks: tasksResult.rows.length
+    });
+  } catch (error) {
+    console.error('Fehler beim Abrufen des Kanban Boards:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
 module.exports = router;

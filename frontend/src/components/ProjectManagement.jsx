@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import ModuleForm from './ModuleForm';
 import UserCard from './UserCard';
@@ -7,6 +8,7 @@ import UserAssignment from './UserAssignment';
 
 const ProjectManagement = () => {
   const { projectApi, teamApi, moduleApi, user, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [teams, setTeams] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
@@ -505,11 +507,20 @@ const ProjectManagement = () => {
                         </div>
                       </div>
                       <div className="flex gap-2">
+                        <button
+                          onClick={() => navigate(`/projects/${selectedProject.project.id}/board`)}
+                          className="btn-primary text-sm px-3 py-1 flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h2a2 2 0 002-2z" />
+                          </svg>
+                          Kanban Board
+                        </button>
                         {(selectedProject.project.owner_id === user.id || isAdmin) && (
                           <>
                             <button
                               onClick={() => setShowEditForm(true)}
-                              className="btn-primary text-sm px-3 py-1"
+                              className="btn-secondary text-sm px-3 py-1"
                             >
                               Bearbeiten
                             </button>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BrowserRouter as Router, Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, NavLink, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, ProtectedRoute, useAuth } from './contexts/AuthContext';
@@ -13,6 +13,7 @@ import TeamManagement from './components/TeamManagement';
 import VersionManagement from './components/VersionManagement';
 import ProjectManagement from './components/ProjectManagement';
 import ProjectDashboard from './components/ProjectDashboard';
+import KanbanBoard from './components/KanbanBoard';
 import RegisterFormStartPage from './components/RegisterFormStartPage';
 import LoginForm from './components/LoginForm';
 import DynamicGreeting from './components/DynamicGreeting';
@@ -439,6 +440,12 @@ const Dashboard = () => <DashboardPage />;
 
 // Projektverwaltung Component - jetzt mit echter Backend-Integration
 const Projects = () => <ProjectManagement />;
+
+// Kanban Board Wrapper Component
+const KanbanBoardWrapper = () => {
+  const { id } = useParams();
+  return <KanbanBoard projectId={id} />;
+};
 
 
 
@@ -925,6 +932,21 @@ const AppContent = () => {
               />
               <main className="flex-1 py-8 page-container">
                 <Projects />
+              </main>
+              <Footer />
+              <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+            </ProtectedRoute>
+          } />
+          <Route path="/projects/:id/board" element={
+            <ProtectedRoute>
+              <Header 
+                theme={theme} 
+                toggleTheme={toggleTheme}
+                isMobileMenuOpen={isMobileMenuOpen}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+              />
+              <main className="flex-1 py-8 page-container">
+                <KanbanBoardWrapper />
               </main>
               <Footer />
               <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />

@@ -100,22 +100,60 @@ router.get('/my-tasks', authenticateToken, async (req, res) => {
     const offset = (parseInt(page) - 1) * parseInt(limit);
     const searchTerm = search ? `%${search}%` : null;
 
-    // Verwende die Datenbankfunktion für optimierte Abfrage
-    const result = await pool.query(`
-      SELECT * FROM get_user_tasks(
-        $1, $2, $3, $4, $5, $6, $7, $8, $9
-      )
-    `, [
-      req.user.id,
-      status || null,
-      priority || null,
-      project_id || null,
-      searchTerm,
-      sort_by,
-      sort_order,
-      parseInt(limit),
-      offset
-    ]);
+    // Einfache Abfrage ohne Datenbankfunktion
+    let query = `
+      SELECT 
+        t.*,
+        p.name as project_name,
+        pm.name as module_name,
+        u.username as assignee_username,
+        u.email as assignee_email,
+        creator.username as created_by_username,
+        CASE 
+          WHEN t.due_date < CURRENT_DATE AND t.status NOT IN ('completed', 'cancelled') THEN true
+          ELSE false
+        END as is_overdue,
+        CASE 
+          WHEN t.due_date <= CURRENT_DATE + INTERVAL '3 days' AND t.status NOT IN ('completed', 'cancelled') THEN true
+          ELSE false
+        END as is_due_soon
+      FROM tasks t
+      LEFT JOIN projects p ON p.id = t.project_id
+      LEFT JOIN project_modules pm ON pm.id = t.module_id
+      LEFT JOIN users u ON u.id = t.assignee_id
+      LEFT JOIN users creator ON creator.id = t.created_by
+      WHERE t.assignee_id = $1
+    `;
+    
+    const params = [req.user.id];
+    let paramCount = 1;
+
+    // Filter hinzufügen
+    if (status) {
+      query += ` AND t.status = $${++paramCount}`;
+      params.push(status);
+    }
+    if (priority) {
+      query += ` AND t.priority = $${++paramCount}`;
+      params.push(priority);
+    }
+    if (project_id) {
+      query += ` AND t.project_id = $${++paramCount}`;
+      params.push(project_id);
+    }
+    if (searchTerm) {
+      query += ` AND (t.title ILIKE $${++paramCount} OR t.description ILIKE $${++paramCount})`;
+      params.push(searchTerm, searchTerm);
+    }
+
+    // Sortierung
+    query += ` ORDER BY t.${sort_by} ${sort_order}`;
+    
+    // Pagination
+    query += ` LIMIT $${++paramCount} OFFSET $${++paramCount}`;
+    params.push(parseInt(limit), offset);
+
+    const result = await pool.query(query, params);
 
     // Gesamtanzahl für Pagination
     let countQuery = `
@@ -124,7 +162,7 @@ router.get('/my-tasks', authenticateToken, async (req, res) => {
       WHERE t.assignee_id = $1
     `;
     const countParams = [req.user.id];
-    let paramCount = 1;
+    paramCount = 1;
 
     if (status) {
       countQuery += ` AND t.status = $${++paramCount}`;
@@ -157,14 +195,28 @@ router.get('/my-tasks', authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error('Fehler beim Abrufen der Aufgaben:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
+    console.error('Error details:', error.message);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ error: 'Interner Serverfehler', details: error.message });
   }
 });
 
 // Task-Statistiken für Benutzer
 router.get('/my-tasks/stats', authenticateToken, async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM get_user_task_stats($1)', [req.user.id]);
+    const result = await pool.query(`
+      SELECT 
+        COUNT(*) as total_tasks,
+        COUNT(CASE WHEN status = 'todo' THEN 1 END) as todo_count,
+        COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress_count,
+        COUNT(CASE WHEN status = 'review' THEN 1 END) as review_count,
+        COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_count,
+        COUNT(CASE WHEN due_date < CURRENT_DATE AND status NOT IN ('completed', 'cancelled') THEN 1 END) as overdue_count,
+        COUNT(CASE WHEN due_date <= CURRENT_DATE + INTERVAL '3 days' AND status NOT IN ('completed', 'cancelled') THEN 1 END) as due_soon_count,
+        AVG(CASE WHEN status = 'completed' AND actual_hours IS NOT NULL THEN actual_hours END) as avg_completion_hours
+      FROM tasks
+      WHERE assignee_id = $1
+    `, [req.user.id]);
     
     if (result.rows.length === 0) {
       return res.json({
@@ -179,10 +231,21 @@ router.get('/my-tasks/stats', authenticateToken, async (req, res) => {
       });
     }
 
-    res.json(result.rows[0]);
+    const stats = result.rows[0];
+    res.json({
+      total_tasks: parseInt(stats.total_tasks) || 0,
+      todo_count: parseInt(stats.todo_count) || 0,
+      in_progress_count: parseInt(stats.in_progress_count) || 0,
+      review_count: parseInt(stats.review_count) || 0,
+      completed_count: parseInt(stats.completed_count) || 0,
+      overdue_count: parseInt(stats.overdue_count) || 0,
+      due_soon_count: parseInt(stats.due_soon_count) || 0,
+      avg_completion_hours: parseFloat(stats.avg_completion_hours) || 0
+    });
   } catch (error) {
     console.error('Fehler beim Abrufen der Task-Statistiken:', error);
-    res.status(500).json({ error: 'Interner Serverfehler' });
+    console.error('Error details:', error.message);
+    res.status(500).json({ error: 'Interner Serverfehler', details: error.message });
   }
 });
 
@@ -306,6 +369,60 @@ router.post('/', authenticateToken, async (req, res) => {
     res.status(201).json(task);
   } catch (error) {
     console.error('Fehler beim Erstellen der Aufgabe:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
+// Task-Status aktualisieren (PATCH für Kanban Board)
+router.patch('/:taskId', authenticateToken, async (req, res) => {
+  try {
+    const taskId = req.params.taskId;
+    const { status } = req.body;
+
+    // Validierung
+    if (!status) {
+      return res.status(400).json({ error: 'Status ist erforderlich' });
+    }
+
+    const validStatuses = ['todo', 'in_progress', 'review', 'completed', 'cancelled'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: 'Ungültiger Status' });
+    }
+
+    // Berechtigung prüfen
+    if (!(await checkTaskPermission(req.user.id, taskId, 'edit'))) {
+      return res.status(403).json({ error: 'Keine Berechtigung, diese Aufgabe zu bearbeiten' });
+    }
+
+    // Aktuelle Werte abrufen
+    const currentResult = await pool.query('SELECT * FROM tasks WHERE id = $1', [taskId]);
+    if (currentResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Aufgabe nicht gefunden' });
+    }
+
+    const currentTask = currentResult.rows[0];
+    const oldStatus = currentTask.status;
+
+    // Status aktualisieren
+    const result = await pool.query(`
+      UPDATE tasks 
+      SET status = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING *
+    `, [status, taskId]);
+
+    const updatedTask = result.rows[0];
+
+    // Aktivität loggen
+    await logTaskActivity(taskId, req.user.id, 'status_changed', 
+      `Status von ${oldStatus} auf ${status} geändert`, 
+      { status: oldStatus }, 
+      { status: status }
+    );
+
+    res.json(updatedTask);
+  } catch (error) {
+    console.error('Fehler beim Aktualisieren des Task-Status:', error);
     res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
