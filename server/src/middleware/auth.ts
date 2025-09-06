@@ -23,9 +23,8 @@ declare global {
 
 // Generate JWT token
 export function generateToken(userId: string, expiresIn: string = '24h'): string {
-  const payload = { userId };
-  const options: jwt.SignOptions = { expiresIn: expiresIn as jwt.StringValue };
-  return jwt.sign(payload, JWT_SECRET, options);
+  // @ts-ignore - JWT library type issue with expiresIn
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn });
 }
 
 // Verify JWT token
