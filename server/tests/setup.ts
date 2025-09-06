@@ -1,12 +1,25 @@
 // Jest Setup - Globale Test-Konfiguration
 import { config } from 'dotenv';
 
+// Extend global types for test helpers
+declare global {
+  var testHelpers: {
+    randomString: (length?: number) => string;
+    randomEmail: () => string;
+    randomUsername: () => string;
+    createTestUser: (overrides?: any) => any;
+    createTestProject: (overrides?: any) => any;
+    createTestTask: (overrides?: any) => any;
+    cleanupTestData: () => Promise<void>;
+  };
+}
+
 // Load test environment variables
 config({ path: '.env.test' });
 
 // Set test environment
 process.env.NODE_ENV = 'test';
-process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || 'postgresql://test:test@localhost:5432/projektseite_test';
+process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || 'postgresql://dev:dev_password@localhost:5433/projektseite_dev';
 
 // Global test timeout
 jest.setTimeout(30000);
