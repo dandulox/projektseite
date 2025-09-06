@@ -38,6 +38,7 @@ info() {
 declare -A PATCHES=(
     ["activity-log"]="install-activity-log.sh:Aktivitätslog-System mit automatischen Benachrichtigungen"
     ["fix-db"]="fix-database-connection.sh:Datenbankverbindung reparieren"
+    ["fix-tables"]="fix-activity-log-tables.sh:Aktivitätslog-Tabellen reparieren"
     # Weitere Patches können hier hinzugefügt werden
 )
 
