@@ -51,6 +51,7 @@ export async function createTestTask(
     status: TaskStatus.TODO,
     priority: Priority.MEDIUM,
     createdById,
+    assigneeId: createdById, // Assign to creator by default
     projectId,
     tags: ['test'],
   };

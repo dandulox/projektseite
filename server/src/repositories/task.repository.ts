@@ -10,14 +10,7 @@ export class TaskRepository extends BaseRepository<Task> {
   }
 
   // Find tasks by assignee
-  async findByAssignee(assigneeId: string, options: {
-    status?: TaskStatus[];
-    priority?: Priority[];
-    projectId?: string;
-    dueDateFrom?: Date;
-    dueDateTo?: Date;
-    tags?: string[];
-    search?: string;
+  async findByAssignee(assigneeId: string, filters: TaskFilters & {
     page?: number;
     limit?: number;
     sortBy?: string;
@@ -38,15 +31,14 @@ export class TaskRepository extends BaseRepository<Task> {
         status,
         priority,
         projectId,
-        dueDateFrom,
-        dueDateTo,
+        dueDate,
         tags,
         search,
         page = 1,
         limit = 20,
         sortBy = 'createdAt',
         sortOrder = 'desc',
-      } = options;
+      } = filters;
 
       const where: any = { assigneeId };
 
@@ -62,10 +54,10 @@ export class TaskRepository extends BaseRepository<Task> {
         where.projectId = projectId;
       }
 
-      if (dueDateFrom || dueDateTo) {
+      if (dueDate) {
         where.dueDate = {};
-        if (dueDateFrom) where.dueDate.gte = dueDateFrom;
-        if (dueDateTo) where.dueDate.lte = dueDateTo;
+        if (dueDate.from) where.dueDate.gte = dueDate.from;
+        if (dueDate.to) where.dueDate.lte = dueDate.to;
       }
 
       if (tags && tags.length > 0) {
@@ -102,14 +94,14 @@ export class TaskRepository extends BaseRepository<Task> {
 
       logger.debug('Task findByAssignee', {
         assigneeId,
-        filters: options,
+        filters,
         count: result.data.length,
         total: result.pagination.total,
       });
 
       return result;
     } catch (error) {
-      logger.error('Task findByAssignee error', { assigneeId, options, error });
+      logger.error('Task findByAssignee error', { assigneeId, filters, error });
       throw error;
     }
   }

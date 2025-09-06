@@ -4,6 +4,7 @@ import app from '../../src/server';
 import { prisma } from '../../src/config/database';
 import { generateToken } from '../utils/auth';
 import { createTestUser, createTestProject, createTestTask } from '../utils/fixtures';
+import { TaskStatus, Priority } from '@shared/types';
 
 describe('Tasks API', () => {
   let authToken: string;
@@ -55,8 +56,8 @@ describe('Tasks API', () => {
 
     it('should filter tasks by status', async () => {
       // Create tasks with different statuses
-      await createTestTask(testUser.id, testProject.id, { status: 'TODO' });
-      await createTestTask(testUser.id, testProject.id, { status: 'IN_PROGRESS' });
+      await createTestTask(testUser.id, testProject.id, { status: TaskStatus.TODO });
+      await createTestTask(testUser.id, testProject.id, { status: TaskStatus.IN_PROGRESS });
 
       const response = await request(app)
         .get('/api/tasks/my-tasks?status=TODO')
@@ -70,8 +71,8 @@ describe('Tasks API', () => {
 
     it('should filter tasks by priority', async () => {
       // Create tasks with different priorities
-      await createTestTask(testUser.id, testProject.id, { priority: 'HIGH' });
-      await createTestTask(testUser.id, testProject.id, { priority: 'LOW' });
+      await createTestTask(testUser.id, testProject.id, { priority: Priority.HIGH });
+      await createTestTask(testUser.id, testProject.id, { priority: Priority.LOW });
 
       const response = await request(app)
         .get('/api/tasks/my-tasks?priority=HIGH')
@@ -277,12 +278,12 @@ describe('Tasks API', () => {
 
   describe('PATCH /api/tasks/:id/status', () => {
     it('should update task status', async () => {
-      const task = await createTestTask(testUser.id, testProject.id, { status: 'TODO' });
+      const task = await createTestTask(testUser.id, testProject.id, { status: TaskStatus.TODO });
 
       const response = await request(app)
         .patch(`/api/tasks/${task.id}/status`)
         .set('Authorization', `Bearer ${authToken}`)
-        .send({ status: 'IN_PROGRESS' })
+        .send({ status: TaskStatus.IN_PROGRESS })
         .expect(200);
 
       expect(response.body.success).toBe(true);
@@ -290,12 +291,12 @@ describe('Tasks API', () => {
     });
 
     it('should set completedAt when status is COMPLETED', async () => {
-      const task = await createTestTask(testUser.id, testProject.id, { status: 'TODO' });
+      const task = await createTestTask(testUser.id, testProject.id, { status: TaskStatus.TODO });
 
       const response = await request(app)
         .patch(`/api/tasks/${task.id}/status`)
         .set('Authorization', `Bearer ${authToken}`)
-        .send({ status: 'COMPLETED' })
+        .send({ status: TaskStatus.COMPLETED })
         .expect(200);
 
       expect(response.body.success).toBe(true);
@@ -353,9 +354,9 @@ describe('Tasks API', () => {
   describe('GET /api/tasks/stats', () => {
     it('should return task statistics', async () => {
       // Create tasks with different statuses
-      await createTestTask(testUser.id, testProject.id, { status: 'TODO' });
-      await createTestTask(testUser.id, testProject.id, { status: 'IN_PROGRESS' });
-      await createTestTask(testUser.id, testProject.id, { status: 'COMPLETED' });
+      await createTestTask(testUser.id, testProject.id, { status: TaskStatus.TODO });
+      await createTestTask(testUser.id, testProject.id, { status: TaskStatus.IN_PROGRESS });
+      await createTestTask(testUser.id, testProject.id, { status: TaskStatus.COMPLETED });
 
       const response = await request(app)
         .get('/api/tasks/stats')
@@ -381,7 +382,7 @@ describe('Tasks API', () => {
       const pastDate = new Date(Date.now() - 24 * 60 * 60 * 1000); // Yesterday
       await createTestTask(testUser.id, testProject.id, { 
         dueDate: pastDate,
-        status: 'TODO' 
+        status: TaskStatus.TODO 
       });
 
       const response = await request(app)
@@ -398,7 +399,7 @@ describe('Tasks API', () => {
       const pastDate = new Date(Date.now() - 24 * 60 * 60 * 1000); // Yesterday
       await createTestTask(testUser.id, testProject.id, { 
         dueDate: pastDate,
-        status: 'COMPLETED' 
+        status: TaskStatus.COMPLETED 
       });
 
       const response = await request(app)
@@ -422,7 +423,7 @@ describe('Tasks API', () => {
       const futureDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000); // 3 days from now
       await createTestTask(testUser.id, testProject.id, { 
         dueDate: futureDate,
-        status: 'TODO' 
+        status: TaskStatus.TODO 
       });
 
       const response = await request(app)
@@ -439,7 +440,7 @@ describe('Tasks API', () => {
       const futureDate = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000); // 10 days from now
       await createTestTask(testUser.id, testProject.id, { 
         dueDate: futureDate,
-        status: 'TODO' 
+        status: TaskStatus.TODO 
       });
 
       const response = await request(app)
