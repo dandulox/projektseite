@@ -23,7 +23,9 @@ declare global {
 
 // Generate JWT token
 export function generateToken(userId: string, expiresIn: string = '24h'): string {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: expiresIn });
+  const payload = { userId };
+  const options = { expiresIn };
+  return jwt.sign(payload, JWT_SECRET, options);
 }
 
 // Verify JWT token
