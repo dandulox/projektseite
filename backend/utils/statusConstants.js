@@ -2,7 +2,7 @@
 // Verhindert Inkonsistenzen zwischen verschiedenen Modulen
 
 // Task-Status (Kanban Board)
-export const TASK_STATUS = {
+const TASK_STATUS = {
   TODO: 'todo',
   IN_PROGRESS: 'in_progress', 
   REVIEW: 'review',
@@ -11,7 +11,7 @@ export const TASK_STATUS = {
 };
 
 // Task-Prioritäten
-export const TASK_PRIORITY = {
+const TASK_PRIORITY = {
   LOW: 'low',
   MEDIUM: 'medium',
   HIGH: 'high',
@@ -19,7 +19,7 @@ export const TASK_PRIORITY = {
 };
 
 // Projekt-Status
-export const PROJECT_STATUS = {
+const PROJECT_STATUS = {
   PLANNING: 'planning',
   ACTIVE: 'active',
   ON_HOLD: 'on_hold',
@@ -28,7 +28,7 @@ export const PROJECT_STATUS = {
 };
 
 // Projekt-Prioritäten
-export const PROJECT_PRIORITY = {
+const PROJECT_PRIORITY = {
   LOW: 'low',
   MEDIUM: 'medium',
   HIGH: 'high',
@@ -36,13 +36,13 @@ export const PROJECT_PRIORITY = {
 };
 
 // Status-Arrays für Validierung
-export const VALID_TASK_STATUSES = Object.values(TASK_STATUS);
-export const VALID_TASK_PRIORITIES = Object.values(TASK_PRIORITY);
-export const VALID_PROJECT_STATUSES = Object.values(PROJECT_STATUS);
-export const VALID_PROJECT_PRIORITIES = Object.values(PROJECT_PRIORITY);
+const VALID_TASK_STATUSES = Object.values(TASK_STATUS);
+const VALID_TASK_PRIORITIES = Object.values(TASK_PRIORITY);
+const VALID_PROJECT_STATUSES = Object.values(PROJECT_STATUS);
+const VALID_PROJECT_PRIORITIES = Object.values(PROJECT_PRIORITY);
 
 // Status-Labels für UI
-export const TASK_STATUS_LABELS = {
+const TASK_STATUS_LABELS = {
   [TASK_STATUS.TODO]: 'Zu erledigen',
   [TASK_STATUS.IN_PROGRESS]: 'In Bearbeitung',
   [TASK_STATUS.REVIEW]: 'Review',
@@ -50,7 +50,7 @@ export const TASK_STATUS_LABELS = {
   [TASK_STATUS.CANCELLED]: 'Abgebrochen'
 };
 
-export const TASK_PRIORITY_LABELS = {
+const TASK_PRIORITY_LABELS = {
   [TASK_PRIORITY.LOW]: 'Niedrig',
   [TASK_PRIORITY.MEDIUM]: 'Mittel',
   [TASK_PRIORITY.HIGH]: 'Hoch',
@@ -58,7 +58,7 @@ export const TASK_PRIORITY_LABELS = {
 };
 
 // Kanban-Spalten-Konfiguration
-export const KANBAN_COLUMNS = [
+const KANBAN_COLUMNS = [
   {
     id: TASK_STATUS.TODO,
     title: TASK_STATUS_LABELS[TASK_STATUS.TODO],
@@ -87,15 +87,15 @@ export const KANBAN_COLUMNS = [
 ];
 
 // Hilfsfunktionen
-export const isTaskCompleted = (status) => {
+const isTaskCompleted = (status) => {
   return status === TASK_STATUS.COMPLETED || status === TASK_STATUS.CANCELLED;
 };
 
-export const isTaskActive = (status) => {
+const isTaskActive = (status) => {
   return !isTaskCompleted(status);
 };
 
-export const getStatusColor = (status) => {
+const getStatusColor = (status) => {
   const colors = {
     [TASK_STATUS.TODO]: 'bg-gray-100 text-gray-800',
     [TASK_STATUS.IN_PROGRESS]: 'bg-blue-100 text-blue-800',
@@ -106,7 +106,7 @@ export const getStatusColor = (status) => {
   return colors[status] || colors[TASK_STATUS.TODO];
 };
 
-export const getPriorityColor = (priority) => {
+const getPriorityColor = (priority) => {
   const colors = {
     [TASK_PRIORITY.LOW]: 'bg-gray-100 text-gray-800',
     [TASK_PRIORITY.MEDIUM]: 'bg-blue-100 text-blue-800',
