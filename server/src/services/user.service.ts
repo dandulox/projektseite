@@ -106,7 +106,7 @@ export class UserService {
   }
 
   // Update user
-  async updateUser(id: string, input: UpdateUserInput, requestingUserId: string): Promise<User> {
+  async updateUser(id: string, input: UpdateUserInput, requestingUserId: string): Promise<UserWithoutPassword> {
     try {
       const user = await this.userRepository.findById(id);
       if (!user) {
