@@ -132,6 +132,51 @@ global.testHelpers = {
     date.setDate(date.getDate() + daysFromNow);
     return date;
   },
+
+  // Create test user
+  createTestUser: (overrides: any = {}) => {
+    return {
+      username: overrides.username || global.testHelpers.randomUsername(),
+      email: overrides.email || global.testHelpers.randomEmail(),
+      password: overrides.password || 'testpassword123',
+      role: overrides.role || 'USER',
+      isActive: overrides.isActive !== undefined ? overrides.isActive : true,
+      ...overrides,
+    };
+  },
+
+  // Create test project
+  createTestProject: (overrides: any = {}) => {
+    return {
+      name: overrides.name || `Test Project ${global.testHelpers.randomString(8)}`,
+      description: overrides.description || 'Test project description',
+      status: overrides.status || 'PLANNING',
+      priority: overrides.priority || 'MEDIUM',
+      visibility: overrides.visibility || 'PRIVATE',
+      completionPercentage: overrides.completionPercentage || 0,
+      ...overrides,
+    };
+  },
+
+  // Create test task
+  createTestTask: (overrides: any = {}) => {
+    return {
+      title: overrides.title || `Test Task ${global.testHelpers.randomString(8)}`,
+      description: overrides.description || 'Test task description',
+      status: overrides.status || 'TODO',
+      priority: overrides.priority || 'MEDIUM',
+      tags: overrides.tags || ['test'],
+      estimatedHours: overrides.estimatedHours || 1,
+      ...overrides,
+    };
+  },
+
+  // Cleanup test data
+  cleanupTestData: async () => {
+    // This would be implemented to clean up test data
+    // For now, it's a placeholder
+    console.log('🧹 Cleaning up test data...');
+  },
 };
 
 // Mock external services
