@@ -1,6 +1,18 @@
 # Projektseite - Projektstatus-Tracker
 
-Eine modulare Website zur Dokumentation und Verfolgung von Projektstatus mit Live-Edit-Funktionalität, Docker-Containerisierung und umfassendem Monitoring.
+Eine vollständige Projektmanagement-Anwendung mit Task-Management, Kanban-Boards, Deadlines und Team-Kollaboration. Entwickelt mit modernem Tech-Stack und funktioniert vollständig mit leerer Datenbank.
+
+## ✨ Features
+
+- ✅ **Projektverwaltung** mit Status-Tracking und Fortschrittsverfolgung
+- ✅ **Task-Management** mit Prioritäten, Deadlines und Zuweisungen
+- ✅ **Kanban-Boards** mit Drag & Drop-Funktionalität
+- ✅ **Deadlines-Kalender** mit Erinnerungen und Statistiken
+- ✅ **Team-Kollaboration** mit Rollen und Berechtigungen
+- ✅ **Admin-Diagnose-Tools** für System-Monitoring
+- ✅ **Responsive Design** mit Dark Mode
+- ✅ **Einheitliche Error-Behandlung** und Validierung
+- ✅ **Empty-States** - funktioniert ohne Demo-Daten
 
 ## 🚀 Quick Start
 
@@ -9,24 +21,27 @@ Eine modulare Website zur Dokumentation und Verfolgung von Projektstatus mit Liv
 git clone https://github.com/dandulox/projektseite.git
 cd projektseite
 
-# 2. Docker starten
-cd docker
-docker-compose up -d
+# 2. Dependencies installieren
+npm ci
 
-# 3. Demo-Daten laden
-cd ../backend
-node scripts/seed-demo-data.js
+# 3. Datenbank migrieren (nur Schema-Änderungen)
+npm run migrate
 
-# 4. Anwendung öffnen
+# 4. Entwicklung starten
+npm run dev
+
+# 5. Anwendung öffnen
 # Frontend: http://localhost:3000
 # Backend: http://localhost:3001
 # Grafana: http://localhost:3002 (admin/admin123)
 ```
 
-## 📋 Demo-Zugangsdaten
+## 📋 Standard-Zugangsdaten
 
-- **Admin**: `admin` / `demo123`
-- **User**: `demo_user` / `demo123`
+- **Admin**: `admin` / `admin`
+- **User**: `user` / `user123`
+
+> **Hinweis**: Die App funktioniert vollständig mit einer leeren Datenbank. Alle Features zeigen freundliche Empty-States ohne Demo-Daten.
 
 ## 🛠️ Entwicklung
 
@@ -55,8 +70,61 @@ cd frontend
 npm test
 
 # E2E Tests
-npx playwright test
+npm run test:e2e
 ```
+
+## 🔧 API-Endpoints
+
+### Tasks
+- `GET /api/tasks/my-tasks` - Meine Aufgaben abrufen
+- `POST /api/tasks` - Task erstellen
+- `PATCH /api/tasks/:id` - Task-Status aktualisieren
+- `PUT /api/tasks/:id` - Task bearbeiten
+
+### Deadlines
+- `GET /api/deadlines` - Nächste Deadlines (7 Tage)
+- `GET /api/deadlines/stats` - Deadline-Statistiken
+- `GET /api/deadlines/calendar` - Kalender-Ansicht
+- `GET /api/deadlines/reminders` - Erinnerungen
+
+### Admin
+- `GET /api/admin/health` - System-Health-Check
+- `GET /api/admin/db/status` - Datenbank-Status
+- `POST /api/admin/api-debug` - API-Debug-Tool
+
+## 🏗️ Architektur
+
+### Backend
+- **Express.js** mit modularen Routen
+- **PostgreSQL** mit umfassendem Schema
+- **JWT-Authentifizierung** mit Rollen
+- **Joi-Validierung** für alle Endpoints
+- **Einheitlicher Error-Contract**
+- **Rate-Limiting** und Security-Headers
+
+### Frontend
+- **React 18** mit Vite
+- **TypeScript** für Type-Safety
+- **Tailwind CSS** für Styling
+- **React Query** für State-Management
+- **React Router** für Navigation
+- **Empty-State-Komponenten** für bessere UX
+
+### Datenbank
+- **PostgreSQL 15** mit umfassendem Schema
+- **Automatische Triggers** für Fortschritts-Tracking
+- **Activity-Logs** für Audit-Trail
+- **Berechtigungs-System** mit Rollen
+- **Non-Destructive Migrations**
+
+## 🔒 Sicherheit
+
+- **JWT-Token** mit Ablaufzeit
+- **Rate-Limiting** (1000 req/15min)
+- **CORS-Konfiguration**
+- **Helmet** Security-Headers
+- **Input-Validierung** mit Joi
+- **SQL-Injection-Schutz** mit Parameterized Queries
 
 ## 📚 Dokumentation
 

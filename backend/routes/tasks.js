@@ -4,6 +4,13 @@ const { authenticateToken } = require('./auth');
 const { VALID_TASK_STATUSES, VALID_TASK_PRIORITIES } = require('../utils/statusConstants');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { getTasksSimple, getTaskStatsSimple } = require('../middleware/databaseFallback');
+const { 
+  validateTaskCreate, 
+  validateTaskUpdate, 
+  validateTaskStatusUpdate, 
+  validateTaskQuery,
+  validateId 
+} = require('../utils/validation');
 const router = express.Router();
 
 // Hilfsfunktion: Prüft Task-Berechtigung
@@ -87,7 +94,7 @@ const logTaskActivity = async (taskId, userId, action, details, oldValues = null
 // ==============================================
 
 // Meine Aufgaben abrufen
-router.get('/my-tasks', authenticateToken, asyncHandler(async (req, res) => {
+router.get('/my-tasks', authenticateToken, validateTaskQuery, asyncHandler(async (req, res) => {
   try {
     const {
       status,
@@ -100,52 +107,120 @@ router.get('/my-tasks', authenticateToken, asyncHandler(async (req, res) => {
       limit = 20
     } = req.query;
 
-    // Verwende Fallback-System für einfache Abfrage
-    const tasks = await getTasksSimple(req.user.id, parseInt(limit));
+    // Echte DB-Abfrage mit Joins
+    let query = `
+      SELECT 
+        t.id,
+        t.title,
+        t.description,
+        t.status,
+        t.priority,
+        t.due_date,
+        t.estimated_hours,
+        t.actual_hours,
+        t.tags,
+        t.created_at,
+        t.updated_at,
+        t.completed_at,
+        p.name as project_name,
+        p.id as project_id,
+        pm.name as module_name,
+        pm.id as module_id,
+        u.username as assignee_username,
+        u.email as assignee_email,
+        creator.username as created_by_username,
+        CASE 
+          WHEN t.due_date < CURRENT_DATE AND t.status NOT IN ('completed', 'cancelled') THEN true
+          ELSE false
+        END as is_overdue,
+        CASE 
+          WHEN t.due_date <= CURRENT_DATE + INTERVAL '3 days' AND t.status NOT IN ('completed', 'cancelled') THEN true
+          ELSE false
+        END as is_due_soon
+      FROM tasks t
+      LEFT JOIN projects p ON p.id = t.project_id
+      LEFT JOIN project_modules pm ON pm.id = t.module_id
+      LEFT JOIN users u ON u.id = t.assignee_id
+      LEFT JOIN users creator ON creator.id = t.created_by
+      WHERE t.assignee_id = $1
+    `;
     
-    // Filtere Tasks basierend auf Parametern
-    let filteredTasks = tasks;
-    
+    const params = [req.user.id];
+    let paramCount = 1;
+
+    // Filter hinzufügen
     if (status) {
-      filteredTasks = filteredTasks.filter(task => task.status === status);
+      query += ` AND t.status = $${++paramCount}`;
+      params.push(status);
     }
     if (priority) {
-      filteredTasks = filteredTasks.filter(task => task.priority === priority);
+      query += ` AND t.priority = $${++paramCount}`;
+      params.push(priority);
     }
     if (project_id) {
-      filteredTasks = filteredTasks.filter(task => task.project_id === parseInt(project_id));
+      query += ` AND t.project_id = $${++paramCount}`;
+      params.push(parseInt(project_id));
     }
     if (search) {
-      const searchLower = search.toLowerCase();
-      filteredTasks = filteredTasks.filter(task => 
-        task.title.toLowerCase().includes(searchLower) || 
-        (task.description && task.description.toLowerCase().includes(searchLower))
-      );
+      query += ` AND (LOWER(t.title) LIKE LOWER($${++paramCount}) OR LOWER(t.description) LIKE LOWER($${++paramCount}))`;
+      const searchPattern = `%${search}%`;
+      params.push(searchPattern, searchPattern);
     }
 
     // Sortierung
-    filteredTasks.sort((a, b) => {
-      const aVal = a[sort_by];
-      const bVal = b[sort_by];
-      
-      if (sort_order === 'ASC') {
-        return aVal > bVal ? 1 : -1;
-      } else {
-        return aVal < bVal ? 1 : -1;
-      }
-    });
+    const validSortFields = ['due_date', 'created_at', 'updated_at', 'title', 'priority', 'status'];
+    const sortField = validSortFields.includes(sort_by) ? sort_by : 'due_date';
+    const sortDirection = sort_order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+    query += ` ORDER BY t.${sortField} ${sortDirection}`;
 
     // Pagination
     const offset = (parseInt(page) - 1) * parseInt(limit);
-    const paginatedTasks = filteredTasks.slice(offset, offset + parseInt(limit));
+    query += ` LIMIT $${++paramCount} OFFSET $${++paramCount}`;
+    params.push(parseInt(limit), offset);
+
+    // Gesamtanzahl für Pagination
+    let countQuery = `
+      SELECT COUNT(*) as total
+      FROM tasks t
+      WHERE t.assignee_id = $1
+    `;
+    const countParams = [req.user.id];
+    let countParamCount = 1;
+
+    if (status) {
+      countQuery += ` AND t.status = $${++countParamCount}`;
+      countParams.push(status);
+    }
+    if (priority) {
+      countQuery += ` AND t.priority = $${++countParamCount}`;
+      countParams.push(priority);
+    }
+    if (project_id) {
+      countQuery += ` AND t.project_id = $${++countParamCount}`;
+      countParams.push(parseInt(project_id));
+    }
+    if (search) {
+      countQuery += ` AND (LOWER(t.title) LIKE LOWER($${++countParamCount}) OR LOWER(t.description) LIKE LOWER($${++countParamCount}))`;
+      const searchPattern = `%${search}%`;
+      countParams.push(searchPattern, searchPattern);
+    }
+
+    // Queries ausführen
+    const [tasksResult, countResult] = await Promise.all([
+      pool.query(query, params),
+      pool.query(countQuery, countParams)
+    ]);
+
+    const tasks = tasksResult.rows;
+    const total = parseInt(countResult.rows[0].total);
 
     res.json({
-      tasks: paginatedTasks,
+      tasks,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
-        total: filteredTasks.length,
-        pages: Math.ceil(filteredTasks.length / parseInt(limit))
+        total,
+        pages: Math.ceil(total / parseInt(limit))
       }
     });
   } catch (error) {
@@ -225,7 +300,7 @@ router.get('/:taskId', authenticateToken, async (req, res) => {
 });
 
 // Task erstellen
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken, validateTaskCreate, async (req, res) => {
   try {
     const {
       title,
@@ -304,7 +379,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Task-Status aktualisieren (PATCH für Kanban Board)
-router.patch('/:taskId', authenticateToken, async (req, res) => {
+router.patch('/:taskId', authenticateToken, validateId('taskId'), validateTaskStatusUpdate, async (req, res) => {
   try {
     const taskId = req.params.taskId;
     const { status } = req.body;
@@ -357,7 +432,7 @@ router.patch('/:taskId', authenticateToken, async (req, res) => {
 });
 
 // Task aktualisieren
-router.put('/:taskId', authenticateToken, async (req, res) => {
+router.put('/:taskId', authenticateToken, validateId('taskId'), validateTaskUpdate, async (req, res) => {
   try {
     const taskId = req.params.taskId;
     const {

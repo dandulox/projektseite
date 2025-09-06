@@ -124,8 +124,8 @@ const getDbStatus = async () => {
   }
 };
 
-// API-Debug Service
-const performApiDebug = async (method, path, headers = {}, body = null) => {
+// API-Debug Service - Echte API-Aufrufe
+const performApiDebug = async (method, path, headers = {}, body = null, userId = null) => {
   // SSRF-Schutz: Nur relative Pfade erlauben
   if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('//')) {
     throw new Error('Absolute URLs sind nicht erlaubt');
@@ -133,8 +133,10 @@ const performApiDebug = async (method, path, headers = {}, body = null) => {
 
   // Nur erlaubte Pfade
   const allowedPaths = [
-    '/api/me', '/api/projects', '/api/tasks', '/api/health', 
-    '/api/dashboard/me', '/api/teams', '/api/notifications'
+    '/api/health', '/api/debug/tables', '/api/debug/columns',
+    '/api/projects', '/api/tasks', '/api/deadlines', 
+    '/api/dashboard', '/api/teams', '/api/notifications',
+    '/api/greetings', '/api/versions', '/api/activity-logs'
   ];
 
   if (!allowedPaths.some(allowed => path.startsWith(allowed))) {
@@ -149,28 +151,94 @@ const performApiDebug = async (method, path, headers = {}, body = null) => {
   const start = Date.now();
   
   try {
-    // Simuliere API-Aufruf (vereinfacht)
-    const response = {
-      status: 200,
-      headers: { 'content-type': 'application/json' },
-      data: { message: 'API-Debug erfolgreich', path, method }
-    };
+    // Echte API-Aufrufe basierend auf Pfad
+    let response;
+    
+    if (path === '/api/health') {
+      response = await performHealthChecks();
+    } else if (path.startsWith('/api/debug/tables')) {
+      const result = await pool.query(`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        ORDER BY table_name
+      `);
+      response = { 
+        tables: result.rows.map(row => row.table_name),
+        count: result.rows.length 
+      };
+    } else if (path.startsWith('/api/debug/columns/')) {
+      const tableName = path.split('/').pop();
+      const result = await pool.query(`
+        SELECT column_name, data_type, is_nullable, column_default
+        FROM information_schema.columns 
+        WHERE table_schema = 'public' AND table_name = $1
+        ORDER BY ordinal_position
+      `, [tableName]);
+      response = { 
+        table: tableName,
+        columns: result.rows,
+        count: result.rows.length 
+      };
+    } else if (path.startsWith('/api/tasks/my-tasks')) {
+      // Simuliere Tasks-Abfrage
+      const result = await pool.query(`
+        SELECT COUNT(*) as count FROM tasks WHERE assignee_id = $1
+      `, [userId || 1]);
+      response = { 
+        message: 'Tasks API erreichbar',
+        user_tasks_count: parseInt(result.rows[0].count)
+      };
+    } else if (path.startsWith('/api/projects')) {
+      // Simuliere Projects-Abfrage
+      const result = await pool.query(`
+        SELECT COUNT(*) as count FROM projects
+      `);
+      response = { 
+        message: 'Projects API erreichbar',
+        total_projects: parseInt(result.rows[0].count)
+      };
+    } else if (path.startsWith('/api/deadlines')) {
+      // Simuliere Deadlines-Abfrage
+      const result = await pool.query(`
+        SELECT COUNT(*) as count FROM tasks 
+        WHERE due_date IS NOT NULL AND due_date >= CURRENT_DATE
+      `);
+      response = { 
+        message: 'Deadlines API erreichbar',
+        upcoming_deadlines: parseInt(result.rows[0].count)
+      };
+    } else {
+      // Fallback für andere Pfade
+      response = { 
+        message: 'API-Endpoint erreichbar',
+        path,
+        method,
+        timestamp: new Date().toISOString()
+      };
+    }
 
     const duration = Date.now() - start;
 
     return {
-      status: response.status,
+      status: 200,
       ms: duration,
-      headers: response.headers,
-      jsonTrunc: JSON.stringify(response.data).substring(0, 1000) + '...'
+      headers: { 'content-type': 'application/json' },
+      jsonTrunc: JSON.stringify(response).substring(0, 1000) + (JSON.stringify(response).length > 1000 ? '...' : ''),
+      success: true
     };
 
   } catch (error) {
+    const duration = Date.now() - start;
     return {
       status: 500,
-      ms: Date.now() - start,
+      ms: duration,
       headers: { 'content-type': 'application/json' },
-      jsonTrunc: JSON.stringify({ error: error.message }).substring(0, 1000)
+      jsonTrunc: JSON.stringify({ 
+        error: error.message,
+        code: error.code || 'UNKNOWN_ERROR'
+      }).substring(0, 1000),
+      success: false
     };
   }
 };
@@ -218,7 +286,7 @@ router.post('/api-debug', authenticateToken, requireAdmin, apiDebugRateLimit, as
       return res.status(400).json({ error: 'Ungültige HTTP-Methode' });
     }
 
-    const result = await performApiDebug(method, path, headers, body);
+    const result = await performApiDebug(method, path, headers, body, req.user.id);
     res.json(result);
 
   } catch (error) {

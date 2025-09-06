@@ -1,4 +1,11 @@
-// Verbessertes Error-Handling für API-Routen
+// Verbessertes Error-Handling für API-Routen mit einheitlichem Error-Contract
+const { 
+  createErrorResponse, 
+  ApiError, 
+  ERROR_CODES, 
+  STATUS_CODE_MAP 
+} = require('../utils/errorContract');
+
 const errorHandler = (err, req, res, next) => {
   console.error('API Error:', {
     message: err.message,
@@ -8,38 +15,67 @@ const errorHandler = (err, req, res, next) => {
     timestamp: new Date().toISOString()
   });
 
+  // ApiError (unserer eigener Error-Typ)
+  if (err instanceof ApiError) {
+    return res.status(err.statusCode).json(createErrorResponse(err));
+  }
+
   // Datenbankfehler
   if (err.code && err.code.startsWith('23')) {
-    return res.status(400).json({
-      error: 'Datenbankfehler',
-      message: 'Ungültige Daten oder Verletzung von Constraints',
-      details: process.env.NODE_ENV === 'development' ? err.message : undefined
-    });
+    const errorResponse = createErrorResponse(
+      err, 
+      ERROR_CODES.DATABASE_ERROR, 
+      'Ungültige Daten oder Verletzung von Constraints'
+    );
+    return res.status(STATUS_CODE_MAP[ERROR_CODES.DATABASE_ERROR]).json(errorResponse);
   }
 
   // Verbindungsfehler
   if (err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND') {
-    return res.status(503).json({
-      error: 'Service nicht verfügbar',
-      message: 'Datenbankverbindung fehlgeschlagen',
-      details: process.env.NODE_ENV === 'development' ? err.message : undefined
-    });
+    const errorResponse = createErrorResponse(
+      err, 
+      ERROR_CODES.EXTERNAL_SERVICE_ERROR, 
+      'Datenbankverbindung fehlgeschlagen'
+    );
+    return res.status(STATUS_CODE_MAP[ERROR_CODES.EXTERNAL_SERVICE_ERROR]).json(errorResponse);
   }
 
   // Syntax-Fehler
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    return res.status(400).json({
-      error: 'Ungültige JSON-Daten',
-      message: 'Request-Body enthält ungültiges JSON'
-    });
+    const errorResponse = createErrorResponse(
+      err, 
+      ERROR_CODES.INVALID_FORMAT, 
+      'Request-Body enthält ungültiges JSON'
+    );
+    return res.status(STATUS_CODE_MAP[ERROR_CODES.INVALID_FORMAT]).json(errorResponse);
+  }
+
+  // JWT-Fehler
+  if (err.name === 'JsonWebTokenError') {
+    const errorResponse = createErrorResponse(
+      err, 
+      ERROR_CODES.INVALID_TOKEN, 
+      'Ungültiger JWT-Token'
+    );
+    return res.status(STATUS_CODE_MAP[ERROR_CODES.INVALID_TOKEN]).json(errorResponse);
+  }
+
+  if (err.name === 'TokenExpiredError') {
+    const errorResponse = createErrorResponse(
+      err, 
+      ERROR_CODES.TOKEN_EXPIRED, 
+      'JWT-Token ist abgelaufen'
+    );
+    return res.status(STATUS_CODE_MAP[ERROR_CODES.TOKEN_EXPIRED]).json(errorResponse);
   }
 
   // Standard-Fehler
-  res.status(err.status || 500).json({
-    error: err.message || 'Interner Serverfehler',
-    details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-    timestamp: new Date().toISOString()
-  });
+  const errorResponse = createErrorResponse(
+    err, 
+    ERROR_CODES.INTERNAL_ERROR, 
+    'Interner Serverfehler'
+  );
+  res.status(STATUS_CODE_MAP[ERROR_CODES.INTERNAL_ERROR]).json(errorResponse);
 };
 
 // Async Error Wrapper
